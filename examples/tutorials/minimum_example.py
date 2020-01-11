@@ -3,10 +3,10 @@ Minimum working example
 =======================
 
 This is a simple minimum working example to get started, along the lines of the
-one given in https://emg3d.readthedocs.io/en/stable/usage.html#example.
+one given in https://emg3d.readthedocs.io/en/stable/usage.html#basic-example.
 
 To see some more realistic models have a look at the other examples in this
-repo.
+gallery.
 
 This notebooks uses ``discretize`` to create meshes easily and plot the model
 as well as the resulting electric field, which also requires ``matplotlib``. If
@@ -46,7 +46,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 plt.style.use('ggplot')
-sphinx_gallery_thumbnail_number = 2
+# sphinx_gallery_thumbnail_number = 2
 
 ###############################################################################
 # 1. Mesh

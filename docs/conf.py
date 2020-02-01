@@ -18,8 +18,8 @@ extensions = [
 
 # Numpydoc settings
 numpydoc_show_class_members = False
-numfig = True
-numfig_format = {'figure': 'Figure %s:'}
+# numfig = True
+# numfig_format = {'figure': 'Figure %s:'}
 
 # Todo settings
 todo_include_todos = True
@@ -30,6 +30,12 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'gallery',
     'subsection_order': ExplicitOrder([
         '../examples/tutorials',
+        '../examples/comparisons',
+        '../examples/reproducing',
+        '../examples/interactions',
+        '../examples/tools',
+        '../examples/various',
+        '../examples/time_domain',
         ]),
     'capture_repr': ('_repr_html_', '__repr__'),
     # Patter to search for example files

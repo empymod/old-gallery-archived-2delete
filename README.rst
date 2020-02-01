@@ -6,18 +6,20 @@
 
 .. sphinx-inclusion-marker
 
+Gallery for ``emg3d``. This is work in progress; the archived, old gallery can
+be found in the repo `emg3d-examples
+<https://github.com/empymod/emg3d-examples>`_.
 
-This will become the emg3d-gallery, and replace the emg3d-examples.
+Outstanding ToDo's:
 
-TODO:
+- Translate all notebooks.
+- Adjust emg3d-manual.
+- Create an environment.yml and scripts to run all.
+- Create script to automatically deploy to gh-pages.
+- Adjust READMEs at https://github.com/empymod/emg3d and here.
 
-- [ ] Translate all notebooks.
-- [ ] Mark them accordingly as outdated in emg3d-examples.
-- [ ] Adjust emg3d-manual.
-- [ ] Create an environment.yml and scripts to run all.
-- [ ] Create command to publish to gh-pages.
-- [ ] Adjust README.
-
+About ``emg3d``
+===============
 
 A multigrid solver for 3D electromagnetic diffusion with tri-axial electrical
 anisotropy. The matrix-free solver can be used as main solver or as
@@ -30,13 +32,10 @@ through jitted numba-functions.
 
 More information
 ================
-For more information regarding installation, usage, contributing, roadmap, bug
-reports, and much more, see
 
 - **Website**: https://empymod.github.io,
 - **Documentation**: https://emg3d.rtfd.io,
 - **Source Code**: https://github.com/empymod/emg3d,
-- **Examples**: https://emg3d.rtfd.io/en/stable/examples.
 
 
 License information

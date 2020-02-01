@@ -4,7 +4,7 @@ emg3d-gallery
 
 Version: |version| ~ Date: |today|
 
-.. include:: README.rst
+.. include:: ../README.rst
   :start-after: sphinx-inclusion-marker
 
 .. toctree::

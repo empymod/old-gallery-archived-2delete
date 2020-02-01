@@ -3,6 +3,7 @@
    :alt: emg3d logo
    
 ----
+
 .. sphinx-inclusion-marker
 
 

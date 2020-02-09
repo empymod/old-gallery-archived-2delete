@@ -12,11 +12,30 @@ be found in the repo `emg3d-examples
 
 Outstanding ToDo's:
 
-- Translate all notebooks.
 - Adjust emg3d-manual.
 - Create an environment.yml and scripts to run all.
 - Create script to automatically deploy to gh-pages.
 - Adjust READMEs at https://github.com/empymod/emg3d and here.
+- Translate all notebooks [1/18 done]; still missing:
+
+  - 0b_Parameter_tests
+  - 0c_Total-vs-PS-Field
+  - 1a_1D_VTI_empymod
+  - 1b_2D_triaxial_MARE2DEM
+  - 1c_3D_triaxial_SimPEG
+  - 1d_1D_VTI_empymod-Laplace
+  - 2a_SEG-EAGE_3D-Salt-Model
+  - 3a_GemPy-discretize-emg3d
+  - 4a_RAM-requirements
+  - 4b_Runtime
+  - 4c_Check_boundary4airwave
+  - 5a_Obtaining_the_magnetic_field
+  - 5b_Magnetic_permeability
+  - 5c_Magnetic_source_using_el_loop
+  - 5d_Magnetic_source_using_duality
+  - 6a_Fullspace
+  - 6b_Marine-1D
+
 
 About ``emg3d``
 ===============

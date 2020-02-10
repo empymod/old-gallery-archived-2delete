@@ -10,11 +10,11 @@ Content:
 
 1. Full-space model for a finite length, finite strength, rotated bipole.
 
-  1.1 Regular VTI case
-  1.2 Tri-axial anisotropy check: Swap ``x`` and ``z`` in ``emg3d``; compare
-      ``yz``-slice
-  1.3 Tri-axial anisotropy check: Swap ``y`` and ``z`` in ``emg3d``; compare
-      ``xz``-slice
+  a. Regular VTI case
+  b. Tri-axial anisotropy check: Swap ``x`` and ``z`` in ``emg3d``; compare
+     ``yz``-slice
+  c. Tri-axial anisotropy check: Swap ``y`` and ``z`` in ``emg3d``; compare
+     ``xz``-slice
 
 2. Layered model for a deep water model with a point dipole source.
 
@@ -146,7 +146,7 @@ def plot_lineplot_ex(x, y, data, epm_fs, grid):
 # 1. Full-space model for a finite length, finite strength, rotated bipole
 # ------------------------------------------------------------------------
 #
-# 1.1 Regular VTI case
+# 1.a Regular VTI case
 # ''''''''''''''''''''
 #
 # ``empymod``
@@ -245,7 +245,7 @@ plot_lineplot_ex(x, x, e3d_fs_x.real, epm_fs_x.real, pgrid)
 
 
 ###############################################################################
-# 1.2 Tri-axial anisotropy check
+# 1.b Tri-axial anisotropy check
 # ''''''''''''''''''''''''''''''
 #
 # Swap ``x`` and ``z`` in ``emg3d``; compare ``yz``-slice
@@ -283,7 +283,7 @@ plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
                 vmin=-12, vmax=-6, mode='abs')
 
 ###############################################################################
-# 1.3 Tri-axial anisotropy check
+# 1.c Tri-axial anisotropy check
 # ''''''''''''''''''''''''''''''
 #
 # Swap ``y`` and ``z`` in ``emg3d``; compare ``xz``-slice

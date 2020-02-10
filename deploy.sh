@@ -30,3 +30,6 @@ echo "DirectoryIndex index.html" > .htaccess
 git add --all
 git commit -m 'Update gallery'
 git push -f --set-upstream origin gh-pages
+
+# Leave it on master again
+git checkout master

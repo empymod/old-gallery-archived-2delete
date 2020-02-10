@@ -16,10 +16,8 @@ Outstanding ToDo's:
 - Create an environment.yml and scripts to run all.
 - Create script to automatically deploy to gh-pages.
 - Adjust READMEs at https://github.com/empymod/emg3d and here.
-- Translate all notebooks [1/18 done]; still missing:
+- Translate all notebooks [3/18 done]; still missing:
 
-  - 0b_Parameter_tests
-  - 0c_Total-vs-PS-Field
   - 1a_1D_VTI_empymod
   - 1b_2D_triaxial_MARE2DEM
   - 1c_3D_triaxial_SimPEG

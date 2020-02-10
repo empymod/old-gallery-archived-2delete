@@ -32,7 +32,7 @@ plot the model as well as the resulting electric field, which also requires
     sfield = emg3d.utils.get_source_field(grid, src=[4, 4, 4, 0, 0], freq=10.0)
 
     # Calculate the electric signal.
-    efield = emg3d.solver.solver(grid, model, sfield, verb=3)
+    efield = emg3d.solve(grid, model, sfield, verb=3)
 
     # Get the corresponding magnetic signal.
     hfield = emg3d.utils.get_h_field(grid, model, efield)
@@ -101,7 +101,7 @@ sfield = emg3d.utils.get_source_field(grid, src=[0, 0, 0, 0, 0], freq=10)
 #
 # Now we can calculate the electric field with ``emg3d``:
 
-efield = emg3d.solver.solver(grid, model, sfield, verb=3)
+efield = emg3d.solve(grid, model, sfield, verb=3)
 
 ###############################################################################
 # The calculation requires in this case seven multigrid F-cycles and takes just

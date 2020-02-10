@@ -10,14 +10,17 @@ input parameter testing.
 
 **IMPORTANT:** None of the conclusions you can draw from these figures are
 applicable to other models. What is faster depends on your input. Influence has
-particularly the degree of anisotropy and of model stretching. These are simply
+particularly the degree of anisotropy and of grid stretching. These are simply
 examples that you can adjust for your problem at hand.
 
 """
 import emg3d
+import discretize
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 plt.style.use('ggplot')
+# sphinx_gallery_thumbnail_number = 3
 
 
 ###############################################################################
@@ -56,7 +59,7 @@ yy, y0 = emg3d.utils.get_hx_h0(
 zz, z0 = emg3d.utils.get_hx_h0(
     freq=freq, res=[0.3, 1., 0.3], domain=[-2500, 0],
     fixed=[-1000, 0, -2100], **ginp)
-grid = emg3d.utils.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
+grid = discretize.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
 print(grid)
 
 # Source-field
@@ -77,6 +80,9 @@ res_x[xt[0]:xt[-1]+1, yt[0]:yt[-1]+1, zt[0]:zt[-1]+1] = 100
 
 # Create a model instance
 model_iso = emg3d.utils.Model(grid, res_x)
+
+# Plot it for QC
+grid.plot_3d_slicer(model_iso.res_x.ravel('F'), pcolorOpts={'norm': LogNorm()})
 
 ###############################################################################
 # Test 1: F, W, and V MG cycles

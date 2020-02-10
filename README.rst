@@ -14,7 +14,6 @@ Outstanding ToDo's:
 
 - Adjust emg3d-manual.
 - Create an environment.yml and scripts to run all.
-- Create script to automatically deploy to gh-pages.
 - Adjust READMEs at https://github.com/empymod/emg3d and here.
 - Translate all notebooks [3/18 done]; still missing:
 

@@ -15,7 +15,7 @@ There are two ways we can achieve that:
 - **using the duality principle**, which is what we do in this notebook, or
 - creating an electric loop source, see the example `magnetic source using
   electric loop
-  <https://empymod.github.io/emg3d-gallery/gallery/magnetics/magnetic_source_using_electric_loop.html>`_.
+  <https://empymod.github.io/emg3d-gallery/gallery/magnetics/magnetic_source_el_loop.html>`_.
 
 ``emg3d`` solves the following equation,
 

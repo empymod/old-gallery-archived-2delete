@@ -14,7 +14,7 @@ There are two ways we can achieve that:
 - **creating an electric loop source**, which is what we do in this notebook,
   or
 - using the duality principle, see the example `magnetic source using duality
-  <https://empymod.github.io/emg3d-gallery/gallery/magnetics/magnetic_source_using_duality.html>`_.
+  <https://empymod.github.io/emg3d-gallery/gallery/magnetics/magnetic_source_duality.html>`_.
 
 We create a horizontal, electric loop source to generate a vertical magnetic
 field in a homogeneous VTI fullspace, and compare it to the semi-analytical

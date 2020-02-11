@@ -169,7 +169,7 @@ em3_pf = emg3d.solve(grid, model_pf, sfield_pf, **modparams)
 # ----------------------------------------------------
 #
 # Define the secondary source
-# '''''''''''''''''''''''''''
+# ```````````````````````````
 
 # Get the difference of conductivity as volume-average values
 dsigma = grid.vol.reshape(grid.vnC, order='F')*(1/model.res_x-1/model_pf.res_x)
@@ -194,7 +194,7 @@ sfield_sf.ensure_pec
 
 ###############################################################################
 # Plot the secondary source
-# '''''''''''''''''''''''''
+# `````````````````````````
 #
 # Our secondary source is the entire target, the scatterer. Here we look at the
 # :math:`E_x` secondary source field. But note that the secondary source has
@@ -212,7 +212,7 @@ grid.plot_3d_slicer(
 
 ###############################################################################
 # Calculate the secondary source
-# ''''''''''''''''''''''''''''''
+# ``````````````````````````````
 
 em3_sf = emg3d.solve(grid, model, sfield_sf, **modparams)
 

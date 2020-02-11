@@ -31,6 +31,7 @@ plt.style.use('ggplot')
 
 ###############################################################################
 # Plotting and interpolation routines
+# -----------------------------------
 def discrete_cmap(N, base_cmap=None):
     """Create an N-bin discrete colormap from the specified input map
     https://gist.github.com/jakevdp/91077b0cae40f8f8244a
@@ -147,9 +148,10 @@ def plot_lineplot_ex(x, y, data, epm_fs, grid):
 # ------------------------------------------------------------------------
 #
 # 1.a Regular VTI case
-# ''''''''''''''''''''
+# ````````````````````
 #
-# ``empymod``
+# empymod
+# ```````
 
 # Survey parameters
 x = (np.arange(1025))*5-2560
@@ -189,7 +191,8 @@ epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, -90], verb=1,
                           **model).reshape(np.shape(rx))
 
 ###############################################################################
-# ``emg3d``
+# emg3d
+# `````
 
 # Get calculation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.utils.get_domain(x0=src[0], freq=0.1, min_width=20)
@@ -246,7 +249,7 @@ plot_lineplot_ex(x, x, e3d_fs_x.real, epm_fs_x.real, pgrid)
 
 ###############################################################################
 # 1.b Tri-axial anisotropy check
-# ''''''''''''''''''''''''''''''
+# ``````````````````````````````
 #
 # Swap ``x`` and ``z`` in ``emg3d``; compare ``yz``-slice
 #
@@ -284,7 +287,7 @@ plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
 
 ###############################################################################
 # 1.c Tri-axial anisotropy check
-# ''''''''''''''''''''''''''''''
+# ``````````````````````````````
 #
 # Swap ``y`` and ``z`` in ``emg3d``; compare ``xz``-slice
 #

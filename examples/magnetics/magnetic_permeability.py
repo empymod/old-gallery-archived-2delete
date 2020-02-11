@@ -31,6 +31,7 @@ plt.style.use('ggplot')
 
 ###############################################################################
 # Plotting and interpolation routines
+# -----------------------------------
 def discrete_cmap(N, base_cmap=None):
     """Create an N-bin discrete colormap from the specified input map
     https://gist.github.com/jakevdp/91077b0cae40f8f8244a
@@ -146,7 +147,8 @@ def plot_lineplot_ex(x, y, data, epm_fs, grid):
 # Full-space model for a finite length, finite strength, rotated bipole
 # ---------------------------------------------------------------------
 #
-# ``empymod``
+# empymod
+# ```````
 
 # Survey parameters
 x = (np.arange(1025))*5-2560
@@ -164,7 +166,6 @@ zrec = -400.           # Receiver depth
 freq = 0.77            # Frequency
 strength = np.pi       # Source strength
 
-###############################################################################
 # Input for empymod
 model = {  # empymod has positive z-down, so switch source-z
     'src': [src[0], src[1], src[2], src[3], -src[4], -src[5]],
@@ -190,7 +191,8 @@ epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, -90],
 
 
 ###############################################################################
-# ``emg3d``
+# emg3d
+# `````
 
 # Get calculation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.utils.get_domain(x0=src[0], freq=0.1, min_width=20)
@@ -219,7 +221,7 @@ efield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 ###############################################################################
 # Plot
-# ''''
+# ````
 e3d_fs_x = emg3d.utils.get_receiver(pgrid, efield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_x, e3d_fs_x, x, r'Diffusive Fullspace $E_x$',
                 vmin=-12, vmax=-6, mode='abs')

@@ -31,11 +31,11 @@ sphinx_gallery_conf = {
     'subsection_order': ExplicitOrder([
         '../examples/tutorials',
         '../examples/comparisons',
+        '../examples/magnetics',
+        '../examples/time_domain',
+        '../examples/tools',
         '../examples/reproducing',
         '../examples/interactions',
-        '../examples/tools',
-        '../examples/various',
-        '../examples/time_domain',
         ]),
     'capture_repr': ('_repr_html_', '__repr__'),
     # Patter to search for example files

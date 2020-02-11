@@ -24,7 +24,6 @@ rm -r html
 
 # Create nojekyll and htaccess
 touch .nojekyll
-echo "DirectoryIndex index.html" > .htaccess
 
 # Upload site
 git add --all

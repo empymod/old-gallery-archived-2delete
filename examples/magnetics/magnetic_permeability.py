@@ -2,10 +2,6 @@ r"""
 Magnetic permeability
 =====================
 
-This is an adapted version of the `1D VTI comparison with empymod
-<https://empymod.github.io/emg3d-gallery/gallery/comparisons/1D_VTI_empymod.html>`_.
-Consult that example to see the result for the electric field.
-
 The solver ``emg3d`` uses the diffusive approximation of Maxwell's equations;
 the relative electric permittivity is therefore fixed at
 :math:`\varepsilon_\rm{r} = 1`. The magnetic permeability :math:`\mu_\rm{r}`,
@@ -17,6 +13,10 @@ isotropic magnetic permeability, and compare it to the semi-analytical solution
 of ``empymod``. (The code ``empymod`` is an open-source code which can model
 CSEM responses for a layered medium including VTI electrical anisotropy, see
 `empymod.github.io <https://empymod.github.io>`_.)
+
+This is an adapted version of
+:ref:`sphx_glr_gallery_comparisons_1D_VTI_empymod.py`. Consult that example to
+see the result for the electric field.
 
 """
 import emg3d

@@ -1,6 +1,6 @@
 """
-Ensure the boundary is big enough for airwave
-=============================================
+Ensure calculation domain is big enough
+=======================================
 
 Not translated yet. Old version:
 https://github.com/empymod/emg3d-examples/blob/master/4c_Check_boundary4airwave.ipynb

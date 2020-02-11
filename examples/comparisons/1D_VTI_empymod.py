@@ -1,6 +1,6 @@
 """
-1D VTI comparison with ``empymod``
-==================================
+empymod: 1D VTI resistivity
+===========================
 
 The code ``empymod`` is an open-source code which can model CSEM responses for
 a layered medium including VTI electrical anisotropy, see `empymod.github.io

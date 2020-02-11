@@ -1,6 +1,6 @@
 r"""
-Obtaining the magnetic field from the electric field
-====================================================
+Magnetic field due to an el. source
+===================================
 
 This is an adapted version of the `1D VTI comparison with empymod
 <https://empymod.github.io/emg3d-gallery/gallery/comparisons/1D_VTI_empymod.html>`_.

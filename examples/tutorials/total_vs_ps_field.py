@@ -1,6 +1,6 @@
 r"""
-Total field vs primary/secondary field formulation
-==================================================
+Total vs primary/secondary field
+================================
 
 We usually use ``emg3d`` for total field calculations. However, we can also use
 it in a primary-secondary field formulation, where we calculate the primary

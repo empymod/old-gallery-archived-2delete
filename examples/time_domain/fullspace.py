@@ -1,6 +1,6 @@
 """
-Fullspace
-=========
+Transient CSEM for a homogeneous space
+======================================
 
 Not translated yet. Old version:
 https://github.com/empymod/emg3d-examples/blob/master/6a_Fullspace.ipynb

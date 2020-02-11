@@ -1,6 +1,6 @@
 """
-1D VTI Laplace-domain comparison to empymod
-===========================================
+empymod: 1D VTI Laplace-domain
+==============================
 
 Not translated yet. Old version:
 https://github.com/empymod/emg3d-examples/blob/master/1d_1D_VTI_empymod-Laplace.ipynb

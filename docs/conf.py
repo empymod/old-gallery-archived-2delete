@@ -46,6 +46,8 @@ sphinx_gallery_conf = {
     'remove_config_comments': True,
     # Show memory
     'show_memory': True,
+    # Custom first notebook cell
+    'first_notebook_cell': '%matplotlib notebook',
 }
 
 # https://github.com/sphinx-gallery/sphinx-gallery/pull/521/files

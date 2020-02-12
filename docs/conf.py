@@ -56,11 +56,11 @@ warnings.filterwarnings("ignore", category=UserWarning,
 
 # Intersphinx configuration
 intersphinx_mapping = {
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "numpy": ("https://numpy.org", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "discretize": ("https://discretize.simpeg.xyz/en/master", None),
-    "empymod": ("https://empymod.readthedocs.org/en/stable", None),
-    "emg3d": ("https://emg3d.readthedocs.org/en/stable", None),
+    "empymod": ("https://empymod.readthedocs.io/en/stable", None),
+    "emg3d": ("https://emg3d.readthedocs.io/en/stable", None),
 }
 
 # ==== 2. General Settings ====

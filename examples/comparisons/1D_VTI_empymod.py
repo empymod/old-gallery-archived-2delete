@@ -8,7 +8,7 @@ a layered medium including VTI electrical anisotropy, see `empymod.github.io
 
 Content:
 
-1. Full-space model for a finite length, finite strength, rotated bipole.
+1. Full-space VTI model for a finite length, finite strength, rotated bipole.
 
   a. Regular VTI case
   b. Tri-axial anisotropy check: Swap ``x`` and ``z`` in ``emg3d``; compare
@@ -144,8 +144,8 @@ def plot_lineplot_ex(x, y, data, epm_fs, grid):
 
 
 ###############################################################################
-# 1. Full-space model for a finite length, finite strength, rotated bipole
-# ------------------------------------------------------------------------
+# 1. Full-space VTI model for a finite length, finite strength, rotated bipole
+# ----------------------------------------------------------------------------
 #
 # 1.a Regular VTI case
 # ````````````````````
@@ -222,6 +222,7 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 ###############################################################################
 # Plot
+# ````
 
 e3d_fs_x = emg3d.utils.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_x, e3d_fs_x, x, r'Diffusive Fullspace $E_x$',
@@ -328,7 +329,8 @@ plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
 # 2. Layered model for a deep water model with a point dipole source
 # ------------------------------------------------------------------
 #
-# ``empymod``
+# empymod
+# ```````
 
 # Survey parameters
 x = (np.arange(1025))*5-2560
@@ -364,7 +366,9 @@ epm_deep_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, -90],
                             verb=1, **model).reshape(np.shape(rx))
 
 ###############################################################################
-# ``emg3d``
+# emg3d
+# `````
+
 
 # Get calculation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.utils.get_domain(x0=src[0], freq=0.1, min_width=20)
@@ -416,7 +420,7 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 ###############################################################################
 # Plot
-
+# ````
 
 e3d_deep_x = emg3d.utils.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_deep_x, e3d_deep_x, x, r'Deep water point dipole $E_x$',

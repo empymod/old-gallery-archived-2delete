@@ -17,7 +17,7 @@ import pymatsolver
 from SimPEG.EM import FDEM
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
-# sphinx_gallery_thumbnail_number = 2
+# sphinx_gallery_thumbnail_path = '_static/thumbs/SimPEG.png'
 
 ###############################################################################
 # Model and survey parameters

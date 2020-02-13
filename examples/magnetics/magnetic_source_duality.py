@@ -96,6 +96,7 @@ import matplotlib.pyplot as plt
 from scipy import interpolate as sint
 from matplotlib.colors import SymLogNorm
 plt.style.use('ggplot')
+# sphinx_gallery_thumbnail_path = '_static/thumbs/duality.png'
 
 
 ###############################################################################

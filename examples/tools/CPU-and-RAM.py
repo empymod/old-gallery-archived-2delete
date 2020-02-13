@@ -107,9 +107,9 @@ for i, nx in enumerate(nsizes):
 plt.figure()
 plt.title('Runtime')
 plt.loglog(nsizes**3/1e6, runtime, '.-')
-plt.legend()
 plt.xlabel('Number of cells (in millions)')
 plt.ylabel('CPU (s)')
+plt.axis('equal')
 plt.show()
 
 ###############################################################################
@@ -122,6 +122,7 @@ plt.title('Memory')
 plt.loglog(nsizes**3/1e6, memory/1e3, '-', zorder=10)
 plt.xlabel('Number of cells (in millions)')
 plt.ylabel('RAM (GB)')
+plt.axis('equal')
 plt.show()
 
 

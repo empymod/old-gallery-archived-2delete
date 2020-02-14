@@ -307,7 +307,7 @@ pmodel = emg3d.utils.Model(pgrid, res_x=1., mu_r=1./resh)
 sfield = emg3d.utils.get_source_field(pgrid, src, freq, strength)
 
 # Calculate the electric field
-hfield = emg3d.solver.solver(pgrid, pmodel, sfield, verb=3)
+hfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 
 ###############################################################################

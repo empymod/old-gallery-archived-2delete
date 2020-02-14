@@ -14,6 +14,9 @@ References
    stretched grids: EAGE Technical Program Expanded Abstracts, D036; DOI:
    `10.3997/2214-4609.201401567
    <https://doi.org/10.3997/2214-4609.201401567>`_.
+.. [MuWS08] Mulder, W. A., M. Wirianto, and E. Slob, 2008, Time-domain modeling
+   of electromagnetic diffusion with a frequency-domain code: Geophysics, 73,
+   F1-F8; DOI: `10.1190/1.2799093 <https://doi.org/10.1190/1.2799093>`_.
 .. [WeMS19] Werthmüller, D., W. A. Mulder, and E. C. Slob, 2019, emg3d: A
    multigrid solver for 3D electromagnetic diffusion: Journal of Open Source
    Software, 4(39), 1463;

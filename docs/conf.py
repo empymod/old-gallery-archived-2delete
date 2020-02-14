@@ -48,6 +48,8 @@ sphinx_gallery_conf = {
     'show_memory': True,
     # Custom first notebook cell
     'first_notebook_cell': '%matplotlib notebook',
+    # PyVista scraper
+    'image_scrapers': ('matplotlib', 'pyvista', ),
 }
 
 # https://github.com/sphinx-gallery/sphinx-gallery/pull/521/files

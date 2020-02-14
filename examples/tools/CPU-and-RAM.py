@@ -88,7 +88,7 @@ def calculate(nx):
 #
 # These are the actual ``nx``-sizes it tests. Adjust to your needs.
 
-nsizes = np.array([32, 48, 64, 96, 128, 192, 256, 384])  # , 512, 768, 1024])
+nsizes = np.array([32, 48, 64, 96, 128, 192])  # , 256, 384, 512, 768, 1024])
 memory = np.zeros(nsizes.shape)
 runtime = np.zeros(nsizes.shape)
 

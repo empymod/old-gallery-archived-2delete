@@ -25,7 +25,7 @@ plt.style.use('ggplot')
 # ---------------------------
 #
 # We start by using the model given in `Chapter 1.1
-# <https://nbviewer.jupyter.org/github/cgre-aachen/gempy/blob/master/notebooks/tutorials/ch1-1_Basics.ipynb>`_
+# <https://nbviewer.jupyter.org/github/cgre-aachen/gempy/blob/master/notebooks/tutorials/ch1-Fundamentals/ch1-1_Basics.ipynb>`_
 # of the GemPy documentation. It is a nice, made-up model of a folded structure
 # with a fault.
 #

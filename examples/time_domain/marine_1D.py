@@ -34,10 +34,10 @@ name = 'Marine-1D'
 # - Receiver on the seafloor at an inline-offset of 4 km.
 # - Both source and receiver are x-directed electric dipoles.
 
-src = [0, 0, 950]
-rec = [4000, 0, 1000]
-res = np.array([1e8, 0.3, 1, 100, 1])
-depth = np.array([0, 1000, 2000, 2500])
+src = [0, 0, -950]
+rec = [4000, 0, -1000]
+res = np.array([1, 100, 1, 0.3, 1e8])
+depth = np.array([-2500, -2000, -1000, 0])
 
 
 ###############################################################################
@@ -47,11 +47,11 @@ depth = np.array([0, 1000, 2000, 2500])
 
 # Create the mesh.
 orig_mesh = discretize.TensorMesh(
-    [[1, ], [1, ], np.r_[1000, np.diff(depth)[::-1], 1000]],
-    x0=('C', 'C', -(depth[-1]+1000)))
+    [[1, ], [1, ], np.r_[1000, np.diff(depth), 1000]],
+    x0=('C', 'C', depth[0]-1000))
 
 # Create a resistivity model using the 1D model and the above mesh.
-orig_model = emg3d.utils.Model(orig_mesh, res_x=np.array(res)[::-1])
+orig_model = emg3d.utils.Model(orig_mesh, res_x=np.array(res))
 
 # QC.
 orig_mesh.plot_3d_slicer(
@@ -155,7 +155,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
         freq=frq, res=[0.3, 1e5], fixed=src[1], domain=[400, 400], **gridinput)
     zz, z0, hiz = emg3d.utils.get_hx_h0(
         freq=frq, res=[0.3, 1., 1e5], domain=[-2300, 0], **gridinput,
-        fixed=[-depth[1], -depth[0], -depth[-1]])
+        fixed=[depth[2], depth[3], depth[0]])
 
     # Store values in log.
     values[key]['alpha'] = [np.min([hix['amin'], hiy['amin'], hiz['amin']]),
@@ -178,7 +178,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
 
     # Define source.
     sfield = emg3d.utils.get_source_field(
-        grid, [src[0], src[1], -src[2], 0, 0], frq, strength=0)
+        grid, [src[0], src[1], src[2], 0, 0], frq, strength=0)
 
     # Solve the system.
     efield, info = emg3d.solve(
@@ -191,7 +191,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
 
     # Store value
     values[key]['data'] = emg3d.utils.get_receiver(
-            grid, efield.fx, (rec[0], rec[1], -rec[2]))
+            grid, efield.fx, (rec[0], rec[1], rec[2]))
 
 # Stop the timer.
 total_time = runtime.runtime

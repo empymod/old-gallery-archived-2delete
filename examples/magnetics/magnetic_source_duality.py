@@ -228,8 +228,8 @@ freq = 0.77            # Frequency
 strength = np.pi       # Source strength
 
 # Input for empymod
-model = {  # empymod has positive z-down, so switch source-z and dip
-    'src': [src[0], src[1], -src[2], src[3], -src[4]],
+model = {
+    'src': src,
     'depth': [],
     'res': resh,
     'strength': strength,
@@ -243,19 +243,19 @@ rxx = rx.ravel()
 ryy = ry.ravel()
 
 # e-field
-epm_fs_ex = empymod.loop(rec=[rxx, ryy, -zrec, 0, 0], mrec=False, verb=3,
+epm_fs_ex = empymod.loop(rec=[rxx, ryy, zrec, 0, 0], mrec=False, verb=3,
                          **model).reshape(np.shape(rx))
-epm_fs_ey = empymod.loop(rec=[rxx, ryy, -zrec, 90, 0], mrec=False, verb=1,
+epm_fs_ey = empymod.loop(rec=[rxx, ryy, zrec, 90, 0], mrec=False, verb=1,
                          **model).reshape(np.shape(rx))
-epm_fs_ez = empymod.loop(rec=[rxx, ryy, -zrec, 0, -90], mrec=False, verb=1,
+epm_fs_ez = empymod.loop(rec=[rxx, ryy, zrec, 0, 90], mrec=False, verb=1,
                          **model).reshape(np.shape(rx))
 
 # h-field
-epm_fs_hx = empymod.loop(rec=[rxx, ryy, -zrec, 0, 0], verb=1,
+epm_fs_hx = empymod.loop(rec=[rxx, ryy, zrec, 0, 0], verb=1,
                          **model).reshape(np.shape(rx))
-epm_fs_hy = empymod.loop(rec=[rxx, ryy, -zrec, 90, 0], verb=1,
+epm_fs_hy = empymod.loop(rec=[rxx, ryy, zrec, 90, 0], verb=1,
                          **model).reshape(np.shape(rx))
-epm_fs_hz = empymod.loop(rec=[rxx, ryy, -zrec, 0, -90], verb=1,
+epm_fs_hz = empymod.loop(rec=[rxx, ryy, zrec, 0, 90], verb=1,
                          **model).reshape(np.shape(rx))
 
 
@@ -363,7 +363,7 @@ plot_lineplot_ex(x, x, e3d_fs_hx.real, epm_fs_hx.real, pgrid)
 # Calculate electric field :math:`E` from the magnetic field
 # ``````````````````````````````````````````````````````````
 
-efield = -emg3d.utils.get_h_field(
+efield = emg3d.utils.get_h_field(
         pgrid, pmodel, hfield)*2j*np.pi*freq*4e-7*np.pi
 
 

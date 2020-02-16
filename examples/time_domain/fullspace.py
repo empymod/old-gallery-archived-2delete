@@ -129,7 +129,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
 
     # Define source.
     sfield = emg3d.utils.get_source_field(
-        grid, [src[0], src[1], -src[2], 0, 0], frq, strength=0)
+        grid, [src[0], src[1], src[2], 0, 0], frq, strength=0)
 
     # Solve the system.
     info = emg3d.solve(
@@ -143,7 +143,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
 
     # Store value
     thislog['data'] = emg3d.utils.get_receiver(
-            grid, efield.fx, (rec[0], rec[1], -rec[2]))
+            grid, efield.fx, (rec[0], rec[1], rec[2]))
 
     # Store thislog in values.
     values[int(frq*1e6)] = thislog

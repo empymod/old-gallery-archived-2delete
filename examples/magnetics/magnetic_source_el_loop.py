@@ -161,14 +161,14 @@ ry = rx.transpose()
 resh = 1.              # Horizontal resistivity
 aniso = np.sqrt(2.)    # Anisotropy
 resv = resh*aniso**2   # Vertical resistivity
-src = [0, 0, -300, 0, 90]  # Source: [x, y, z, azimuth, dip]
+src = [0, 0, -300, 0, -90]  # Source: [x, y, z, azimuth, dip]
 zrec = -400.           # Receiver depth
 freq = 0.77            # Frequency
 strength = np.pi       # Source strength
 
 # Input for empymod
-model = {  # empymod has positive z-down, so switch source-z
-    'src': [src[0], src[1], -src[2], src[3], src[4]],
+model = {
+    'src': src,
     'depth': [],
     'res': resh,
     'aniso': aniso,
@@ -183,19 +183,19 @@ rxx = rx.ravel()
 ryy = ry.ravel()
 
 # e-field
-epm_fs_ex = empymod.loop(rec=[rxx, ryy, -zrec, 0, 0], mrec=False, verb=3,
-                         **model).reshape(np.shape(rx))
-epm_fs_ey = empymod.loop(rec=[rxx, ryy, -zrec, 90, 0], mrec=False, verb=1,
-                         **model).reshape(np.shape(rx))
-epm_fs_ez = empymod.loop(rec=[rxx, ryy, -zrec, 0, -90], mrec=False, verb=1,
-                         **model).reshape(np.shape(rx))
+epm_fs_ex = -empymod.loop(rec=[rxx, ryy, zrec, 0, 0], mrec=False, verb=3,
+                          **model).reshape(np.shape(rx))
+epm_fs_ey = -empymod.loop(rec=[rxx, ryy, zrec, 90, 0], mrec=False, verb=1,
+                          **model).reshape(np.shape(rx))
+epm_fs_ez = -empymod.loop(rec=[rxx, ryy, zrec, 0, 90], mrec=False, verb=1,
+                          **model).reshape(np.shape(rx))
 
 # h-field
-epm_fs_hx = empymod.loop(rec=[rxx, ryy, -zrec, 0, 0], verb=1,
+epm_fs_hx = empymod.loop(rec=[rxx, ryy, zrec, 0, 0], verb=1,
                          **model).reshape(np.shape(rx))
-epm_fs_hy = empymod.loop(rec=[rxx, ryy, -zrec, 90, 0], verb=1,
+epm_fs_hy = empymod.loop(rec=[rxx, ryy, zrec, 90, 0], verb=1,
                          **model).reshape(np.shape(rx))
-epm_fs_hz = empymod.loop(rec=[rxx, ryy, -zrec, 0, -90], verb=1,
+epm_fs_hz = empymod.loop(rec=[rxx, ryy, zrec, 0, 90], verb=1,
                          **model).reshape(np.shape(rx))
 
 

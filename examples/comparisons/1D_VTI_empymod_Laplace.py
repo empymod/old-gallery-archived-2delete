@@ -150,8 +150,8 @@ sval = -4.84           # Laplace-value
 strength = np.pi       # Source strength
 
 # Input for empymod
-model = {  # empymod has positive z-down, so switch source-z
-    'src': [src[0], src[1], src[2], src[3], -src[4], -src[5]],
+model = {
+    'src': src,
     'depth': [],
     'res': resh,
     'aniso': aniso,
@@ -164,11 +164,11 @@ model = {  # empymod has positive z-down, so switch source-z
 
 ###############################################################################
 
-epm_fs_x = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, 0], verb=3,
+epm_fs_x = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 0], verb=3,
                           **model).reshape(np.shape(rx))
-epm_fs_y = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 90, 0], verb=1,
+epm_fs_y = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 90, 0], verb=1,
                           **model).reshape(np.shape(rx))
-epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, -90], verb=1,
+epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90], verb=1,
                           **model).reshape(np.shape(rx))
 
 ###############################################################################
@@ -242,17 +242,17 @@ rx = np.repeat([x, ], np.size(x), axis=0)
 ry = rx.transpose()
 
 # Model parameters
-resh = [1e12, 0.3, 1, 50, 1]      # Horizontal resistivity
-aniso = np.sqrt([1, 1, 2, 2, 2])  # Anisotropy
+resh = [1, 50, 1, 0.3, 1e12]      # Horizontal resistivity
+aniso = np.sqrt([2, 2, 2, 1, 1])  # Anisotropy
 resv = resh*aniso**2              # Vertical resistivity
 src = [0, 0, -900, 0, 0]          # Source: [x, y, z, azimuth, dip]
 zrec = -950.                      # Receiver depth
 sval = -2*np.pi                   # Laplace-value
-depth = np.array([0, -1000, -2000, -2200])  # Layer boundaries
+depth = np.array([-2200, -2000, -1000, 0])  # Layer boundaries
 
-model = {  # empymod has positive z-down, so switch source-z
-    'src': [src[0], src[1], -src[2], src[3], src[4]],
-    'depth': -depth,
+model = {
+    'src': src,
+    'depth': depth,
     'res': resh,
     'aniso': aniso,
     'freqtime': sval,
@@ -262,11 +262,11 @@ model = {  # empymod has positive z-down, so switch source-z
 
 ###############################################################################
 
-epm_deep_x = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, 0],
+epm_deep_x = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 0],
                             verb=3, **model).reshape(np.shape(rx))
-epm_deep_y = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 90, 0],
+epm_deep_y = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 90, 0],
                             verb=1, **model).reshape(np.shape(rx))
-epm_deep_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, -90],
+epm_deep_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
                             verb=1, **model).reshape(np.shape(rx))
 
 ###############################################################################
@@ -283,7 +283,7 @@ hz_min, zdomain = emg3d.utils.get_domain(
 nx = 2**7
 hx = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[0])
 hy = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[1])
-hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx*2, x0=depth[-1], x1=0)
+hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx*2, x0=depth[0], x1=0)
 pgrid = discretize.TensorMesh(
         [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
@@ -292,18 +292,18 @@ pgrid
 ###############################################################################
 
 # Create the model: horizontal resistivity
-res_x_full = resh[-1]*np.ones(pgrid.nC)  # Background
-res_x_full[pgrid.gridCC[:, 2] >= depth[3]] = resh[3]  # Target
-res_x_full[pgrid.gridCC[:, 2] >= depth[2]] = resh[2]  # Overburden
-res_x_full[pgrid.gridCC[:, 2] >= depth[1]] = resh[1]  # Water
-res_x_full[pgrid.gridCC[:, 2] >= depth[0]] = resh[0]  # Air
+res_x_full = resh[0]*np.ones(pgrid.nC)  # Background
+res_x_full[pgrid.gridCC[:, 2] >= depth[0]] = resh[1]  # Target
+res_x_full[pgrid.gridCC[:, 2] >= depth[1]] = resh[2]  # Overburden
+res_x_full[pgrid.gridCC[:, 2] >= depth[2]] = resh[3]  # Water
+res_x_full[pgrid.gridCC[:, 2] >= depth[3]] = resh[4]  # Air
 
 # Create the model: vertical resistivity
-res_z_full = resv[-1]*np.ones(pgrid.nC)  # Background
-res_z_full[pgrid.gridCC[:, 2] >= depth[3]] = resv[3]
-res_z_full[pgrid.gridCC[:, 2] >= depth[2]] = resv[2]
-res_z_full[pgrid.gridCC[:, 2] >= depth[1]] = resv[1]
-res_z_full[pgrid.gridCC[:, 2] >= depth[0]] = resv[0]
+res_z_full = resv[0]*np.ones(pgrid.nC)  # Background
+res_z_full[pgrid.gridCC[:, 2] >= depth[0]] = resv[1]
+res_z_full[pgrid.gridCC[:, 2] >= depth[1]] = resv[2]
+res_z_full[pgrid.gridCC[:, 2] >= depth[2]] = resv[3]
+res_z_full[pgrid.gridCC[:, 2] >= depth[3]] = resv[4]
 
 # Get the model
 pmodel = emg3d.utils.Model(pgrid, res_x_full, res_z=res_z_full)

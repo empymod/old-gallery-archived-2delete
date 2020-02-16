@@ -4,7 +4,7 @@ SimPEG: 3D with tri-axial anisotropy
 
 `SimPEG <https://simpeg.xyz>`_ is an open source python package for simulation
 and gradient based parameter estimation in geophysical applications. Here we
-compare ``empymod`` with ``SimPEG`` using the forward solver ``Pardiso``.
+compare ``emg3d`` with ``SimPEG`` using the forward solver ``Pardiso``.
 
 Note, in order to use the ``Pardiso``-solver ``pymatsolver`` has to be
 installed via ``conda``, not via ``pip``!

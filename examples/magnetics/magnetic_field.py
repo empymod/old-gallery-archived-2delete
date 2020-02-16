@@ -172,8 +172,8 @@ freq = 0.77            # Frequency
 strength = np.pi       # Source strength
 
 # Input for empymod
-model = {  # empymod has positive z-down, so switch source-z
-    'src': [src[0], src[1], src[2], src[3], -src[4], -src[5]],
+model = {
+    'src': src,
     'depth': [],
     'res': resh,
     'aniso': aniso,
@@ -184,12 +184,12 @@ model = {  # empymod has positive z-down, so switch source-z
 }
 
 ###############################################################################
-epm_fs_hx = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, 0],
-                           mrec=True, verb=3, **model).reshape(np.shape(rx))
-epm_fs_hy = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 90, 0],
-                           mrec=True, verb=1, **model).reshape(np.shape(rx))
-epm_fs_hz = empymod.bipole(rec=[rx.ravel(), ry.ravel(), -zrec, 0, -90],
-                           mrec=True, verb=1, **model).reshape(np.shape(rx))
+epm_fs_hx = -empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 0],
+                            mrec=True, verb=3, **model).reshape(np.shape(rx))
+epm_fs_hy = -empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 90, 0],
+                            mrec=True, verb=1, **model).reshape(np.shape(rx))
+epm_fs_hz = -empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
+                            mrec=True, verb=1, **model).reshape(np.shape(rx))
 
 ###############################################################################
 # emg3d

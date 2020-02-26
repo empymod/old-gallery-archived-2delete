@@ -45,7 +45,7 @@ src = [-100, 100, 0, 0, -900, -900]
 # ---------------------
 
 # skin depth
-skin_depth = 503/np.sqrt(res_back[0]/freq)
+skin_depth = 503*np.sqrt(res_back[0]/freq)
 print(f"\nThe skin_depth is {skin_depth} m.\n")
 
 cs = 100    # 100 m min_width of cells

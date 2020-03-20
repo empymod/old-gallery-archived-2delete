@@ -27,6 +27,19 @@ More information
 - **Source Code**: https://github.com/empymod/emg3d,
 
 
+Workflow
+========
+
+To create the gallery:
+
+.. code-block:: console
+
+    conda env create -f environment.yml
+    conda activate gallery
+    cd docs
+    make html
+
+
 License information
 ===================
 

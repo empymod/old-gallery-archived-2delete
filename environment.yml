@@ -1,0 +1,24 @@
+name: gallery
+
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - emg3d
+  - joblib
+  - matplotlib
+  - memory_profiler
+  - pip
+  - pymatsolver
+  - pyvista
+  - python>=3.6
+  - scooby
+  - SimPEG
+  - pip:
+    - gempy
+    - nptyping
+    - numpydoc
+    - sphinx < 2.0
+    - sphinx_gallery
+    - sphinx_numfig
+    - sphinx_rtd_theme

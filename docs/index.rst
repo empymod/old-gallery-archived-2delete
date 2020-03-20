@@ -13,4 +13,5 @@ Version: |version| ~ Date: |today|
    :caption: Example Gallery
 
    gallery/index
+   manual
    references

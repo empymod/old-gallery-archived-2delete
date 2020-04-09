@@ -13,7 +13,6 @@ import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-plt.style.use('ggplot')
 # sphinx_gallery_thumbnail_path = '_static/thumbs/MARE2DEM.png'
 
 

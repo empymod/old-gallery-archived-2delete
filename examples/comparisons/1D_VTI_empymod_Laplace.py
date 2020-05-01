@@ -176,14 +176,14 @@ epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90], verb=1,
 # `````
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.utils.get_domain(x0=src[0], freq=0.1, min_width=20)
-hz_min, zdomain = emg3d.utils.get_domain(x0=src[2], freq=0.1, min_width=20)
+hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
+hz_min, zdomain = emg3d.meshes.get_domain(x0=src[2], freq=0.1, min_width=20)
 
 # Create stretched grid
 nx = 2**7
-hx = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src_c[0])
-hy = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src_c[1])
-hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx, src_c[2])
+hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[0])
+hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[1])
+hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src_c[2])
 pgrid = discretize.TensorMesh([hx, hy, hz],
                               x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
@@ -192,10 +192,10 @@ pgrid
 ###############################################################################
 
 # Get the model
-pmodel = emg3d.utils.Model(pgrid, res_x=resh, res_z=resv)
+pmodel = emg3d.models.Model(pgrid, res_x=resh, res_z=resv)
 
 # Get the source field
-sfield = emg3d.utils.get_source_field(pgrid, src, sval, strength)
+sfield = emg3d.fields.get_source_field(pgrid, src, sval, strength)
 
 # Calculate the electric field
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
@@ -205,21 +205,21 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 # Plot
 # ````
 
-e3d_fs_x = emg3d.utils.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
+e3d_fs_x = emg3d.fields.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_x, e3d_fs_x, x, r'Diffusive Fullspace $E_x$',
                 vmin=-12, vmax=-6)
 
 
 ###############################################################################
 
-e3d_fs_y = emg3d.utils.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
+e3d_fs_y = emg3d.fields.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_y, e3d_fs_y, x, r'Diffusive Fullspace $E_y$',
                 vmin=-12, vmax=-6)
 
 
 ###############################################################################
 
-e3d_fs_z = emg3d.utils.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
+e3d_fs_z = emg3d.fields.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
                 vmin=-12, vmax=-6)
 
@@ -275,15 +275,15 @@ epm_deep_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
 
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.utils.get_domain(x0=src[0], freq=0.1, min_width=20)
-hz_min, zdomain = emg3d.utils.get_domain(
+hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
+hz_min, zdomain = emg3d.meshes.get_domain(
         x0=src[2], freq=0.1, min_width=20, fact_pos=10)
 
 # Create stretched grid
 nx = 2**7
-hx = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[0])
-hy = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[1])
-hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx*2, x0=depth[0], x1=0)
+hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
+hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
+hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx*2, x0=depth[0], x1=0)
 pgrid = discretize.TensorMesh(
         [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
@@ -306,7 +306,7 @@ res_z_full[pgrid.gridCC[:, 2] >= depth[2]] = resv[3]
 res_z_full[pgrid.gridCC[:, 2] >= depth[3]] = resv[4]
 
 # Get the model
-pmodel = emg3d.utils.Model(pgrid, res_x_full, res_z=res_z_full)
+pmodel = emg3d.models.Model(pgrid, res_x_full, res_z=res_z_full)
 
 # Plot it
 pgrid.plot_3d_slicer(pmodel.res_x, zslice=-2000, clim=[0.3, 50],
@@ -316,7 +316,7 @@ pgrid.plot_3d_slicer(pmodel.res_x, zslice=-2000, clim=[0.3, 50],
 ###############################################################################
 
 # Get the source field
-sfield = emg3d.utils.get_source_field(pgrid, src, sval, 0)
+sfield = emg3d.fields.get_source_field(pgrid, src, sval, 0)
 
 # Calculate the electric field
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
@@ -326,21 +326,21 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 # Plot
 # ````
 
-e3d_deep_x = emg3d.utils.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
+e3d_deep_x = emg3d.fields.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_deep_x, e3d_deep_x, x, r'Deep water point dipole $E_x$',
                 vmin=-14, vmax=-8)
 
 
 ###############################################################################
 
-e3d_deep_y = emg3d.utils.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
+e3d_deep_y = emg3d.fields.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_deep_y, e3d_deep_y, x, r'Deep water point dipole $E_y$',
                 vmin=-14, vmax=-8)
 
 
 ###############################################################################
 
-e3d_deep_z = emg3d.utils.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
+e3d_deep_z = emg3d.fields.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_deep_z, e3d_deep_z, x, r'Deep water point dipole $E_z$',
                 vmin=-14, vmax=-8)
 

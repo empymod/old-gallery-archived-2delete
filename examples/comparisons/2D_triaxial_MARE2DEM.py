@@ -45,12 +45,12 @@ gridinput = {
 }
 
 # Get cell widths and origin in each direction
-xx, x0 = emg3d.utils.get_hx_h0(
+xx, x0 = emg3d.meshes.get_hx_h0(
     res=[0.3, 1e5], fixed=src[0], domain=[-100, 10100],
     **gridinput)
-yy, y0 = emg3d.utils.get_hx_h0(
+yy, y0 = emg3d.meshes.get_hx_h0(
     res=[0.3, 1e5], fixed=src[1], domain=[400, 400], **gridinput)
-zz, z0 = emg3d.utils.get_hx_h0(
+zz, z0 = emg3d.meshes.get_hx_h0(
     res=[0.3, 1., 1e5], domain=[-4200, 0], **gridinput,
     fixed=[-2000, 0, -4200])
 
@@ -90,12 +90,12 @@ res_y_full_tg[xx*zz] = 100
 res_z_full_tg[xx*zz] = 300
 
 # Collect models
-model_bg = emg3d.utils.Model(grid, res_x_full, res_y_full, res_z_full)
-model_tg = emg3d.utils.Model(
+model_bg = emg3d.models.Model(grid, res_x_full, res_y_full, res_z_full)
+model_tg = emg3d.models.Model(
         grid, res_x_full_tg, res_y_full_tg, res_z_full_tg)
 
 # Create source field
-sfield = emg3d.utils.get_source_field(grid, src, freq, 0)
+sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
 
 # Solver parameters
 sparams = {
@@ -116,7 +116,7 @@ grid.plot_3d_slicer(
 # ````````````````
 
 efield_bg = emg3d.solve(grid, model_bg, sfield, **sparams)
-em3_bg = emg3d.utils.get_receiver(grid, efield_bg.fx, rec)
+em3_bg = emg3d.fields.get_receiver(grid, efield_bg.fx, rec)
 
 
 ###############################################################################
@@ -124,7 +124,7 @@ em3_bg = emg3d.utils.get_receiver(grid, efield_bg.fx, rec)
 # ````````````
 
 efield_tg = emg3d.solve(grid, model_tg, sfield, **sparams)
-em3_tg = emg3d.utils.get_receiver(grid, efield_tg.fx, rec)
+em3_tg = emg3d.fields.get_receiver(grid, efield_tg.fx, rec)
 
 
 ###############################################################################

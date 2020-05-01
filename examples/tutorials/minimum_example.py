@@ -21,21 +21,22 @@ plot the model as well as the resulting electric field, which also requires
 
     # Create a simple grid, 8 cells of length 1 in each direction,
     # starting at the origin.
-    grid = emg3d.utils.TensorMesh(
+    grid = emg3d.meshes.TensorMesh(
             [np.ones(8), np.ones(8), np.ones(8)], x0=np.array([0, 0, 0]))
 
     # The model is a fullspace with tri-axial anisotropy.
-    model = emg3d.utils.Model(grid, res_x=1.5, res_y=1.8, res_z=3.3)
+    model = emg3d.models.Model(grid, res_x=1.5, res_y=1.8, res_z=3.3)
 
     # The source is a x-directed, horizontal dipole at (4, 4, 4),
     # frequency is 10 Hz.
-    sfield = emg3d.utils.get_source_field(grid, src=[4, 4, 4, 0, 0], freq=10.0)
+    sfield = emg3d.fields.get_source_field(
+            grid, src=[4, 4, 4, 0, 0], freq=10.0)
 
     # Calculate the electric signal.
     efield = emg3d.solve(grid, model, sfield, verb=3)
 
     # Get the corresponding magnetic signal.
-    hfield = emg3d.utils.get_h_field(grid, model, efield)
+    hfield = emg3d.fields.get_h_field(grid, model, efield)
 
 Note that in the future ``discretize`` is likely to become a mandatory
 dependency as well, which will make above mini-example obsolete.
@@ -77,7 +78,7 @@ grid
 # :math:`\rho_x=1.5\,\Omega\,\rm{m}`, :math:`\rho_y=1.8\,\Omega\,\rm{m}`, and
 # :math:`\rho_z=3.3\,\Omega\,\rm{m}`.
 
-model = emg3d.utils.Model(grid, res_x=1.5, res_y=1.8, res_z=3.3)
+model = emg3d.models.Model(grid, res_x=1.5, res_y=1.8, res_z=3.3)
 
 ###############################################################################
 # We can plot the model using ``discretize``; in this case it is obviously
@@ -93,7 +94,7 @@ grid.plot_3d_slicer(np.ones(grid.vnC)*model.res_x)  # x-resistivity
 # (``src`` is defined either as ``[x, y, z, dip, azimuth]`` or ``[x0, x1, y0,
 # y1, z0, z1]``; the strength can be set via the ``strength`` parameter).
 
-sfield = emg3d.utils.get_source_field(grid, src=[0, 0, 0, 0, 0], freq=10)
+sfield = emg3d.fields.get_source_field(grid, src=[0, 0, 0, 0, 0], freq=10)
 
 ###############################################################################
 # 4. Calculate the electric field

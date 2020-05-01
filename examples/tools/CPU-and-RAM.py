@@ -63,7 +63,7 @@ def calculate(nx):
     # Grid
     hx = np.ones(nx)*50
     x0 = -nx//2*50
-    grid = emg3d.utils.TensorMesh([hx, hx, hx], x0=(x0, x0, x0))
+    grid = emg3d.meshes.TensorMesh([hx, hx, hx], x0=(x0, x0, x0))
 
     # Source location and frequency
     src = [0, 0, 0, 0, 0]
@@ -73,8 +73,8 @@ def calculate(nx):
     res = 1.
 
     # Model and source field
-    model = emg3d.utils.Model(grid, res_x=res)
-    sfield = emg3d.utils.get_source_field(grid, src, freq=freq, strength=0)
+    model = emg3d.models.Model(grid, res_x=res)
+    sfield = emg3d.fields.get_source_field(grid, src, freq=freq, strength=0)
 
     # Calculate the field
     _, inf = emg3d.solve(grid, model, sfield, verb=1, return_info=True)

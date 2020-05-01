@@ -120,16 +120,16 @@ freq = 1.0                      # Frequency
 ###############################################################################
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.utils.get_domain(
+hx_min, xdomain = emg3d.meshes.get_domain(
         x0=src[0], freq=freq, limits=[0, 2000], min_width=[5, 100])
-hz_min, zdomain = emg3d.utils.get_domain(
+hz_min, zdomain = emg3d.meshes.get_domain(
         freq=freq, limits=[-2000, 0], min_width=[5, 20], fact_pos=40)
 
 # Create stretched grid
 nx = 2**6
-hx = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[0])
-hy = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[1])
-hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx*2, x0=src[2], x1=0)
+hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
+hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
+hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx*2, x0=src[2], x1=0)
 grid = discretize.TensorMesh(
         [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 grid
@@ -198,10 +198,10 @@ p.show()
 # ---------------------------
 
 # Create model
-model = emg3d.utils.Model(grid, res)
+model = emg3d.models.Model(grid, res)
 
 # Source field
-sfield = emg3d.utils.get_source_field(grid, src, freq, 0)
+sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
 
 # Calculate the efield
 pfield = emg3d.solve(grid, model, sfield, sslsolver=True, verb=3)

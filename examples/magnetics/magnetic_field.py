@@ -196,14 +196,14 @@ epm_fs_hz = -empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
 # `````
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.utils.get_domain(x0=src[0], freq=0.1, min_width=20)
-hz_min, zdomain = emg3d.utils.get_domain(x0=src[2], freq=0.1, min_width=20)
+hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
+hz_min, zdomain = emg3d.meshes.get_domain(x0=src[2], freq=0.1, min_width=20)
 
 # Create stretched grid
 nx = 2**7
-hx = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src_c[0])
-hy = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src_c[1])
-hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx, src_c[2])
+hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[0])
+hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[1])
+hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src_c[2])
 pgrid = discretize.TensorMesh([hx, hy, hz],
                               x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
@@ -211,10 +211,10 @@ pgrid
 ###############################################################################
 
 # Get the model
-pmodel = emg3d.utils.Model(pgrid, res_x=resh, res_z=resv)
+pmodel = emg3d.models.Model(pgrid, res_x=resh, res_z=resv)
 
 # Get the source field
-sfield = emg3d.utils.get_source_field(pgrid, src, freq, strength)
+sfield = emg3d.fields.get_source_field(pgrid, src, freq, strength)
 
 # Calculate the electric field
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
@@ -222,22 +222,22 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 ###############################################################################
 # Calculate magnetic field :math:`H` from the electric field
 # ----------------------------------------------------------
-hfield = emg3d.utils.get_h_field(pgrid, pmodel, pfield)
+hfield = emg3d.fields.get_h_field(pgrid, pmodel, pfield)
 
 ###############################################################################
 # Plot
 # ````
-e3d_fs_hx = emg3d.utils.get_receiver(pgrid, hfield.fx, (rx, ry, zrec))
+e3d_fs_hx = emg3d.fields.get_receiver(pgrid, hfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_hx, e3d_fs_hx, x, r'Diffusive Fullspace $H_x$',
                 vmin=-8, vmax=-4, mode='abs')
 
 ###############################################################################
-e3d_fs_hy = emg3d.utils.get_receiver(pgrid, hfield.fy, (rx, ry, zrec))
+e3d_fs_hy = emg3d.fields.get_receiver(pgrid, hfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_hy, e3d_fs_hy, x, r'Diffusive Fullspace $H_y$',
                 vmin=-8, vmax=-4, mode='abs')
 
 ###############################################################################
-e3d_fs_hz = emg3d.utils.get_receiver(pgrid, hfield.fz, (rx, ry, zrec))
+e3d_fs_hz = emg3d.fields.get_receiver(pgrid, hfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_hz, e3d_fs_hz, x, r'Diffusive Fullspace $H_z$',
                 vmin=-8, vmax=-4, mode='abs')
 

@@ -173,16 +173,16 @@ freq = 1.0                                # Frequency
 # ```````````````````````````
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.utils.get_domain(
+hx_min, xdomain = emg3d.meshes.get_domain(
         x0=6500, freq=freq, limits=[0, 13500], min_width=[5, 100])
-hz_min, zdomain = emg3d.utils.get_domain(
+hz_min, zdomain = emg3d.meshes.get_domain(
         freq=freq, limits=[-4180, 0], min_width=[5, 20], fact_pos=40)
 
 # Create stretched grid
 nx = 2**7
-hx = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, 6500)
-hy = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, 6500)
-hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx, x0=-100, x1=0)
+hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, 6500)
+hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, 6500)
+hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, x0=-100, x1=0)
 grid = discretize.TensorMesh(
         [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 grid
@@ -192,10 +192,10 @@ grid
 # ``````````````````````````````````````````
 
 # Interpolate resistivities from fine mesh to coarser grid
-cres = emg3d.utils.grid2grid(mesh, res, grid, 'volume')
+cres = emg3d.maps.grid2grid(mesh, res, grid, 'volume')
 
 # Create model
-model = emg3d.utils.Model(grid, cres)
+model = emg3d.models.Model(grid, cres)
 
 # Set air resistivity
 iz = np.argmin(np.abs(grid.vectorNz))
@@ -215,7 +215,7 @@ grid.plot_3d_slicer(
 # ````````````````
 
 # Source field
-sfield = emg3d.utils.get_source_field(grid, src, freq, 0)
+sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
 
 pfield = emg3d.solve(
     grid, model, sfield,
@@ -239,7 +239,7 @@ y = grid.vectorCCy
 rx = np.repeat([x, ], np.size(x), axis=0)
 ry = rx.transpose()
 rz = -2000
-data = emg3d.utils.get_receiver(grid, pfield.fx, (rx, ry, rz))
+data = emg3d.fields.get_receiver(grid, pfield.fx, (rx, ry, rz))
 
 # Colour limits
 vmin, vmax = -16, -10.5

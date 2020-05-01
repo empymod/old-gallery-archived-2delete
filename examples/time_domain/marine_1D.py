@@ -51,7 +51,7 @@ orig_mesh = discretize.TensorMesh(
     x0=('C', 'C', depth[0]-1000))
 
 # Create a resistivity model using the 1D model and the above mesh.
-orig_model = emg3d.utils.Model(orig_mesh, res_x=np.array(res))
+orig_model = emg3d.models.Model(orig_mesh, res_x=np.array(res))
 
 # QC.
 orig_mesh.plot_3d_slicer(
@@ -148,12 +148,12 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
     values[key]['freq'] = frq
 
     # Get cell widths and origin in each direction
-    xx, x0, hix = emg3d.utils.get_hx_h0(
+    xx, x0, hix = emg3d.meshes.get_hx_h0(
         freq=frq, res=[0.3, 1e5], fixed=src[0], domain=[-100, 7100],
         **gridinput)
-    yy, y0, hiy = emg3d.utils.get_hx_h0(
+    yy, y0, hiy = emg3d.meshes.get_hx_h0(
         freq=frq, res=[0.3, 1e5], fixed=src[1], domain=[400, 400], **gridinput)
-    zz, z0, hiz = emg3d.utils.get_hx_h0(
+    zz, z0, hiz = emg3d.meshes.get_hx_h0(
         freq=frq, res=[0.3, 1., 1e5], domain=[-2300, 0], **gridinput,
         fixed=[depth[2], depth[3], depth[0]])
 
@@ -169,15 +169,15 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
     values[key]['nC'] = grid.nC  # Store number of cells in log.
 
     # Generate model (interpolate on log-scale from our coarse model).
-    res_x = 10**emg3d.utils.grid2grid(
+    res_x = 10**emg3d.maps.grid2grid(
             orig_mesh, np.log10(orig_model.res_x), grid, 'volume')
-    model = emg3d.utils.Model(grid, res_x)
+    model = emg3d.models.Model(grid, res_x)
 
     # QC
     # grid.plot_3d_slicer(np.log10(model.res_x), zlim=[-3000, 500], clim=clim)
 
     # Define source.
-    sfield = emg3d.utils.get_source_field(
+    sfield = emg3d.fields.get_source_field(
         grid, [src[0], src[1], src[2], 0, 0], frq, strength=0)
 
     # Solve the system.
@@ -190,20 +190,20 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
     values[key]['info'] = info
 
     # Store value
-    values[key]['data'] = emg3d.utils.get_receiver(
+    values[key]['data'] = emg3d.fields.get_receiver(
             grid, efield.fx, (rec[0], rec[1], rec[2]))
 
 # Stop the timer.
 total_time = runtime.runtime
 
 # Store data and info to disk
-emg3d.utils.data_write(name, 'values', values, exists=-1)
+emg3d.io.data_write(name, 'values', values, exists=-1)
 
 
 ###############################################################################
 
 # Load info and data
-values = emg3d.utils.data_read(name, 'values')
+values = emg3d.io.data_read(name, 'values')
 
 runtime = 0
 for key, value in values.items():

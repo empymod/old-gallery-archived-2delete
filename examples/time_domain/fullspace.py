@@ -99,9 +99,9 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
     thislog['freq'] = frq
 
     # Get cell widths and origin in each direction
-    xx, x0, hix = emg3d.utils.get_hx_h0(
+    xx, x0, hix = emg3d.meshes.get_hx_h0(
         freq=frq, fixed=src[0], domain=[-200, 1100], **gridinput)
-    yz, yz0, hiyz = emg3d.utils.get_hx_h0(
+    yz, yz0, hiyz = emg3d.meshes.get_hx_h0(
         freq=frq, fixed=src[1], domain=[-50, 50], **gridinput)
 
     # Store values in log.
@@ -118,17 +118,17 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
     # Interpolate the starting electric field from the last one (can speed-up
     # the calculation).
     if fi == 0:
-        efield = emg3d.utils.Field(grid, freq=frq)
+        efield = emg3d.fields.Field(grid, freq=frq)
     else:
-        efield = emg3d.utils.grid2grid(old_grid, efield, grid,
-                                       method='cubic', extrapolate=False)
-        efield = emg3d.utils.Field(grid, efield, freq=frq)
+        efield = emg3d.maps.grid2grid(old_grid, efield, grid,
+                                      method='cubic', extrapolate=False)
+        efield = emg3d.fields.Field(grid, efield, freq=frq)
 
     # Generate model
-    model = emg3d.utils.Model(grid, res_x=res)
+    model = emg3d.models.Model(grid, res_x=res)
 
     # Define source.
-    sfield = emg3d.utils.get_source_field(
+    sfield = emg3d.fields.get_source_field(
         grid, [src[0], src[1], src[2], 0, 0], frq, strength=0)
 
     # Solve the system.
@@ -142,7 +142,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
     thislog['info'] = info
 
     # Store value
-    thislog['data'] = emg3d.utils.get_receiver(
+    thislog['data'] = emg3d.fields.get_receiver(
             grid, efield.fx, (rec[0], rec[1], rec[2]))
 
     # Store thislog in values.
@@ -155,13 +155,13 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
 total_time = runtime.runtime
 
 # Store data and info to disk
-emg3d.utils.data_write(name, 'values', values, exists=-1)
+emg3d.io.data_write(name, 'values', values, exists=-1)
 
 
 ###############################################################################
 
 # Load info and data
-values = emg3d.utils.data_read(name, 'values')
+values = emg3d.io.data_read(name, 'values')
 
 runtime = 0
 for key, value in values.items():
@@ -383,7 +383,7 @@ Fourier_dlf = emg3d.utils.Fourier(
     time=time,
     fmin=0.05,
     fmax=21,
-    ft='sin',  # Fourier transform to use
+    ft='dlf',  # Fourier transform to use
     ftarg={'pts_per_dec': -1},
     freq_inp=Fourier.freq_req,  # Use same frequencies as in above example
 )

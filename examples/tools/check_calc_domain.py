@@ -30,13 +30,14 @@ plt.style.use('ggplot')
 # Model, Survey, and Analytical Solution
 # --------------------------------------
 
-water_depth = 500                   # 500 m water depth
-off = np.linspace(2000, 7000, 501)  # Offsets
-src = [0, 0, -water_depth+50]       # Source at origin, 50 m above seafloor
-rec = [off, off*0, -water_depth]    # Receivers on the seafloor
-depth = [-water_depth, 0]           # Simple model
-res = [1, 0.3, 1e8]                 # Simple model
-freq = 0.1                          # Frequency
+water_depth = 500                    # 500 m water depth
+off = np.linspace(2000, 7000, 501)   # Offsets
+src = [np.array([0]), np.array([0]),
+       np.array([-water_depth+50])]  # Source at origin, 50 m above seafloor
+rec = [off, off*0, -water_depth]     # Receivers on the seafloor
+depth = [-water_depth, 0]            # Simple model
+res = [1, 0.3, 1e8]                  # Simple model
+freq = 0.1                           # Frequency
 
 # Calculate analytical solution
 epm = empymod.dipole(src, rec, depth, res, freq)
@@ -70,18 +71,18 @@ solver_inp = {
 # with :math:`\rho=1e4, 1e3, 1e2, 1e1`, and the result was that after 100 there
 # is not much improvement any longer.)
 #
-# Also note that the function ``emg3d.utils.get_hx_h0`` internally uses six
+# Also note that the function ``emg3d.meshes.get_hx_h0`` internally uses six
 # times the skin depth for the boundary. For :math:`\rho` = 100 Ohm.m and
 # :math:`f` = 0.1 Hz, the skin depth :math:`\delta` is roughly 16 km, which
 # therefore results in a boundary of roughly 96 km.
 #
-# See the documentation of ``emg3d.utils.get_hx_h0`` for more information on
+# See the documentation of ``emg3d.meshes.get_hx_h0`` for more information on
 # how the grid is created.
 
 # Get cell widths and origin in each direction
-xx_1, x0_1 = emg3d.utils.get_hx_h0(res=[res[1], res[0]], **x_inp, **inp)
-yy_1, y0_1 = emg3d.utils.get_hx_h0(res=[res[1], res[0]], **y_inp, **inp)
-zz_1, z0_1 = emg3d.utils.get_hx_h0(res=[res[1], res[0], 100], **z_inp, **inp)
+xx_1, x0_1 = emg3d.meshes.get_hx_h0(res=[res[1], res[0]], **x_inp, **inp)
+yy_1, y0_1 = emg3d.meshes.get_hx_h0(res=[res[1], res[0]], **y_inp, **inp)
+zz_1, z0_1 = emg3d.meshes.get_hx_h0(res=[res[1], res[0], 100], **z_inp, **inp)
 
 # Create grid and correpsoding model
 grid_1 = discretize.TensorMesh(
@@ -89,14 +90,14 @@ grid_1 = discretize.TensorMesh(
 res_1 = res[0]*np.ones(grid_1.nC)
 res_1[grid_1.gridCC[:, 2] > -water_depth] = res[1]
 res_1[grid_1.gridCC[:, 2] > 0] = res[2]
-model_1 = emg3d.utils.Model(grid_1, res_x=res_1)
+model_1 = emg3d.models.Model(grid_1, res_x=res_1)
 
 # QC
 grid_1.plot_3d_slicer(
         np.log10(model_1.res_x), zlim=(-2000, 100), clim=[-1, 2])
 
 # Define source and solve the system
-sfield_1 = emg3d.utils.get_source_field(
+sfield_1 = emg3d.fields.get_source_field(
         grid_1, [src[0], src[1], src[2], 0, 0], freq)
 efield_1 = emg3d.solve(grid_1, model_1, sfield_1, **solver_inp)
 
@@ -108,9 +109,9 @@ efield_1 = emg3d.solve(grid_1, model_1, sfield_1, **solver_inp)
 # See comments below the heading of the 1st grid regarding boundary.
 
 # Get cell widths and origin in each direction
-xx_2, x0_2 = emg3d.utils.get_hx_h0(res=[res[1], 100], **x_inp, **inp)
-yy_2, y0_2 = emg3d.utils.get_hx_h0(res=[res[1], 100], **y_inp, **inp)
-zz_2, z0_2 = emg3d.utils.get_hx_h0(res=[res[1], res[0], 100], **z_inp, **inp)
+xx_2, x0_2 = emg3d.meshes.get_hx_h0(res=[res[1], 100], **x_inp, **inp)
+yy_2, y0_2 = emg3d.meshes.get_hx_h0(res=[res[1], 100], **y_inp, **inp)
+zz_2, z0_2 = emg3d.meshes.get_hx_h0(res=[res[1], res[0], 100], **z_inp, **inp)
 
 # Create grid and correpsoding model
 grid_2 = discretize.TensorMesh(
@@ -118,14 +119,14 @@ grid_2 = discretize.TensorMesh(
 res_2 = res[0]*np.ones(grid_2.nC)
 res_2[grid_2.gridCC[:, 2] > -water_depth] = res[1]
 res_2[grid_2.gridCC[:, 2] > 0] = res[2]
-model_2 = emg3d.utils.Model(grid_2, res_x=res_2)
+model_2 = emg3d.models.Model(grid_2, res_x=res_2)
 
 # QC
 # grid_2.plot_3d_slicer(
 #         np.log10(model_2.res_x), zlim=(-2000, 100), clim=[-1, 2])
 
 # Define source and solve the system
-sfield_2 = emg3d.utils.get_source_field(
+sfield_2 = emg3d.fields.get_source_field(
         grid_2, [src[0], src[1], src[2], 0, 0], freq)
 efield_2 = emg3d.solve(grid_2, model_2, sfield_2, **solver_inp)
 
@@ -135,8 +136,10 @@ efield_2 = emg3d.solve(grid_2, model_2, sfield_2, **solver_inp)
 # -----------------------
 
 # Interpolate fields at receiver positions
-emg_1 = emg3d.utils.get_receiver(grid_1, efield_1.fx, (rec[0], rec[1], rec[2]))
-emg_2 = emg3d.utils.get_receiver(grid_2, efield_2.fx, (rec[0], rec[1], rec[2]))
+emg_1 = emg3d.fields.get_receiver(
+        grid_1, efield_1.fx, (rec[0], rec[1], rec[2]))
+emg_2 = emg3d.fields.get_receiver(
+        grid_2, efield_2.fx, (rec[0], rec[1], rec[2]))
 
 
 ###############################################################################

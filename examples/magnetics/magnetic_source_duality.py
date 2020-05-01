@@ -264,14 +264,14 @@ epm_fs_hz = empymod.loop(rec=[rxx, ryy, zrec, 0, 90], verb=1,
 # `````
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.utils.get_domain(x0=src[0], freq=0.1, min_width=20)
-hz_min, zdomain = emg3d.utils.get_domain(x0=src[2], freq=0.1, min_width=20)
+hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
+hz_min, zdomain = emg3d.meshes.get_domain(x0=src[2], freq=0.1, min_width=20)
 
 # Create stretched grid
 nx = 2**7
-hx = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[0])
-hy = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[1])
-hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx, src[2])
+hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
+hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
+hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src[2])
 pgrid = discretize.TensorMesh([hx, hy, hz],
                               x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
@@ -298,13 +298,13 @@ pgrid
 #     \mu_\mathrm{r} = 1/\rho = \sigma \, .
 
 # Get the model        => Set res_x = 1 and mu_r = 1./resh
-pmodel = emg3d.utils.Model(pgrid, res_x=1., mu_r=1./resh)
+pmodel = emg3d.models.Model(pgrid, res_x=1., mu_r=1./resh)
 
 
 ###############################################################################
 
 # Get the source field
-sfield = emg3d.utils.get_source_field(pgrid, src, freq, strength)
+sfield = emg3d.fields.get_source_field(pgrid, src, freq, strength)
 
 # Calculate the electric field
 hfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
@@ -314,21 +314,21 @@ hfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 # Compare the magnetic field generated from the magnetic source
 # -------------------------------------------------------------
 
-e3d_fs_hx = emg3d.utils.get_receiver(pgrid, hfield.fx, (rx, ry, zrec))
+e3d_fs_hx = emg3d.fields.get_receiver(pgrid, hfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_hx, e3d_fs_hx, x, r'Diffusive Fullspace $H_x$',
                 vmin=-15, vmax=-8, mode='abs')
 
 
 ###############################################################################
 
-e3d_fs_hy = emg3d.utils.get_receiver(pgrid, hfield.fy, (rx, ry, zrec))
+e3d_fs_hy = emg3d.fields.get_receiver(pgrid, hfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_hy, e3d_fs_hy, x, r'Diffusive Fullspace $H_y$',
                 vmin=-15, vmax=-8, mode='abs')
 
 
 ###############################################################################
 
-e3d_fs_hz = emg3d.utils.get_receiver(pgrid, hfield.fz, (rx, ry, zrec))
+e3d_fs_hz = emg3d.fields.get_receiver(pgrid, hfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_hz, e3d_fs_hz, x, r'Diffusive Fullspace $H_z$',
                 vmin=-14, vmax=-7, mode='abs')
 
@@ -363,7 +363,7 @@ plot_lineplot_ex(x, x, e3d_fs_hx.real, epm_fs_hx.real, pgrid)
 # Calculate electric field :math:`E` from the magnetic field
 # ``````````````````````````````````````````````````````````
 
-efield = emg3d.utils.get_h_field(
+efield = emg3d.fields.get_h_field(
         pgrid, pmodel, hfield)*2j*np.pi*freq*4e-7*np.pi
 
 
@@ -371,21 +371,21 @@ efield = emg3d.utils.get_h_field(
 # Plot
 # ````
 
-e3d_fs_ex = emg3d.utils.get_receiver(pgrid, efield.fx, (rx, ry, zrec))
+e3d_fs_ex = emg3d.fields.get_receiver(pgrid, efield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_ex, e3d_fs_ex, x, r'Diffusive Fullspace $E_x$',
                 vmin=-17, vmax=-10, mode='abs')
 
 
 ###############################################################################
 
-e3d_fs_ey = emg3d.utils.get_receiver(pgrid, efield.fy, (rx, ry, zrec))
+e3d_fs_ey = emg3d.fields.get_receiver(pgrid, efield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_ey, e3d_fs_ey, x, r'Diffusive Fullspace $E_y$',
                 vmin=-17, vmax=-10, mode='abs')
 
 
 ###############################################################################
 
-e3d_fs_ez = emg3d.utils.get_receiver(pgrid, efield.fz, (rx, ry, zrec))
+e3d_fs_ez = emg3d.fields.get_receiver(pgrid, efield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_ez, e3d_fs_ez, x, r'Diffusive Fullspace $E_z$',
                 vmin=-17, vmax=-10, mode='abs')
 

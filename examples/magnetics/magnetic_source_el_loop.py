@@ -204,14 +204,14 @@ epm_fs_hz = empymod.loop(rec=[rxx, ryy, zrec, 0, 90], verb=1,
 # `````
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.utils.get_domain(x0=src[0], freq=0.1, min_width=20)
-hz_min, zdomain = emg3d.utils.get_domain(x0=src[2], freq=0.1, min_width=20)
+hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
+hz_min, zdomain = emg3d.meshes.get_domain(x0=src[2], freq=0.1, min_width=20)
 
 # Create stretched grid
 nx = 2**7
-hx = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[0])
-hy = emg3d.utils.get_stretched_h(hx_min, xdomain, nx, src[1])
-hz = emg3d.utils.get_stretched_h(hz_min, zdomain, nx, src[2])
+hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
+hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
+hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src[2])
 pgrid = discretize.TensorMesh([hx, hy, hz],
                               x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
@@ -224,7 +224,7 @@ pgrid
 # of 1 meter side length, hence an area of one square meter.
 
 # Initiate a zero-valued source field.
-sfield = emg3d.utils.SourceField(pgrid, freq=freq)
+sfield = emg3d.fields.SourceField(pgrid, freq=freq)
 
 # Define the four dipole segments.
 srcloop = [
@@ -236,13 +236,13 @@ srcloop = [
 
 # Add the source fields up.
 for srcl in srcloop:
-    sfield += emg3d.utils.get_source_field(pgrid, srcl, freq, strength)
+    sfield += emg3d.fields.get_source_field(pgrid, srcl, freq, strength)
 
 
 ###############################################################################
 
 # Get the model
-pmodel = emg3d.utils.Model(pgrid, res_x=resh, res_z=resv)
+pmodel = emg3d.models.Model(pgrid, res_x=resh, res_z=resv)
 
 # Calculate the electric field
 efield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
@@ -250,12 +250,12 @@ efield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 ###############################################################################
 # Compare the electric field generated from the magnetic source
 # -------------------------------------------------------------
-e3d_fs_ex = emg3d.utils.get_receiver(pgrid, efield.fx, (rx, ry, zrec))
+e3d_fs_ex = emg3d.fields.get_receiver(pgrid, efield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_ex, e3d_fs_ex, x, r'Diffusive Fullspace $E_x$',
                 vmin=-17, vmax=-10, mode='abs')
 
 ###############################################################################
-e3d_fs_ey = emg3d.utils.get_receiver(pgrid, efield.fy, (rx, ry, zrec))
+e3d_fs_ey = emg3d.fields.get_receiver(pgrid, efield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_ey, e3d_fs_ey, x, r'Diffusive Fullspace $E_y$',
                 vmin=-17, vmax=-10, mode='abs')
 
@@ -272,24 +272,24 @@ plot_result_rel(epm_fs_ey, e3d_fs_ey, x, r'Diffusive Fullspace $E_y$',
 # Calculate magnetic field :math:`H` from the electric field
 # ``````````````````````````````````````````````````````````
 
-hfield = emg3d.utils.get_h_field(pgrid, pmodel, efield)
+hfield = emg3d.fields.get_h_field(pgrid, pmodel, efield)
 
 ###############################################################################
 # Plot
 # ````
-e3d_fs_hx = emg3d.utils.get_receiver(pgrid, hfield.fx, (rx, ry, zrec))
+e3d_fs_hx = emg3d.fields.get_receiver(pgrid, hfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_hx, e3d_fs_hx, x, r'Diffusive Fullspace $H_x$',
                 vmin=-15, vmax=-8, mode='abs')
 
 ###############################################################################
 
-e3d_fs_hy = emg3d.utils.get_receiver(pgrid, hfield.fy, (rx, ry, zrec))
+e3d_fs_hy = emg3d.fields.get_receiver(pgrid, hfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_hy, e3d_fs_hy, x, r'Diffusive Fullspace $H_y$',
                 vmin=-15, vmax=-8, mode='abs')
 
 ###############################################################################
 
-e3d_fs_hz = emg3d.utils.get_receiver(pgrid, hfield.fz, (rx, ry, zrec))
+e3d_fs_hz = emg3d.fields.get_receiver(pgrid, hfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_hz, e3d_fs_hz, x, r'Diffusive Fullspace $H_z$',
                 vmin=-14, vmax=-7, mode='abs')
 

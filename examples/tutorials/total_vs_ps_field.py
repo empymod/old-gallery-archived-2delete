@@ -101,11 +101,11 @@ freq = 1.0                  # Frequency (Ohm.m)
 # restrict that domain a lot.
 
 meshinp = {'freq': freq, 'min_width': 100, 'verb': 0}
-xx, x0 = emg3d.utils.get_hx_h0(
+xx, x0 = emg3d.meshes.get_hx_h0(
     res=[res[1], 100.], fixed=src[0], domain=[-100, 8100], **meshinp)
-yy, y0 = emg3d.utils.get_hx_h0(
+yy, y0 = emg3d.meshes.get_hx_h0(
     res=[res[1], 100.], fixed=src[1], domain=[-500, 500], **meshinp)
-zz, z0 = emg3d.utils.get_hx_h0(
+zz, z0 = emg3d.meshes.get_hx_h0(
     res=[res[1], res[2], 100.], domain=[-2500, 0], fixed=[-1000, 0, -2000],
     **meshinp)
 
@@ -122,7 +122,7 @@ res_x[grid.gridCC[:, 2] < 0] = res[1]      # Water resistivity
 res_x[grid.gridCC[:, 2] < -1000] = res[2]  # Background resistivity
 
 # Background model
-model_pf = emg3d.utils.Model(grid, res_x.copy())
+model_pf = emg3d.models.Model(grid, res_x.copy())
 
 # Include the target
 xx = (grid.gridCC[:, 0] >= 0) & (grid.gridCC[:, 0] <= 6000)
@@ -132,7 +132,7 @@ zz = (grid.gridCC[:, 2] > -2500)*(grid.gridCC[:, 2] < -2000)
 res_x[xx*yy*zz] = 100.  # Target resistivity
 
 # Create target model
-model = emg3d.utils.Model(grid, res_x)
+model = emg3d.models.Model(grid, res_x)
 
 # Plot a slice
 grid.plot_3d_slicer(
@@ -150,7 +150,7 @@ modparams = {
         'semicoarsening': True, 'linerelaxation': True
 }
 
-sfield_tf = emg3d.utils.get_source_field(grid, src, freq, strength=0)
+sfield_tf = emg3d.fields.get_source_field(grid, src, freq, strength=0)
 em3_tf = emg3d.solve(grid, model, sfield_tf, **modparams)
 
 
@@ -161,7 +161,7 @@ em3_tf = emg3d.solve(grid, model, sfield_tf, **modparams)
 # Here we use ``emg3d`` to calculate the primary field. This could be replaced
 # by a (semi-)analytical solution.
 
-sfield_pf = emg3d.utils.get_source_field(grid, src, freq, strength=0)
+sfield_pf = emg3d.fields.get_source_field(grid, src, freq, strength=0)
 em3_pf = emg3d.solve(grid, model_pf, sfield_pf, **modparams)
 
 ###############################################################################
@@ -189,7 +189,7 @@ fz[1:-1, 1:-1, :] *= 0.25*(dsigma[:-1, :-1, :] + dsigma[1:, :-1, :] +
                            dsigma[:-1, 1:, :] + dsigma[1:, 1:, :])
 
 # Create field instance iwu dsigma E
-sfield_sf = sfield_pf.smu0*emg3d.utils.Field(fx, fy, fz, freq=freq)
+sfield_sf = sfield_pf.smu0*emg3d.fields.Field(fx, fy, fz, freq=freq)
 sfield_sf.ensure_pec
 
 ###############################################################################
@@ -225,10 +225,10 @@ em3_ps = em3_pf + em3_sf
 
 # Get the responses at receiver locations
 rectuple = (rec[0], rec[1], rec[2])
-em3_pf_rec = emg3d.utils.get_receiver(grid, em3_pf.fx, rectuple)
-em3_tf_rec = emg3d.utils.get_receiver(grid, em3_tf.fx, rectuple)
-em3_sf_rec = emg3d.utils.get_receiver(grid, em3_sf.fx, rectuple)
-em3_ps_rec = emg3d.utils.get_receiver(grid, em3_ps.fx, rectuple)
+em3_pf_rec = emg3d.fields.get_receiver(grid, em3_pf.fx, rectuple)
+em3_tf_rec = emg3d.fields.get_receiver(grid, em3_tf.fx, rectuple)
+em3_sf_rec = emg3d.fields.get_receiver(grid, em3_sf.fx, rectuple)
+em3_ps_rec = emg3d.fields.get_receiver(grid, em3_ps.fx, rectuple)
 
 ###############################################################################
 plt.figure(figsize=(9, 5))

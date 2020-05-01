@@ -69,7 +69,7 @@ mesh = discretize.TensorMesh(
 mesh.x0 = np.r_[-mesh.hx.sum()/2, -mesh.hy.sum()/2, -mesh.hz[:-npadz].sum()]
 
 # Create the source field for this mesh and given frequency
-sfield = emg3d.utils.get_source_field(mesh, src, freq, strength=0)
+sfield = emg3d.fields.get_source_field(mesh, src, freq, strength=0)
 
 # We take the receiver locations at the actual CCx-locations
 rec_x = mesh.vectorCCx[12:-12]
@@ -108,8 +108,8 @@ res_y[target_inds] = res_target
 res_z[target_inds] = res_target
 
 # Create emg3d-models for given frequency
-pmodel = emg3d.utils.Model(mesh, res_x, res_y, res_z)
-pmodel_bg = emg3d.utils.Model(mesh, res_x_bg, res_y_bg, res_z_bg)
+pmodel = emg3d.models.Model(mesh, res_x, res_y, res_z)
+pmodel_bg = emg3d.models.Model(mesh, res_x_bg, res_y_bg, res_z_bg)
 
 # Plot a slice
 mesh.plot_3d_slicer(pmodel.res_x, zslice=-1100, clim=[0, 2],

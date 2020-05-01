@@ -52,18 +52,18 @@ freq = 1.0                     # Frequency (Hz).
 
 # Mesh
 ginp = {'min_width': 100, 'verb': 0}
-xx, x0 = emg3d.utils.get_hx_h0(
+xx, x0 = emg3d.meshes.get_hx_h0(
     freq=freq, res=[0.3, 1.], fixed=src[0], domain=[-1000, 5000], **ginp)
-yy, y0 = emg3d.utils.get_hx_h0(
+yy, y0 = emg3d.meshes.get_hx_h0(
     freq=freq, res=[0.3, 1.], fixed=src[1], domain=[-500, 500], **ginp)
-zz, z0 = emg3d.utils.get_hx_h0(
+zz, z0 = emg3d.meshes.get_hx_h0(
     freq=freq, res=[0.3, 1., 0.3], domain=[-2500, 0],
     fixed=[-1000, 0, -2100], **ginp)
 grid = discretize.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
 print(grid)
 
 # Source-field
-sfield = emg3d.utils.get_source_field(grid, src=src, freq=freq)
+sfield = emg3d.fields.get_source_field(grid, src=src, freq=freq)
 
 # Create a simple marine model for the tests.
 
@@ -79,7 +79,7 @@ zt = np.nonzero((grid.vectorCCz >= -2100) & (grid.vectorCCz <= -1800))[0]
 res_x[xt[0]:xt[-1]+1, yt[0]:yt[-1]+1, zt[0]:zt[-1]+1] = 100
 
 # Create a model instance
-model_iso = emg3d.utils.Model(grid, res_x)
+model_iso = emg3d.models.Model(grid, res_x)
 
 # Plot it for QC
 grid.plot_3d_slicer(model_iso.res_x.ravel('F'), pcolorOpts={'norm': LogNorm()})

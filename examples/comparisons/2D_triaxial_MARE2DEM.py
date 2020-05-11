@@ -39,9 +39,10 @@ freq = 0.5                  # Frequency (Hz)
 ###############################################################################
 
 gridinput = {
-    'min_width': 100,
+    'min_width': 50,
     'verb': 0,
     'freq': freq,
+    'max_domain': 50000,
 }
 
 # Get cell widths and origin in each direction
@@ -153,10 +154,10 @@ plt.grid(axis='y', c='0.9')
 # NORMALIZED DIFFERENCE REAL
 ax2 = plt.subplot2grid((4, 2), (3, 0))
 
-nd_bg_re = np.clip(50*abs((mar_bg.real-em3_bg.real) /
-                          (mar_bg.real+em3_bg.real)), 0.1, 10)
-nd_tg_re = np.clip(50*abs((mar_tg.real-em3_tg.real) /
-                          (mar_tg.real+em3_tg.real)), 0.1, 10)
+nd_bg_re = np.clip(200*abs((mar_bg.real-em3_bg.real) /
+                           (mar_bg.real+em3_bg.real)), 0.1, 10)
+nd_tg_re = np.clip(200*abs((mar_tg.real-em3_tg.real) /
+                           (mar_tg.real+em3_tg.real)), 0.1, 10)
 
 plt.semilogy(rec[0]/1e3, nd_tg_re, '.', label='target')
 plt.semilogy(rec[0]/1e3, nd_bg_re, '.', label='background')
@@ -191,10 +192,10 @@ plt.grid(axis='y', c='0.9')
 # NORMALIZED DIFFERENCE IMAG
 ax4 = plt.subplot2grid((4, 2), (3, 1))
 
-nd_bg_im = np.clip(50*abs((mar_bg.imag-em3_bg.imag) /
-                          (mar_bg.imag+em3_bg.imag)), 0.1, 10)
-nd_tg_im = np.clip(50*abs((mar_tg.imag-em3_tg.imag) /
-                          (mar_tg.imag+em3_tg.imag)), 0.1, 10)
+nd_bg_im = np.clip(200*abs((mar_bg.imag-em3_bg.imag) /
+                           (mar_bg.imag+em3_bg.imag)), 0.1, 10)
+nd_tg_im = np.clip(200*abs((mar_tg.imag-em3_tg.imag) /
+                           (mar_tg.imag+em3_tg.imag)), 0.1, 10)
 
 plt.semilogy(rec[0]/1e3, nd_tg_im, 'C0.', label='Target')
 plt.semilogy(rec[0]/1e3, nd_bg_im, 'C1.', label='BGC')

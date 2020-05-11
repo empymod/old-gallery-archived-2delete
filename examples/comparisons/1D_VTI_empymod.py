@@ -178,6 +178,7 @@ model = {
     'strength': strength,
     'srcpts': 5,
     'freqtime': freq,
+    'xdirect': True,  # Use analytical fullspace solution
     'htarg': {'pts_per_dec': -1},
 }
 
@@ -196,8 +197,8 @@ epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90], verb=1,
 # `````
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
-hz_min, zdomain = emg3d.meshes.get_domain(x0=src[2], freq=0.1, min_width=20)
+hx_min, xdomain = emg3d.meshes.get_domain(x0=src_c[0], freq=0.1, min_width=20)
+hz_min, zdomain = emg3d.meshes.get_domain(x0=src_c[2], freq=0.1, min_width=20)
 
 # Create stretched grid
 nx = 2**7
@@ -372,7 +373,8 @@ epm_deep_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
 
 
 # Get calculation domain as a function of frequency (resp., skin depth)
-hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
+hx_min, xdomain = emg3d.meshes.get_domain(
+        x0=src[0], freq=0.1, min_width=20, fact_neg=10)
 hz_min, zdomain = emg3d.meshes.get_domain(
         x0=src[2], freq=0.1, min_width=20, fact_pos=10)
 

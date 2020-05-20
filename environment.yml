@@ -18,7 +18,7 @@ dependencies:
     - gempy
     - nptyping
     - numpydoc
-    - sphinx < 2.0
+    - sphinx
     - sphinx_gallery
     - sphinx_numfig
     - sphinx_rtd_theme

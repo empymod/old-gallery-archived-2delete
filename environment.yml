@@ -1,8 +1,8 @@
-name: gallery
+name: emg3d-gallery
 
 channels:
-  - defaults
   - conda-forge
+  - defaults
 dependencies:
   - emg3d
   - joblib
@@ -10,15 +10,14 @@ dependencies:
   - memory_profiler
   - pip
   - pymatsolver
-  - pyvista
-  - python>=3.6
   - scooby
-  - SimPEG
+  - simpeg
+  - sphinx
+  - sphinx-gallery
+  - numpydoc
+  - sphinx_rtd_theme
+  - pyvista
   - pip:
     - gempy
     - nptyping
-    - numpydoc
-    - sphinx
-    - sphinx_gallery
     - sphinx_numfig
-    - sphinx_rtd_theme

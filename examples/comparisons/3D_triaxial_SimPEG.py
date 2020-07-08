@@ -14,7 +14,7 @@ import SimPEG
 import discretize
 import numpy as np
 import pymatsolver
-from SimPEG.EM import FDEM
+import SimPEG.electromagnetics.frequency_domain as FDEM
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 # sphinx_gallery_thumbnail_path = '_static/thumbs/SimPEG.png'
@@ -134,35 +134,37 @@ em3_bg = emg3d.solve(mesh, pmodel_bg, sfield, verb=3, nu_pre=0,
 # Calculate ``SimPEG``
 # --------------------
 
-# Set up the PDE
-prob = FDEM.Problem3D_e(mesh, sigmaMap=SimPEG.Maps.IdentityMap(mesh),
-                        Solver=pymatsolver.Pardiso)
-
 # Set up the receivers
 rx_locs = discretize.utils.ndgrid([rec_x, np.r_[0], np.r_[-water_depth]])
 rx_list = [
-    FDEM.Rx.Point_e(orientation='x', component="real", locs=rx_locs),
-    FDEM.Rx.Point_e(orientation='x', component="imag", locs=rx_locs)
+    FDEM.receivers.Point_e(
+        orientation='x', component="real", locations=rx_locs),
+    FDEM.receivers.Point_e(
+        orientation='x', component="imag", locations=rx_locs)
 ]
 
 # We use the emg3d-source-vector, to ensure we use the same in both cases
-src_sp = FDEM.Src.RawVec_e(rx_list, s_e=sfield.vector, freq=freq)
+src_sp = FDEM.sources.RawVec_e(rx_list, s_e=sfield.vector, freq=freq)
 src_list = [src_sp]
 survey = FDEM.Survey(src_list)
 
-# Create the simulation
-prob.pair(survey)
+# Define the Simulation
+sim = FDEM.simulation.Simulation3DElectricField(
+        mesh,
+        survey=survey,
+        sigmaMap=SimPEG.maps.IdentityMap(mesh),
+        Solver=pymatsolver.Pardiso,
+)
+
+###############################################################################
+spg_tg_dobs = sim.dpred(np.vstack([1./res_x, 1./res_y, 1./res_z]).T)
+spg_tg = SimPEG.survey.Data(survey, dobs=spg_tg_dobs)
 
 
 ###############################################################################
-spg_tg_dobs = survey.dpred(np.vstack([1./res_x, 1./res_y, 1./res_z]).T)
-spg_tg = SimPEG.Survey.Data(survey, dobs=spg_tg_dobs)
-
-
-###############################################################################
-spg_bg_dobs = survey.dpred(
+spg_bg_dobs = sim.dpred(
         np.vstack([1./res_x_bg, 1./res_y_bg, 1./res_z_bg]).T)
-spg_bg = SimPEG.Survey.Data(survey, dobs=spg_bg_dobs)
+spg_bg = SimPEG.survey.Data(survey, dobs=spg_bg_dobs)
 
 
 ###############################################################################
@@ -198,37 +200,41 @@ plt.ylabel('$E_x$ (V/m)')
 plt.legend()
 
 plt.subplot(222)
-plt.title('Relative error Real')
+plt.title('Difference Real')
 
-err_bg = 100*np.abs((spg_bg[src_sp, rx_list[0]] -
-                     em3_bg.fx[ix1:-ix2, iy, iz].real) /
-                    em3_bg.fx[ix1:-ix2, iy, iz].real)
-err_tg = 100*np.abs((spg_tg[src_sp, rx_list[0]] -
-                     em3_tg.fx[ix1:-ix2, iy, iz].real) /
-                    em3_tg.fx[ix1:-ix2, iy, iz].real)
+nrmsd_bg = 200*(abs(spg_bg[src_sp, rx_list[0]] -
+                    em3_bg.fx[ix1:-ix2, iy, iz].real) /
+                (abs(em3_bg.fx[ix1:-ix2, iy, iz].real) +
+                 abs(spg_bg[src_sp, rx_list[0]])))
+nrmsd_tg = 200*(abs(spg_tg[src_sp, rx_list[0]] -
+                    em3_tg.fx[ix1:-ix2, iy, iz].real) /
+                (abs(em3_tg.fx[ix1:-ix2, iy, iz].real) +
+                 abs(spg_tg[src_sp, rx_list[0]])))
 
-plt.semilogy(rec_x/1e3, err_bg, label='BG')
-plt.semilogy(rec_x/1e3, err_tg, label='target')
+plt.semilogy(rec_x/1e3, nrmsd_bg, label='BG')
+plt.semilogy(rec_x/1e3, nrmsd_tg, label='target')
 
 plt.xlabel('Offset (km)')
-plt.ylabel('Rel. Error (%)')
+plt.ylabel('NRMSD (%)')
 plt.legend()
 
 plt.subplot(224)
-plt.title('Relative error (%) Imag')
+plt.title('Difference Imag')
 
-err_bg = 100*np.abs((spg_bg[src_sp, rx_list[1]] -
-                     em3_bg.fx[ix1:-ix2, iy, iz].imag) /
-                    em3_bg.fx[ix1:-ix2, iy, iz].imag)
-err_tg = 100*np.abs((spg_tg[src_sp, rx_list[1]] -
-                     em3_tg.fx[ix1:-ix2, iy, iz].imag) /
-                    em3_tg.fx[ix1:-ix2, iy, iz].imag)
+nrmsd_bg = 200*(abs(spg_bg[src_sp, rx_list[1]] -
+                    em3_bg.fx[ix1:-ix2, iy, iz].imag) /
+                (abs(em3_bg.fx[ix1:-ix2, iy, iz].imag) +
+                 abs(spg_bg[src_sp, rx_list[1]])))
+nrmsd_tg = 200*(abs(spg_tg[src_sp, rx_list[1]] -
+                    em3_tg.fx[ix1:-ix2, iy, iz].imag) /
+                (abs(em3_tg.fx[ix1:-ix2, iy, iz].imag) +
+                 abs(spg_tg[src_sp, rx_list[1]])))
 
-plt.semilogy(rec_x/1e3, err_bg, label='BG')
-plt.semilogy(rec_x/1e3, err_tg, label='target')
+plt.semilogy(rec_x/1e3, nrmsd_bg, label='BG')
+plt.semilogy(rec_x/1e3, nrmsd_tg, label='target')
 
 plt.xlabel('Offset (km)')
-plt.ylabel('Rel. Error (%)')
+plt.ylabel('NRMSD (%)')
 plt.legend()
 
 plt.tight_layout()

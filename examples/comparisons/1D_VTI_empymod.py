@@ -31,19 +31,6 @@ plt.style.use('ggplot')
 
 
 ###############################################################################
-# Plotting and interpolation routines
-# -----------------------------------
-def discrete_cmap(N, base_cmap=None):
-    """Create an N-bin discrete colormap from the specified input map
-    https://gist.github.com/jakevdp/91077b0cae40f8f8244a
-    """
-    base = plt.cm.get_cmap(base_cmap)
-    color_list = base(np.linspace(0, 1, N))
-    cmap_name = base.name + str(N)
-    return base.from_list(cmap_name, color_list, N)
-
-
-###############################################################################
 def plot_data_rel(ax, name, data, x, vmin=-15., vmax=-7., mode="log"):
     """Plot function."""
 
@@ -66,7 +53,8 @@ def plot_data_rel(ax, name, data, x, vmin=-15., vmax=-7., mode="log"):
     else:
         cf = ax.pcolormesh(
                 x/1000, x/1000, np.log10(data), vmin=vmin, vmax=vmax,
-                linewidth=0, rasterized=True, cmap=discrete_cmap(8, "RdBu_r"))
+                linewidth=0, rasterized=True,
+                cmap=plt.cm.get_cmap("RdBu_r", 8))
 
     return cf
 

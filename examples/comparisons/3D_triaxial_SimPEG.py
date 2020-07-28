@@ -59,7 +59,7 @@ domain_x = 4000            # x- and y-domain
 domain_z = - target_z[0]   # z-domain
 
 # Create mesh
-mesh = discretize.TensorMesh(
+mesh = emg3d.TensorMesh(
     [[(cs, npadx, -pf), (cs, int(domain_x/cs)), (cs, npadx, pf)],
      [(cs, npadx, -pf), (cs, int(domain_x/cs)), (cs, npadx, pf)],
      [(cs, npadz, -pfz), (cs, int(domain_z/cs)), (cs, npadz, pfz)]]
@@ -108,11 +108,15 @@ res_y[target_inds] = res_target
 res_z[target_inds] = res_target
 
 # Create emg3d-models for given frequency
-pmodel = emg3d.models.Model(mesh, res_x, res_y, res_z)
-pmodel_bg = emg3d.models.Model(mesh, res_x_bg, res_y_bg, res_z_bg)
+pmodel = emg3d.models.Model(
+        mesh, property_x=res_x, property_y=res_y,
+        property_z=res_z, mapping='Resistivity')
+pmodel_bg = emg3d.models.Model(
+        mesh, property_x=res_x_bg, property_y=res_y_bg,
+        property_z=res_z_bg, mapping='Resistivity')
 
 # Plot a slice
-mesh.plot_3d_slicer(pmodel.res_x, zslice=-1100, clim=[0, 2],
+mesh.plot_3d_slicer(pmodel.property_x, zslice=-1100, clim=[0, 2],
                     xlim=(-4000, 4000), ylim=(-4000, 4000), zlim=(-2000, 500))
 
 
@@ -243,4 +247,4 @@ plt.show()
 
 ###############################################################################
 
-emg3d.Report([discretize, SimPEG, pymatsolver])
+emg3d.Report([SimPEG, pymatsolver])

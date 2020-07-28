@@ -73,7 +73,7 @@ def calculate(nx):
     res = 1.
 
     # Model and source field
-    model = emg3d.models.Model(grid, res_x=res)
+    model = emg3d.models.Model(grid, property_x=res, mapping='Resistivity')
     sfield = emg3d.fields.get_source_field(grid, src, freq=freq, strength=0)
 
     # Calculate the field

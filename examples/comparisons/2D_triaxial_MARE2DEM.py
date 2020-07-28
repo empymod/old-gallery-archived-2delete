@@ -9,7 +9,6 @@ located in the data-directory.
 
 """
 import emg3d
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -56,7 +55,7 @@ zz, z0 = emg3d.meshes.get_hx_h0(
     fixed=[-2000, 0, -4200])
 
 # Initiate mesh.
-grid = discretize.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
+grid = emg3d.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
 grid
 
 ###############################################################################
@@ -91,9 +90,12 @@ res_y_full_tg[xx*zz] = 100
 res_z_full_tg[xx*zz] = 300
 
 # Collect models
-model_bg = emg3d.models.Model(grid, res_x_full, res_y_full, res_z_full)
+model_bg = emg3d.models.Model(
+        grid, property_x=res_x_full, property_y=res_y_full,
+        property_z=res_z_full, mapping='Resistivity')
 model_tg = emg3d.models.Model(
-        grid, res_x_full_tg, res_y_full_tg, res_z_full_tg)
+        grid, property_x=res_x_full_tg, property_y=res_y_full_tg,
+        property_z=res_z_full_tg, mapping='Resistivity')
 
 # Create source field
 sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
@@ -108,7 +110,7 @@ sparams = {
 
 # QC model
 grid.plot_3d_slicer(
-        model_tg.res_x, clim=[0.3, 300], zlim=[-6000, 500],
+        model_tg.property_x, clim=[0.3, 300], zlim=[-6000, 500],
         pcolorOpts={'norm': LogNorm()})
 
 

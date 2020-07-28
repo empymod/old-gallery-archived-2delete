@@ -72,7 +72,6 @@ and the secondary field can be calculated using the primary field as source,
 
 """
 import emg3d
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -109,7 +108,7 @@ zz, z0 = emg3d.meshes.get_hx_h0(
     res=[res[1], res[2], 100.], domain=[-2500, 0], fixed=[-1000, 0, -2000],
     **meshinp)
 
-grid = discretize.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
+grid = emg3d.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
 grid
 
 ###############################################################################
@@ -122,7 +121,8 @@ res_x[grid.gridCC[:, 2] < 0] = res[1]      # Water resistivity
 res_x[grid.gridCC[:, 2] < -1000] = res[2]  # Background resistivity
 
 # Background model
-model_pf = emg3d.models.Model(grid, res_x.copy())
+model_pf = emg3d.models.Model(
+        grid, property_x=res_x.copy(), mapping='Resistivity')
 
 # Include the target
 xx = (grid.gridCC[:, 0] >= 0) & (grid.gridCC[:, 0] <= 6000)
@@ -132,11 +132,11 @@ zz = (grid.gridCC[:, 2] > -2500)*(grid.gridCC[:, 2] < -2000)
 res_x[xx*yy*zz] = 100.  # Target resistivity
 
 # Create target model
-model = emg3d.models.Model(grid, res_x)
+model = emg3d.models.Model(grid, property_x=res_x, mapping='Resistivity')
 
 # Plot a slice
 grid.plot_3d_slicer(
-        model.res_x, zslice=-2250, clim=[0.3, 200],
+        model.property_x, zslice=-2250, clim=[0.3, 200],
         xlim=(-1000, 8000), ylim=(-4000, 4000), zlim=(-3000, 500),
         pcolorOpts={'norm': LogNorm()}
 )
@@ -172,7 +172,8 @@ em3_pf = emg3d.solve(grid, model_pf, sfield_pf, **modparams)
 # ```````````````````````````
 
 # Get the difference of conductivity as volume-average values
-dsigma = grid.vol.reshape(grid.vnC, order='F')*(1/model.res_x-1/model_pf.res_x)
+dsigma = grid.vol.reshape(grid.vnC, order='F')
+dsigma *= 1/model.property_x-1/model_pf.property_x
 
 # Here we use the primary field calculated with emg3d. This could be done
 # with a 1D modeller such as empymod instead.
@@ -204,7 +205,7 @@ sfield_sf.ensure_pec
 # to show the other source fields.)
 
 grid.plot_3d_slicer(
-        sfield_sf.fx.ravel('F'), view='abs', vType='Ex',
+        sfield_sf.fx.ravel('F'), view='abs', v_type='Ex',
         zslice=-2250, clim=[1e-17, 1e-9],
         xlim=(-1000, 8000), ylim=(-4000, 4000), zlim=(-3000, 500),
         pcolorOpts={'norm': LogNorm()}
@@ -267,4 +268,4 @@ plt.show()
 
 ###############################################################################
 
-emg3d.Report([discretize, ])
+emg3d.Report()

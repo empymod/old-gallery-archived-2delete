@@ -41,7 +41,6 @@ import emg3d
 import joblib
 import zipfile
 import pyvista
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -111,7 +110,7 @@ except FileNotFoundError:  # THE ORIGINAL DATA ARE REQUIRED!
     joblib.dump(res, './data/res-model.lzma')
 
 # Create a discretize-mesh
-mesh = discretize.TensorMesh(
+mesh = emg3d.TensorMesh(
         [np.ones(nx)*20., np.ones(ny)*20., np.ones(nz)*20.], x0='00N')
 models = {'res': np.log10(res.ravel('F'))}
 
@@ -183,7 +182,7 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, 6500)
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, 6500)
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, x0=-100, x1=0)
-grid = discretize.TensorMesh(
+grid = emg3d.TensorMesh(
         [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 grid
 
@@ -195,20 +194,20 @@ grid
 cres = emg3d.maps.grid2grid(mesh, res, grid, 'volume')
 
 # Create model
-model = emg3d.models.Model(grid, cres)
+model = emg3d.models.Model(grid, property_x=cres, mapping='Resistivity')
 
 # Set air resistivity
 iz = np.argmin(np.abs(grid.vectorNz))
-model.res_x[:, :, iz:] = 1e8
+model.property_x[:, :, iz:] = 1e8
 
 # Ensure at least top layer is water
-model.res_x[:, :, iz] = 0.3
+model.property_x[:, :, iz] = 0.3
 
-cmodels = {'res': np.log10(model.res_x.ravel('F'))}
+cmodels = {'res': np.log10(model.property_x.ravel('F'))}
 
 grid.plot_3d_slicer(
         cmodels['res'], zslice=-2000, zlim=(-4180, 500),
-        clim=np.log10([np.nanmin(model.res_x), 50]))
+        clim=np.log10([np.nanmin(model.property_x), 50]))
 
 ###############################################################################
 # Solve the system
@@ -228,7 +227,7 @@ pfield = emg3d.solve(
 
 grid.plot_3d_slicer(
     pfield.fx.ravel('F'), zslice=-2000, zlim=(-4180, 500),
-    view='abs', vType='Ex',
+    view='abs', v_type='Ex',
     clim=[1e-16, 1e-9], pcolorOpts={'norm': LogNorm()})
 
 ###############################################################################
@@ -278,4 +277,4 @@ plt.show()
 
 ###############################################################################
 
-emg3d.Report([discretize, pyvista])
+emg3d.Report(pyvista)

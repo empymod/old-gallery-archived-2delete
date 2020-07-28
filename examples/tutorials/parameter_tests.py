@@ -15,7 +15,6 @@ examples that you can adjust for your problem at hand.
 
 """
 import emg3d
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -59,7 +58,7 @@ yy, y0 = emg3d.meshes.get_hx_h0(
 zz, z0 = emg3d.meshes.get_hx_h0(
     freq=freq, res=[0.3, 1., 0.3], domain=[-2500, 0],
     fixed=[-1000, 0, -2100], **ginp)
-grid = discretize.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
+grid = emg3d.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
 print(grid)
 
 # Source-field
@@ -79,10 +78,11 @@ zt = np.nonzero((grid.vectorCCz >= -2100) & (grid.vectorCCz <= -1800))[0]
 res_x[xt[0]:xt[-1]+1, yt[0]:yt[-1]+1, zt[0]:zt[-1]+1] = 100
 
 # Create a model instance
-model_iso = emg3d.models.Model(grid, res_x)
+model_iso = emg3d.models.Model(grid, property_x=res_x, mapping='Resistivity')
 
 # Plot it for QC
-grid.plot_3d_slicer(model_iso.res_x.ravel('F'), pcolorOpts={'norm': LogNorm()})
+grid.plot_3d_slicer(model_iso.property_x.ravel('F'),
+                    pcolorOpts={'norm': LogNorm()})
 
 ###############################################################################
 # Test 1: F, W, and V MG cycles

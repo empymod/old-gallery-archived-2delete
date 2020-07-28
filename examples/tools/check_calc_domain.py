@@ -18,7 +18,6 @@ into the sky). This is an example to test boundaries on a simple marine model
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -85,16 +84,15 @@ yy_1, y0_1 = emg3d.meshes.get_hx_h0(res=[res[1], res[0]], **y_inp, **inp)
 zz_1, z0_1 = emg3d.meshes.get_hx_h0(res=[res[1], res[0], 100], **z_inp, **inp)
 
 # Create grid and correpsoding model
-grid_1 = discretize.TensorMesh(
-        [xx_1, yy_1, zz_1], x0=np.array([x0_1, y0_1, z0_1]))
+grid_1 = emg3d.TensorMesh([xx_1, yy_1, zz_1], x0=np.array([x0_1, y0_1, z0_1]))
 res_1 = res[0]*np.ones(grid_1.nC)
 res_1[grid_1.gridCC[:, 2] > -water_depth] = res[1]
 res_1[grid_1.gridCC[:, 2] > 0] = res[2]
-model_1 = emg3d.models.Model(grid_1, res_x=res_1)
+model_1 = emg3d.models.Model(grid_1, property_x=res_1, mapping='Resistivity')
 
 # QC
 grid_1.plot_3d_slicer(
-        np.log10(model_1.res_x), zlim=(-2000, 100), clim=[-1, 2])
+        np.log10(model_1.property_x), zlim=(-2000, 100), clim=[-1, 2])
 
 # Define source and solve the system
 sfield_1 = emg3d.fields.get_source_field(
@@ -114,16 +112,15 @@ yy_2, y0_2 = emg3d.meshes.get_hx_h0(res=[res[1], 100], **y_inp, **inp)
 zz_2, z0_2 = emg3d.meshes.get_hx_h0(res=[res[1], res[0], 100], **z_inp, **inp)
 
 # Create grid and correpsoding model
-grid_2 = discretize.TensorMesh(
-        [xx_2, yy_2, zz_2], x0=np.array([x0_2, y0_2, z0_2]))
+grid_2 = emg3d.TensorMesh([xx_2, yy_2, zz_2], x0=np.array([x0_2, y0_2, z0_2]))
 res_2 = res[0]*np.ones(grid_2.nC)
 res_2[grid_2.gridCC[:, 2] > -water_depth] = res[1]
 res_2[grid_2.gridCC[:, 2] > 0] = res[2]
-model_2 = emg3d.models.Model(grid_2, res_x=res_2)
+model_2 = emg3d.models.Model(grid_2, property_x=res_2, mapping='Resistivity')
 
 # QC
 # grid_2.plot_3d_slicer(
-#         np.log10(model_2.res_x), zlim=(-2000, 100), clim=[-1, 2])
+#         np.log10(model_2.property_x), zlim=(-2000, 100), clim=[-1, 2])
 
 # Define source and solve the system
 sfield_2 = emg3d.fields.get_source_field(
@@ -230,11 +227,11 @@ plt.show()
 # the boundaries :math:`\pm x` and :math:`\pm y`.
 
 grid_1.plot_3d_slicer(
-    efield_1.fx.ravel('F'), view='abs', vType='Ex', clim=[1e-17, 1e-9],
+    efield_1.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xslice=src[0], yslice=src[1], zslice=rec[2],
     pcolorOpts={'norm': LogNorm()})
 grid_1.plot_3d_slicer(
-    efield_1.fx.ravel('F'), view='abs', vType='Ex', clim=[1e-17, 1e-9],
+    efield_1.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     zlim=[-5000, 1000],
     xslice=src[0], yslice=src[1], zslice=rec[2],
     pcolorOpts={'norm': LogNorm()})
@@ -249,11 +246,11 @@ grid_1.plot_3d_slicer(
 # as the lower plot for the first grid, our zone of interest.
 
 grid_2.plot_3d_slicer(
-    efield_2.fx.ravel('F'), view='abs', vType='Ex', clim=[1e-17, 1e-9],
+    efield_2.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xslice=src[0], yslice=src[1], zslice=rec[2],
     pcolorOpts={'norm': LogNorm()})
 grid_2.plot_3d_slicer(
-    efield_2.fx.ravel('F'), view='abs', vType='Ex', clim=[1e-17, 1e-9],
+    efield_2.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xlim=[grid_1.vectorNx[0], grid_1.vectorNx[-1]],  # Same square as grid_1
     ylim=[grid_1.vectorNy[0], grid_1.vectorNy[-1]],  # Same square as grid_1
     zlim=[-5000, 1000],
@@ -263,4 +260,4 @@ grid_2.plot_3d_slicer(
 
 ###############################################################################
 
-emg3d.Report([empymod, discretize])
+emg3d.Report()

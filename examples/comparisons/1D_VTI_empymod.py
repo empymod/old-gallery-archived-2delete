@@ -21,7 +21,6 @@ Content:
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate as sint
@@ -193,15 +192,15 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src_c[2])
-pgrid = discretize.TensorMesh([hx, hy, hz],
-                              x0=(xdomain[0], xdomain[0], zdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
 
 
 ###############################################################################
 
 # Get the model
-pmodel = emg3d.models.Model(pgrid, res_x=resh, res_z=resv)
+pmodel = emg3d.models.Model(
+        pgrid, property_x=resh, property_z=resv, mapping='Resistivity')
 
 # Get the source field
 sfield = emg3d.fields.get_source_field(pgrid, src, freq, strength)
@@ -249,11 +248,11 @@ plot_lineplot_ex(x, x, e3d_fs_x.real, epm_fs_x.real, pgrid)
 # ``xy``-``empymod`` result to the ``zy``-``emg3d`` result.
 
 # ===> Swap hy and hz; ydomain and zdomain <===
-pgrid = discretize.TensorMesh(
-        [hx, hz, hy], x0=(xdomain[0], zdomain[0], xdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hz, hy], x0=(xdomain[0], zdomain[0], xdomain[0]))
 
 # ===> Swap y- and z-resistivities <===
-pmodel = emg3d.models.Model(pgrid, res_x=resh, res_y=resv)
+pmodel = emg3d.models.Model(
+        pgrid, property_x=resh, property_y=resv, mapping='Resistivity')
 
 # ===> Swap src_y and src_z <===
 src_new = [src[0], src[1], src[4], src[5], src[2], src[3]]
@@ -287,11 +286,12 @@ plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
 # ``xy``-``empymod`` result to the ``xz``-``emg3d`` result.
 
 # ===> Swap hx and hz; xdomain and zdomain <===
-pgrid = discretize.TensorMesh(
-        [hz, hy, hx], x0=(zdomain[0], xdomain[0], xdomain[0]))
+pgrid = emg3d.TensorMesh([hz, hy, hx], x0=(zdomain[0], xdomain[0], xdomain[0]))
 
 # ===> Swap x- and z-resistivities <===
-pmodel = emg3d.models.Model(pgrid, resv, resh, resh)
+pmodel = emg3d.models.Model(
+        pgrid, property_x=resv, property_y=resh, property_z=resh,
+        mapping='Resistivity')
 
 # ===> Swap src_x and src_z <===
 src_new = [src[4], src[5], src[2], src[3], src[0], src[1]]
@@ -371,8 +371,7 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx*2, x0=depth[0], x1=0)
-pgrid = discretize.TensorMesh(
-        [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
 
 
@@ -393,10 +392,12 @@ res_z_full[pgrid.gridCC[:, 2] >= depth[2]] = resv[3]
 res_z_full[pgrid.gridCC[:, 2] >= depth[3]] = resv[4]
 
 # Get the model
-pmodel = emg3d.models.Model(pgrid, res_x_full, res_z=res_z_full)
+pmodel = emg3d.models.Model(
+        pgrid, property_x=res_x_full, property_z=res_z_full,
+        mapping='Resistivity')
 
 # Plot it
-pgrid.plot_3d_slicer(pmodel.res_x, zslice=-2000, clim=[0.3, 50],
+pgrid.plot_3d_slicer(pmodel.property_x, zslice=-2000, clim=[0.3, 50],
                      zlim=(-5000, 50), pcolorOpts={'norm': LogNorm()})
 
 
@@ -439,4 +440,4 @@ plot_lineplot_ex(x, x, e3d_deep_x.real, epm_deep_x.real, pgrid)
 
 ###############################################################################
 
-emg3d.Report(empymod)
+emg3d.Report()

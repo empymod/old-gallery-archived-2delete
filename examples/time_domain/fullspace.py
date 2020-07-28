@@ -10,7 +10,6 @@ original results are shown at the bottom of this example.
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
@@ -111,7 +110,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
                           np.max([hix['dmax'], hiyz['dmax']])]
 
     # Initiate mesh.
-    grid = discretize.TensorMesh([xx, yz, yz], x0=np.array([x0, yz0, yz0]))
+    grid = emg3d.TensorMesh([xx, yz, yz], x0=np.array([x0, yz0, yz0]))
     # print(grid)
     thislog['nC'] = grid.nC  # Store number of cells in log.
 
@@ -125,7 +124,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
         efield = emg3d.fields.Field(grid, efield, freq=frq)
 
     # Generate model
-    model = emg3d.models.Model(grid, res_x=res)
+    model = emg3d.models.Model(grid, property_x=res, mapping='Resistivity')
 
     # Define source.
     sfield = emg3d.fields.get_source_field(
@@ -603,4 +602,4 @@ plt.show()
 # Hz. Have a look at the example
 # :ref:`sphx_glr_gallery_time_domain_freqselect.py`.
 
-emg3d.Report([empymod, discretize])
+emg3d.Report()

@@ -25,7 +25,8 @@ plot the model as well as the resulting electric field, which also requires
             [np.ones(8), np.ones(8), np.ones(8)], x0=np.array([0, 0, 0]))
 
     # The model is a fullspace with tri-axial anisotropy.
-    model = emg3d.models.Model(grid, res_x=1.5, res_y=1.8, res_z=3.3)
+    model = emg3d.models.Model(grid, property_x=1.5, property_y=1.8,
+                               property_z=3.3, mapping='Resistivity')
 
     # The source is a x-directed, horizontal dipole at (4, 4, 4),
     # frequency is 10 Hz.
@@ -46,7 +47,6 @@ along with ``numpy`` and ``matplotlib``:
 
 """
 import emg3d
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -63,7 +63,7 @@ plt.style.use('ggplot')
 # to dissipate, yet fine enough around source and receiver to accurately model
 # them. This grid is too small by any means, but serves as a minimal example.
 
-grid = discretize.TensorMesh(
+grid = emg3d.TensorMesh(
         [[(25, 10, -1.04), (25, 28), (25, 10, 1.04)],
          [(50, 8, -1.03), (50, 16), (50, 8, 1.03)],
          [(30, 8, -1.05), (30, 16), (30, 8, 1.05)]],
@@ -78,13 +78,14 @@ grid
 # :math:`\rho_x=1.5\,\Omega\,\rm{m}`, :math:`\rho_y=1.8\,\Omega\,\rm{m}`, and
 # :math:`\rho_z=3.3\,\Omega\,\rm{m}`.
 
-model = emg3d.models.Model(grid, res_x=1.5, res_y=1.8, res_z=3.3)
+model = emg3d.models.Model(grid, property_x=1.5, property_y=1.8,
+                           property_z=3.3, mapping='Resistivity')
 
 ###############################################################################
 # We can plot the model using ``discretize``; in this case it is obviously
 # a rather boring plot, as it simply shows a homogeneous space.
 
-grid.plot_3d_slicer(np.ones(grid.vnC)*model.res_x)  # x-resistivity
+grid.plot_3d_slicer(np.ones(grid.vnC)*model.property_x)  # x-resistivity
 
 ###############################################################################
 # 3. Source field
@@ -116,7 +117,7 @@ efield = emg3d.solve(grid, model, sfield, verb=3)
 # e.g., the x-directed electric field.
 
 grid.plot_3d_slicer(
-        efield.fx.ravel('F'), view='abs', vType='Ex',
+        efield.fx.ravel('F'), view='abs', v_type='Ex',
         pcolorOpts={'norm': LogNorm()}
 )
 

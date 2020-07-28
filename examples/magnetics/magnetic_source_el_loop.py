@@ -27,7 +27,6 @@ shaped source loop.
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate as sint
@@ -200,8 +199,7 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src[2])
-pgrid = discretize.TensorMesh([hx, hy, hz],
-                              x0=(xdomain[0], xdomain[0], zdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
 
 ###############################################################################
@@ -230,7 +228,8 @@ for srcl in srcloop:
 ###############################################################################
 
 # Get the model
-pmodel = emg3d.models.Model(pgrid, res_x=resh, res_z=resv)
+pmodel = emg3d.models.Model(
+        pgrid, property_x=resh, property_z=resv, mapping='Resistivity')
 
 # Calculate the electric field
 efield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
@@ -286,4 +285,4 @@ plot_result_rel(epm_fs_hz, e3d_fs_hz, x, r'Diffusive Fullspace $H_z$',
 plot_lineplot_ex(x, x, e3d_fs_hx.real, epm_fs_hx.real, pgrid)
 
 ###############################################################################
-emg3d.Report(empymod)
+emg3d.Report()

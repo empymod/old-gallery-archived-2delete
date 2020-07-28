@@ -90,7 +90,6 @@ see `empymod.github.io <https://empymod.github.io>`_.)
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate as sint
@@ -260,8 +259,7 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src[2])
-pgrid = discretize.TensorMesh([hx, hy, hz],
-                              x0=(xdomain[0], xdomain[0], zdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
 
 ###############################################################################
@@ -285,8 +283,9 @@ pgrid
 #
 #     \mu_\mathrm{r} = 1/\rho = \sigma \, .
 
-# Get the model        => Set res_x = 1 and mu_r = 1./resh
-pmodel = emg3d.models.Model(pgrid, res_x=1., mu_r=1./resh)
+# Get the model        => Set property_x = 1 and mu_r = 1./resh
+pmodel = emg3d.models.Model(
+        pgrid, property_x=1., mu_r=1./resh, mapping='Resistivity')
 
 
 ###############################################################################
@@ -379,4 +378,4 @@ plot_result_rel(epm_fs_ez, e3d_fs_ez, x, r'Diffusive Fullspace $E_z$',
 
 
 ###############################################################################
-emg3d.Report(empymod)
+emg3d.Report()

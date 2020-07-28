@@ -12,7 +12,6 @@ discretize allows us to plot it with `PyVista <https://github.com/pyvista>`_.
 """
 import emg3d
 import pyvista
-import discretize
 import numpy as np
 import gempy as gempy
 import matplotlib.pyplot as plt
@@ -130,7 +129,7 @@ nx = 2**6
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx*2, x0=src[2], x1=0)
-grid = discretize.TensorMesh(
+grid = emg3d.TensorMesh(
         [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 grid
 
@@ -198,7 +197,7 @@ p.show()
 # ---------------------------
 
 # Create model
-model = emg3d.models.Model(grid, res)
+model = emg3d.Model(grid, property_x=res, mapping='Resistivity')
 
 # Source field
 sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
@@ -210,10 +209,10 @@ pfield = emg3d.solve(grid, model, sfield, sslsolver=True, verb=3)
 
 grid.plot_3d_slicer(
     pfield.fx.ravel('F'), zslice=-1000, zlim=(-2000, 50),
-    view='abs', vType='Ex', clim=[1e-13, 1e-8],
+    view='abs', v_type='Ex', clim=[1e-13, 1e-8],
     pcolorOpts={'cmap': 'viridis', 'norm': LogNorm()})
 
 
 ###############################################################################
 
-emg3d.Report([gempy, pyvista, discretize])
+emg3d.Report([gempy, pyvista])

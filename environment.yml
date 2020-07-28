@@ -4,7 +4,11 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - empymod
   - emg3d
+  - xarray
+  - discretize
+  - h5py
   - joblib
   - matplotlib
   - memory_profiler

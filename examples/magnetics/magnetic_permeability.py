@@ -21,7 +21,6 @@ see the result for the electric field.
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate as sint
@@ -192,14 +191,14 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src_c[2])
-pgrid = discretize.TensorMesh([hx, hy, hz],
-                              x0=(xdomain[0], xdomain[0], zdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
 
 ###############################################################################
 
 # Get the model, with magnetic permeability
-pmodel = emg3d.models.Model(pgrid, res_x=resh, res_z=resv, mu_r=mperm)
+pmodel = emg3d.models.Model(pgrid, property_x=resh, property_z=resv,
+                            mu_r=mperm, mapping='Resistivity')
 
 # Get the source field
 sfield = emg3d.fields.get_source_field(pgrid, src, freq, strength)
@@ -235,4 +234,4 @@ plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
 plot_lineplot_ex(x, x, e3d_fs_x.real, epm_fs_x.real, pgrid)
 
 ###############################################################################
-emg3d.Report(empymod)
+emg3d.Report()

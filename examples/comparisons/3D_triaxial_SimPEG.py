@@ -1,6 +1,6 @@
 """
-SimPEG: 3D with tri-axial anisotropy
-====================================
+3. SimPEG: 3D with tri-axial anisotropy
+=======================================
 
 `SimPEG <https://simpeg.xyz>`_ is an open source python package for simulation
 and gradient based parameter estimation in geophysical applications. Here we
@@ -59,17 +59,17 @@ domain_x = 4000            # x- and y-domain
 domain_z = - target_z[0]   # z-domain
 
 # Create mesh
-mesh = emg3d.TensorMesh(
+mesh = discretize.TensorMesh(
     [[(cs, npadx, -pf), (cs, int(domain_x/cs)), (cs, npadx, pf)],
      [(cs, npadx, -pf), (cs, int(domain_x/cs)), (cs, npadx, pf)],
-     [(cs, npadz, -pfz), (cs, int(domain_z/cs)), (cs, npadz, pfz)]]
+     [(cs, npadz, -pfz), (cs, int(domain_z/cs)), (cs, npadz, pfz)]],
 )
 
 # Center mesh
 mesh.x0 = np.r_[-mesh.hx.sum()/2, -mesh.hy.sum()/2, -mesh.hz[:-npadz].sum()]
 
 # Create the source field for this mesh and given frequency
-sfield = emg3d.fields.get_source_field(mesh, src, freq, strength=0)
+sfield = emg3d.get_source_field(mesh, src, freq, strength=0)
 
 # We take the receiver locations at the actual CCx-locations
 rec_x = mesh.vectorCCx[12:-12]
@@ -108,10 +108,10 @@ res_y[target_inds] = res_target
 res_z[target_inds] = res_target
 
 # Create emg3d-models for given frequency
-pmodel = emg3d.models.Model(
+pmodel = emg3d.Model(
         mesh, property_x=res_x, property_y=res_y,
         property_z=res_z, mapping='Resistivity')
-pmodel_bg = emg3d.models.Model(
+pmodel_bg = emg3d.Model(
         mesh, property_x=res_x_bg, property_y=res_y_bg,
         property_z=res_z_bg, mapping='Resistivity')
 
@@ -121,7 +121,7 @@ mesh.plot_3d_slicer(pmodel.property_x, zslice=-1100, clim=[0, 2],
 
 
 ###############################################################################
-# Calculate ``emg3d``
+# Compute ``emg3d``
 # -------------------
 
 em3_tg = emg3d.solve(mesh, pmodel, sfield, verb=3, nu_pre=0,
@@ -135,7 +135,7 @@ em3_bg = emg3d.solve(mesh, pmodel_bg, sfield, verb=3, nu_pre=0,
 
 
 ###############################################################################
-# Calculate ``SimPEG``
+# Compute ``SimPEG``
 # --------------------
 
 # Set up the receivers

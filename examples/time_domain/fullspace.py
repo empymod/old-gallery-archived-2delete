@@ -1,6 +1,6 @@
 """
-Transient CSEM for a homogeneous space
-======================================
+1. Transient CSEM for a homogeneous space
+=========================================
 
 Example how to use ``emg3d`` to model time-domain data, using FFTLog and DLF.
 
@@ -43,7 +43,7 @@ depth = []
 # Fourier Transforms parameters
 # -----------------------------
 #
-# We only calculate frequencies :math:`0.05 < f < 21` Hz, which yields enough
+# We only compute frequencies :math:`0.05 < f < 21` Hz, which yields enough
 # precision for our purpose.
 #
 # This means, instead of 30 frequencies from 0.0002 - 126.4 Hz, we only need 14
@@ -53,7 +53,7 @@ depth = []
 time = np.logspace(-2, 1, 201)
 
 # Initiate a Fourier instance
-Fourier = emg3d.utils.Fourier(
+Fourier = emg3d.Fourier(
     time=time,
     fmin=0.05,
     fmax=21,
@@ -70,7 +70,7 @@ freq_dense = np.logspace(
 
 
 ###############################################################################
-# Frequency-domain calculation
+# Frequency-domain computation
 # ----------------------------
 
 # To store the info of each frequency.
@@ -82,7 +82,7 @@ gridinput = {
     'return_info': True,      # To get back some information for later.
     'pps': 12,                # Many points, to have a small min cell width.
     'alpha': [1, 1.3, 0.01],  # Lower the alpha will improve the result, but
-    'verb': 0,                # slow down calculation.
+    'verb': 0,                # slow down computation.
 }
 #
 # Start the timer.
@@ -115,19 +115,19 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
     thislog['nC'] = grid.nC  # Store number of cells in log.
 
     # Interpolate the starting electric field from the last one (can speed-up
-    # the calculation).
+    # the computation).
     if fi == 0:
-        efield = emg3d.fields.Field(grid, freq=frq)
+        efield = emg3d.Field(grid, freq=frq)
     else:
         efield = emg3d.maps.grid2grid(old_grid, efield, grid,
                                       method='cubic', extrapolate=False)
-        efield = emg3d.fields.Field(grid, efield, freq=frq)
+        efield = emg3d.Field(grid, efield, freq=frq)
 
     # Generate model
-    model = emg3d.models.Model(grid, property_x=res, mapping='Resistivity')
+    model = emg3d.Model(grid, property_x=res, mapping='Resistivity')
 
     # Define source.
-    sfield = emg3d.fields.get_source_field(
+    sfield = emg3d.get_source_field(
         grid, [src[0], src[1], src[2], 0, 0], frq, strength=0)
 
     # Solve the system.
@@ -141,7 +141,7 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
     thislog['info'] = info
 
     # Store value
-    thislog['data'] = emg3d.fields.get_receiver(
+    thislog['data'] = emg3d.get_receiver(
             grid, efield.fx, (rec[0], rec[1], rec[2]))
 
     # Store thislog in values.
@@ -154,13 +154,13 @@ for fi, frq in enumerate(Fourier.freq_calc[::-1]):
 total_time = runtime.runtime
 
 # Store data and info to disk
-emg3d.io.data_write(name, 'values', values, exists=-1)
+emg3d.save(name+'.npz', values=values)
 
 
 ###############################################################################
 
 # Load info and data
-values = emg3d.io.data_read(name, 'values')
+values = emg3d.load(name+'.npz')['values']
 
 runtime = 0
 for key, value in values.items():
@@ -185,7 +185,7 @@ data = np.zeros(Fourier.freq_calc.size, dtype=complex)
 
 # Loop over frequencies.
 for fi, frq in enumerate(Fourier.freq_calc):
-    key = int(frq*1e6)
+    key = str(int(frq*1e6))
     data[fi] = values[key]['data']
 
 
@@ -193,12 +193,12 @@ for fi, frq in enumerate(Fourier.freq_calc):
 # 1. Using FFTLog
 # ---------------
 #
-# Interpolate missing frequencies and calculate analytical result
-# ```````````````````````````````````````````````````````````````
+# Interpolate missing frequencies and compute analytical result
+# `````````````````````````````````````````````````````````````
 
 data_int = Fourier.interpolate(data)
 
-# Calculate analytical result using empymod (epm)
+# Compute analytical result using empymod (epm)
 epm_req = empymod.dipole(src, rec, depth, res, Fourier.freq_req, verb=1)
 epm_calc = empymod.dipole(src, rec, depth, res, Fourier.freq_calc, verb=1)
 epm_dense = empymod.dipole(src, rec, depth, res, freq_dense, verb=1)
@@ -233,7 +233,7 @@ plt.yscale('symlog', linthreshy=1e-5)
 ax5 = plt.subplot(325, sharex=ax3)
 plt.title('(e) clipped 0.01-10')
 
-# Calculate the error
+# Compute the error
 err_int_r = np.clip(100*abs((data_int.real-epm_req.real) /
                             epm_req.real), 0.01, 10)
 err_cal_r = np.clip(100*abs((data.real-epm_calc.real) /
@@ -271,7 +271,7 @@ plt.yscale('symlog', linthreshy=1e-5)
 ax6 = plt.subplot(326, sharex=ax2)
 plt.title('(f) clipped 0.01-10')
 
-# Calculate error
+# Compute error
 err_int_i = np.clip(100*abs((data_int.imag-epm_req.imag) /
                             epm_req.imag), 0.01, 10)
 err_cal_i = np.clip(100*abs((data.imag-epm_calc.imag) /
@@ -294,9 +294,9 @@ plt.show()
 # Fourier Transform
 # `````````````````
 #
-# Carry-out Fourier transform, calculate analytical result
+# Carry-out Fourier transform, compute analytical result
 
-# Calculate corresponding time-domain signal.
+# Compute corresponding time-domain signal.
 data_time = Fourier.freq2time(data, rec[0])
 
 # Analytical result
@@ -339,7 +339,7 @@ plt.yscale('log')
 ax4 = plt.subplot(224, sharex=ax2)
 plt.title('(c) clipped 0.01-10 %')
 
-# Calculate error
+# Compute error
 err = np.clip(100*abs((data_time-epm_time_precise)/epm_time_precise), 0.01, 10)
 err2 = np.clip(100*abs((epm_time-epm_time_precise)/epm_time_precise), 0.01, 10)
 
@@ -365,20 +365,20 @@ plt.show()
 # - The black line is the analytical fullspace solution in the time-domain.
 # - The blue result was obtained with empymod, using the same Fourier-transform
 #   parameters as used for ``emg3d``, hence FFTLog with 5 pts per decade.
-#   However, in contrary to the red response, all frequencies are calculated,
+#   However, in contrary to the red response, all frequencies are computed,
 #   with a very high precision.
 # - The red result is the result obtain with ``emg3d``.
 #
 # 2. Using DLF
 # ------------
 #
-# We use the same frequencies and calculated data as in the FFTLog example, but
+# We use the same frequencies and computed data as in the FFTLog example, but
 # apply the digital-linear-filter method for the transformation.
 #
 # Fourier Transform parameters for DLF
 # ````````````````````````````````````
 
-Fourier_dlf = emg3d.utils.Fourier(
+Fourier_dlf = emg3d.Fourier(
     time=time,
     fmin=0.05,
     fmax=21,
@@ -397,7 +397,7 @@ freq_dense_dlf = np.logspace(
 # Get data
 data_int_dlf = Fourier_dlf.interpolate(data)
 
-# Calculate analytical result using empymod (epm)
+# Compute analytical result using empymod (epm)
 epm_req_dlf = empymod.dipole(
         src, rec, depth, res, Fourier_dlf.freq_req, verb=1)
 epm_calc_dlf = empymod.dipole(
@@ -406,12 +406,12 @@ epm_dense_dlf = empymod.dipole(src, rec, depth, res, freq_dense_dlf, verb=1)
 
 
 ###############################################################################
-# Interpolate missing frequencies and calculate analytical result
-# ```````````````````````````````````````````````````````````````
+# Interpolate missing frequencies and compute analytical result
+# `````````````````````````````````````````````````````````````
 
 data_int_dlf = Fourier_dlf.interpolate(data)
 
-# Calculate analytical result using empymod (epm)
+# Compute analytical result using empymod (epm)
 epm_req_dlf = empymod.dipole(
         src, rec, depth, res, Fourier_dlf.freq_req, verb=1)
 epm_calc_dlf = empymod.dipole(
@@ -449,7 +449,7 @@ plt.yscale('symlog', linthreshy=1e-5)
 ax5 = plt.subplot(325, sharex=ax3)
 plt.title('(e) clipped 0.01-10')
 
-# Calculate the error
+# Compute the error
 err_int_r = np.clip(100*abs((data_int_dlf.real-epm_req_dlf.real) /
                             epm_req_dlf.real), 0.01, 10)
 err_cal_r = np.clip(100*abs((data.real-epm_calc_dlf.real) /
@@ -488,7 +488,7 @@ plt.yscale('symlog', linthreshy=1e-5)
 ax6 = plt.subplot(326, sharex=ax2)
 plt.title('(f) clipped 0.01-10')
 
-# Calculate error
+# Compute error
 err_int_i = np.clip(100*abs((data_int_dlf.imag-epm_req_dlf.imag) /
                             epm_req_dlf.imag), 0.01, 10)
 err_cal_i = np.clip(100*abs((data.imag-epm_calc_dlf.imag) /
@@ -513,7 +513,7 @@ plt.show()
 #
 # Carry-out Fourier transform.
 
-# Calculate corresponding time-domain signal.
+# Compute corresponding time-domain signal.
 data_time_dlf = Fourier_dlf.freq2time(data, rec[0])
 
 
@@ -550,7 +550,7 @@ plt.yscale('log')
 ax4 = plt.subplot(224, sharex=ax2)
 plt.title('(c) clipped 0.01-10 %')
 
-# Calculate error
+# Compute error
 err = np.clip(100*abs((data_time_dlf-epm_time_precise)/epm_time_precise),
               0.01, 10)
 err2 = np.clip(100*abs((epm_time-epm_time_precise)/epm_time_precise),
@@ -575,8 +575,8 @@ plt.show()
 # 3. Results from Mulder et al., 2008, Geophysics
 # -----------------------------------------------
 #
-# Total calculation time (CPU) is 13,632 s, which corresponds to 3 h 47 min 12
-# s.
+# Total computation time (CPU) is 13,632 s, which corresponds to
+# 3 h 47 min 12 s.
 #
 # .. figure:: ../../_static/images/Mulder2008_Figs_3-4_Tab_1.png
 #    :scale: 66 %
@@ -593,7 +593,7 @@ plt.show()
 # 2. frequency selection.
 #
 # Note re first point, gridding: We implemented here an adaptive gridding with
-# various number of cells. Our calculation uses meshes between 36,864
+# various number of cells. Our computation uses meshes between 36,864
 # (64x24x24) and 102,400 (64x40x40) cells, whereas Mulder et al., 2008, used
 # 2,097,152 (128x128x128) for all frequencies.
 #

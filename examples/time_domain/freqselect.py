@@ -1,6 +1,6 @@
 """
-Interactive frequency selection
-===============================
+3. Interactive frequency selection
+==================================
 
 The time domain examples :ref:`sphx_glr_gallery_time_domain_fullspace.py` and
 :ref:`sphx_glr_gallery_time_domain_marine_1D.py` use a relatively small range

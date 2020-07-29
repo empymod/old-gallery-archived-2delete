@@ -1,11 +1,11 @@
 """
-Parameter tests
-===============
+6. Parameter tests
+==================
 
 The modeller ``emg3d`` has quite a few parameters which can influence the speed
-of a calculation. It can be difficult to estimate which is the best setting. In
+of a computation. It can be difficult to estimate which is the best setting. In
 the case that speed is of utmost importance, and a lot of similar models are
-going to be calculated (e.g. for inversions), it might be worth to do some
+going to be computed (e.g. for inversions), it might be worth to do some
 input parameter testing.
 
 **IMPORTANT:** None of the conclusions you can draw from these figures are
@@ -62,7 +62,7 @@ grid = emg3d.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
 print(grid)
 
 # Source-field
-sfield = emg3d.fields.get_source_field(grid, src=src, freq=freq)
+sfield = emg3d.get_source_field(grid, src=src, freq=freq)
 
 # Create a simple marine model for the tests.
 
@@ -78,7 +78,7 @@ zt = np.nonzero((grid.vectorCCz >= -2100) & (grid.vectorCCz <= -1800))[0]
 res_x[xt[0]:xt[-1]+1, yt[0]:yt[-1]+1, zt[0]:zt[-1]+1] = 100
 
 # Create a model instance
-model_iso = emg3d.models.Model(grid, property_x=res_x, mapping='Resistivity')
+model_iso = emg3d.Model(grid, property_x=res_x, mapping='Resistivity')
 
 # Plot it for QC
 grid.plot_3d_slicer(model_iso.property_x.ravel('F'),

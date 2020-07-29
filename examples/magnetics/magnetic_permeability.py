@@ -1,13 +1,13 @@
 r"""
-Magnetic permeability
-=====================
+4. Magnetic permeability
+========================
 
 The solver ``emg3d`` uses the diffusive approximation of Maxwell's equations;
 the relative electric permittivity is therefore fixed at
 :math:`\varepsilon_\rm{r} = 1`. The magnetic permeability :math:`\mu_\rm{r}`,
 however, is implemented in ``emg3d``, albeit only isotropically.
 
-In this notebook we run the same model as in the example mentioned above: A
+In this example we run the same model as in the example mentioned above: A
 rotated finite length bipole in a homogeneous VTI fullspace, but here with
 isotropic magnetic permeability, and compare it to the semi-analytical solution
 of ``empymod``. (The code ``empymod`` is an open-source code which can model
@@ -182,7 +182,7 @@ epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
 # emg3d
 # `````
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
 hz_min, zdomain = emg3d.meshes.get_domain(x0=src[2], freq=0.1, min_width=20)
 
@@ -197,34 +197,34 @@ pgrid
 ###############################################################################
 
 # Get the model, with magnetic permeability
-pmodel = emg3d.models.Model(pgrid, property_x=resh, property_z=resv,
-                            mu_r=mperm, mapping='Resistivity')
+pmodel = emg3d.Model(pgrid, property_x=resh, property_z=resv,
+                     mu_r=mperm, mapping='Resistivity')
 
 # Get the source field
-sfield = emg3d.fields.get_source_field(pgrid, src, freq, strength)
+sfield = emg3d.get_source_field(pgrid, src, freq, strength)
 
-# Calculate the electric field
+# Compute the electric field
 efield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 
 ###############################################################################
 # Plot
 # ````
-e3d_fs_x = emg3d.fields.get_receiver(pgrid, efield.fx, (rx, ry, zrec))
+e3d_fs_x = emg3d.get_receiver(pgrid, efield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_x, e3d_fs_x, x, r'Diffusive Fullspace $E_x$',
                 vmin=-12, vmax=-6, mode='abs')
 
 
 ###############################################################################
 
-e3d_fs_y = emg3d.fields.get_receiver(pgrid, efield.fy, (rx, ry, zrec))
+e3d_fs_y = emg3d.get_receiver(pgrid, efield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_y, e3d_fs_y, x, r'Diffusive Fullspace $E_y$',
                 vmin=-12, vmax=-6, mode='abs')
 
 
 ###############################################################################
 
-e3d_fs_z = emg3d.fields.get_receiver(pgrid, efield.fz, (rx, ry, zrec))
+e3d_fs_z = emg3d.get_receiver(pgrid, efield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
                 vmin=-12, vmax=-6, mode='abs')
 

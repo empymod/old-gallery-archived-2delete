@@ -1,13 +1,19 @@
 """
-GemPy
-=====
+1. GemPy
+========
 
 Use GemPy to create a geological model as input to emg3d.
 
 A simple example how you can use `GemPy <https://www.gempy.org>`_ to create a
 geological model, move it onto `discretize <http://discretize.simpeg.xyz>`_,
-and calculate CSEM data with `emg3d <https://empymod.github.io>`_. Having it in
+and compute CSEM data with `emg3d <https://empymod.github.io>`_. Having it in
 discretize allows us to plot it with `PyVista <https://github.com/pyvista>`_.
+
+The input files for the geological model are located in the data-directory. You
+have to download the following directory to run this example:
+`github.com/empymod/emg3d-gallery => examples => interactions => data
+<https://github.com/empymod/emg3d-gallery/tree/master/examples/interactions/data>`_.
+
 
 """
 import emg3d
@@ -24,7 +30,7 @@ plt.style.use('ggplot')
 # ---------------------------
 #
 # We start by using the model given in `Chapter 1.1
-# <https://nbviewer.jupyter.org/github/cgre-aachen/gempy/blob/master/notebooks/tutorials/ch1-Fundamentals/ch1-1_Basics.ipynb>`_
+# <https://docs.gempy.org/tutorials/ch1_fundamentals/ch1_1_basics.html#sphx-glr-tutorials-ch1-fundamentals-ch1-1-basics-py>`_
 # of the GemPy documentation. It is a nice, made-up model of a folded structure
 # with a fault.
 #
@@ -44,12 +50,12 @@ gempy.init_data(
     [0, 2000., 0, 2000., -2000, 40.], [50, 50, 51],
     path_o="data/simple_fault_model_orientations.csv",
     path_i="data/simple_fault_model_points.csv",
-    default_values=True
 )
 
 
 ###############################################################################
 # Initiate the stratigraphies and faults, and add resistivities to lithology
+# --------------------------------------------------------------------------
 
 # Add an air-layer: Horizontal layer at z=0m
 geo_model.add_surfaces('air')
@@ -74,6 +80,7 @@ gempy.map_series_to_surfaces(
     remove_unused_series=True
 )
 
+geo_model.rename_series({'Main_Fault': 'Fault_Series'})
 
 ###############################################################################
 
@@ -87,7 +94,7 @@ geo_model.faults.faults_relations_df
 # Model generation
 # ----------------
 
-gempy.set_interpolation_data(
+gempy.set_interpolator(
     geo_model,
     compile_theano=True,
     theano_optimizer='fast_compile',
@@ -103,12 +110,11 @@ sol = gempy.compute_model(geo_model, compute_mesh=True)
 ###############################################################################
 
 # Plot lithologies (colour-code corresponds to lithologies)
-_ = gempy.plot.plot_section(
-        geo_model, cell_number=25, direction='y', show_data=True)
+_ = gempy.plot_2d(geo_model, cell_number=25, direction='y', show_data=True)
 
 
 ###############################################################################
-# Let's start with a discretize mesh for a CSEM survey
+# Let's start with a discretize mesh for a CSEM survey.
 #
 # Source location and frequency
 
@@ -118,7 +124,7 @@ freq = 1.0                      # Frequency
 
 ###############################################################################
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(
         x0=src[0], freq=freq, limits=[0, 2000], min_width=[5, 100])
 hz_min, zdomain = emg3d.meshes.get_domain(
@@ -145,7 +151,7 @@ grid
 # different stratigraphies).
 
 # First, we have to get the id's for our mesh
-sol = gempy.compute_model_at(grid.gridCC, geo_model)
+sol = gempy.compute_model(geo_model, at=grid.gridCC)
 
 
 ###############################################################################
@@ -156,7 +162,7 @@ geo_model.surfaces
 ###############################################################################
 
 # Now, we convert the id's to resistivities
-res = sol[0][0, :grid.nC]
+res = sol.custom[0][0, :grid.nC]
 
 res[res == 1] = 1e8  # air
 # id=2 is the fault
@@ -186,33 +192,33 @@ p.add_mesh(dataset.slice('y', xyz), name='y-slice', **dparams)
 # p.add_mesh(dataset.slice('z', xyz), name='z-slice', **dparams)
 
 # Add a layer as 3D
-p.add_mesh(dataset.threshold([1.69, 1.7]),  name='vol', **dparams)
+p.add_mesh(dataset.threshold([1.69, 1.7]), name='vol', **dparams)
 
 # Show the scene!
 p.show()
 
 
 ###############################################################################
-# Calculate the resistivities
-# ---------------------------
+# Compute the resistivities
+# -------------------------
 
 # Create model
 model = emg3d.Model(grid, property_x=res, mapping='Resistivity')
 
 # Source field
-sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
+sfield = emg3d.get_source_field(grid, src, freq, 0)
 
-# Calculate the efield
+# Compute the efield
 pfield = emg3d.solve(grid, model, sfield, sslsolver=True, verb=3)
 
 ###############################################################################
 
 grid.plot_3d_slicer(
     pfield.fx.ravel('F'), zslice=-1000, zlim=(-2000, 50),
-    view='abs', v_type='Ex', clim=[1e-13, 1e-8],
-    pcolorOpts={'cmap': 'viridis', 'norm': LogNorm()})
+    view='abs', v_type='Ex',
+    pcolorOpts={'cmap': 'viridis', 'norm': LogNorm(vmin=1e-13, vmax=1e-8)})
 
 
 ###############################################################################
 
-emg3d.Report([gempy, pyvista])
+emg3d.Report([gempy, pyvista, 'pandas'])

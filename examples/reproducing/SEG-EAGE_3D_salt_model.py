@@ -1,9 +1,9 @@
 r"""
-SEG-EAGE 3D Salt Model
-======================
+1. SEG-EAGE 3D Salt Model
+=========================
 
 
-In this notebook we reproduce the results by [Muld07]_, which uses the SEG/EAGE
+In this example we reproduce the results by [Muld07]_, which uses the SEG/EAGE
 salt model from [AmBK97]_.
 
 Velocity to resistivity transform
@@ -66,7 +66,7 @@ plt.style.use('ggplot')
 # ``./data/`` (or adjust the path in the following cell).
 
 try:
-    # Get resistivities if we already calculated them
+    # Get resistivities if we already computed them
     res = joblib.load('./data/res-model.lzma')
 
     # Get dimension
@@ -168,10 +168,10 @@ src = [6400, 6600, 6500, 6500, -50, -50]  # source location
 freq = 1.0                                # Frequency
 
 ###############################################################################
-# Initialize calculation mesh
+# Initialize computation mesh
 # ```````````````````````````
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(
         x0=6500, freq=freq, limits=[0, 13500], min_width=[5, 100])
 hz_min, zdomain = emg3d.meshes.get_domain(
@@ -194,7 +194,7 @@ grid
 cres = emg3d.maps.grid2grid(mesh, res, grid, 'volume')
 
 # Create model
-model = emg3d.models.Model(grid, property_x=cres, mapping='Resistivity')
+model = emg3d.Model(grid, property_x=cres, mapping='Resistivity')
 
 # Set air resistivity
 iz = np.argmin(np.abs(grid.vectorNz))
@@ -214,7 +214,7 @@ grid.plot_3d_slicer(
 # ````````````````
 
 # Source field
-sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
+sfield = emg3d.get_source_field(grid, src, freq, 0)
 
 pfield = emg3d.solve(
     grid, model, sfield,
@@ -238,7 +238,7 @@ y = grid.vectorCCy
 rx = np.repeat([x, ], np.size(x), axis=0)
 ry = rx.transpose()
 rz = -2000
-data = emg3d.fields.get_receiver(grid, pfield.fx, (rx, ry, rz))
+data = emg3d.get_receiver(grid, pfield.fx, (rx, ry, rz))
 
 # Colour limits
 vmin, vmax = -16, -10.5

@@ -1,7 +1,7 @@
 import time
 import warnings
 from emg3d import __version__
-from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
+from sphinx_gallery.sorting import ExplicitOrder, ExampleTitleSortKey
 
 # ==== 1. Extensions  ====
 
@@ -41,7 +41,7 @@ sphinx_gallery_conf = {
     # Patter to search for example files
     "filename_pattern": r"\.py",
     # Sort gallery example by file name instead of number of lines (default)
-    "within_subsection_order": FileNameSortKey,
+    "within_subsection_order": ExampleTitleSortKey,
     # Remove the settings (e.g., sphinx_gallery_thumbnail_number)
     'remove_config_comments': True,
     # Show memory

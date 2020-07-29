@@ -1,11 +1,15 @@
 """
-MARE2DEM: 2D with tri-axial anisotropy
-======================================
+2. MARE2DEM: 2D with tri-axial anisotropy
+=========================================
 
 ``MARE2DEM`` is an open-source, finite element 2.5D code for controlled-source
 electromagnetic (CSEM) and magnetotelluric (MT) data, see `mare2dem.ucsd.edu
-<https://mare2dem.ucsd.edu>`_. The ``MARE2DEM`` input- and output-files are
-located in the data-directory.
+<https://mare2dem.ucsd.edu>`_.
+
+The ``MARE2DEM`` input- and output-files are located in the data-directory. You
+have to download the following directory to run this example:
+`github.com/empymod/emg3d-gallery => examples => comparisons => data
+<https://github.com/empymod/emg3d-gallery/tree/master/examples/comparisons/data>`_.
 
 """
 import emg3d
@@ -90,15 +94,15 @@ res_y_full_tg[xx*zz] = 100
 res_z_full_tg[xx*zz] = 300
 
 # Collect models
-model_bg = emg3d.models.Model(
+model_bg = emg3d.Model(
         grid, property_x=res_x_full, property_y=res_y_full,
         property_z=res_z_full, mapping='Resistivity')
-model_tg = emg3d.models.Model(
+model_tg = emg3d.Model(
         grid, property_x=res_x_full_tg, property_y=res_y_full_tg,
         property_z=res_z_full_tg, mapping='Resistivity')
 
 # Create source field
-sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
+sfield = emg3d.get_source_field(grid, src, freq, 0)
 
 # Solver parameters
 sparams = {
@@ -119,7 +123,7 @@ grid.plot_3d_slicer(
 # ````````````````
 
 efield_bg = emg3d.solve(grid, model_bg, sfield, **sparams)
-em3_bg = emg3d.fields.get_receiver(grid, efield_bg.fx, rec)
+em3_bg = emg3d.get_receiver(grid, efield_bg.fx, rec)
 
 
 ###############################################################################
@@ -127,7 +131,7 @@ em3_bg = emg3d.fields.get_receiver(grid, efield_bg.fx, rec)
 # ````````````
 
 efield_tg = emg3d.solve(grid, model_tg, sfield, **sparams)
-em3_tg = emg3d.fields.get_receiver(grid, efield_tg.fx, rec)
+em3_tg = emg3d.get_receiver(grid, efield_tg.fx, rec)
 
 
 ###############################################################################

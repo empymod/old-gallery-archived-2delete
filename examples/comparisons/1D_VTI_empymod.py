@@ -1,6 +1,6 @@
 """
-empymod: 1D VTI resistivity
-===========================
+1. empymod: 1D VTI resistivity
+==============================
 
 The code ``empymod`` is an open-source code which can model CSEM responses for
 a layered medium including VTI electrical anisotropy, see `empymod.github.io
@@ -183,7 +183,7 @@ epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90], verb=1,
 # emg3d
 # `````
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(x0=src_c[0], freq=0.1, min_width=20)
 hz_min, zdomain = emg3d.meshes.get_domain(x0=src_c[2], freq=0.1, min_width=20)
 
@@ -199,13 +199,13 @@ pgrid
 ###############################################################################
 
 # Get the model
-pmodel = emg3d.models.Model(
+pmodel = emg3d.Model(
         pgrid, property_x=resh, property_z=resv, mapping='Resistivity')
 
 # Get the source field
-sfield = emg3d.fields.get_source_field(pgrid, src, freq, strength)
+sfield = emg3d.get_source_field(pgrid, src, freq, strength)
 
-# Calculate the electric field
+# Compute the electric field
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 
@@ -213,21 +213,21 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 # Plot
 # ````
 
-e3d_fs_x = emg3d.fields.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
+e3d_fs_x = emg3d.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_x, e3d_fs_x, x, r'Diffusive Fullspace $E_x$',
                 vmin=-12, vmax=-6, mode='abs')
 
 
 ###############################################################################
 
-e3d_fs_y = emg3d.fields.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
+e3d_fs_y = emg3d.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_y, e3d_fs_y, x, r'Diffusive Fullspace $E_y$',
                 vmin=-12, vmax=-6, mode='abs')
 
 
 ###############################################################################
 
-e3d_fs_z = emg3d.fields.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
+e3d_fs_z = emg3d.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
                 vmin=-12, vmax=-6, mode='abs')
 
@@ -251,27 +251,27 @@ plot_lineplot_ex(x, x, e3d_fs_x.real, epm_fs_x.real, pgrid)
 pgrid = emg3d.TensorMesh([hx, hz, hy], x0=(xdomain[0], zdomain[0], xdomain[0]))
 
 # ===> Swap y- and z-resistivities <===
-pmodel = emg3d.models.Model(
+pmodel = emg3d.Model(
         pgrid, property_x=resh, property_y=resv, mapping='Resistivity')
 
 # ===> Swap src_y and src_z <===
 src_new = [src[0], src[1], src[4], src[5], src[2], src[3]]
 
-sfield = emg3d.fields.get_source_field(pgrid, src_new, freq, strength)
+sfield = emg3d.get_source_field(pgrid, src_new, freq, strength)
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 # ===> Swap ry and zrec <===
-e3d_fs_x = emg3d.fields.get_receiver(pgrid, pfield.fx, (rx, zrec, ry))
+e3d_fs_x = emg3d.get_receiver(pgrid, pfield.fx, (rx, zrec, ry))
 plot_result_rel(epm_fs_x, e3d_fs_x, x, r'Diffusive Fullspace $E_x$',
                 vmin=-12, vmax=-6, mode='abs')
 
 # ===> Swap ry and zrec; 'y'->'z' <===
-e3d_fs_y = emg3d.fields.get_receiver(pgrid, pfield.fz, (rx, zrec, ry))
+e3d_fs_y = emg3d.get_receiver(pgrid, pfield.fz, (rx, zrec, ry))
 plot_result_rel(epm_fs_y, e3d_fs_y, x, r'Diffusive Fullspace $E_y$',
                 vmin=-12, vmax=-6, mode='abs')
 
 # ===> Swap ry and zrec; 'z'->'y' <===
-e3d_fs_z = emg3d.fields.get_receiver(pgrid, pfield.fy, (rx, zrec, ry))
+e3d_fs_z = emg3d.get_receiver(pgrid, pfield.fy, (rx, zrec, ry))
 plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
                 vmin=-12, vmax=-6, mode='abs')
 
@@ -289,28 +289,28 @@ plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
 pgrid = emg3d.TensorMesh([hz, hy, hx], x0=(zdomain[0], xdomain[0], xdomain[0]))
 
 # ===> Swap x- and z-resistivities <===
-pmodel = emg3d.models.Model(
+pmodel = emg3d.Model(
         pgrid, property_x=resv, property_y=resh, property_z=resh,
         mapping='Resistivity')
 
 # ===> Swap src_x and src_z <===
 src_new = [src[4], src[5], src[2], src[3], src[0], src[1]]
 
-sfield = emg3d.fields.get_source_field(pgrid, src_new, freq, strength)
+sfield = emg3d.get_source_field(pgrid, src_new, freq, strength)
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 # ===> Swap rx and zrec; 'x'->'z' <===
-e3d_fs_x = emg3d.fields.get_receiver(pgrid, pfield.fz, (zrec, ry, rx))
+e3d_fs_x = emg3d.get_receiver(pgrid, pfield.fz, (zrec, ry, rx))
 plot_result_rel(epm_fs_x, e3d_fs_x, x, r'Diffusive Fullspace $E_x$',
                 vmin=-12, vmax=-6, mode='abs')
 
 # ===> Swap rx and zrec <===
-e3d_fs_y = emg3d.fields.get_receiver(pgrid, pfield.fy, (zrec, ry, rx))
+e3d_fs_y = emg3d.get_receiver(pgrid, pfield.fy, (zrec, ry, rx))
 plot_result_rel(epm_fs_y, e3d_fs_y, x, r'Diffusive Fullspace $E_y$',
                 vmin=-12, vmax=-6, mode='abs')
 
 # ===> Swap rx and zrec; 'z'->'x' <===
-e3d_fs_z = emg3d.fields.get_receiver(pgrid, pfield.fx, (zrec, ry, rx))
+e3d_fs_z = emg3d.get_receiver(pgrid, pfield.fx, (zrec, ry, rx))
 plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
                 vmin=-12, vmax=-6, mode='abs')
 
@@ -360,7 +360,7 @@ epm_deep_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
 # `````
 
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(
         x0=src[0], freq=0.1, min_width=20, fact_neg=10)
 hz_min, zdomain = emg3d.meshes.get_domain(
@@ -392,7 +392,7 @@ res_z_full[pgrid.gridCC[:, 2] >= depth[2]] = resv[3]
 res_z_full[pgrid.gridCC[:, 2] >= depth[3]] = resv[4]
 
 # Get the model
-pmodel = emg3d.models.Model(
+pmodel = emg3d.Model(
         pgrid, property_x=res_x_full, property_z=res_z_full,
         mapping='Resistivity')
 
@@ -404,9 +404,9 @@ pgrid.plot_3d_slicer(pmodel.property_x, zslice=-2000, clim=[0.3, 50],
 ###############################################################################
 
 # Get the source field
-sfield = emg3d.fields.get_source_field(pgrid, src, freq, 0)
+sfield = emg3d.get_source_field(pgrid, src, freq, 0)
 
-# Calculate the electric field
+# Compute the electric field
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 
@@ -414,21 +414,21 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 # Plot
 # ````
 
-e3d_deep_x = emg3d.fields.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
+e3d_deep_x = emg3d.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_deep_x, e3d_deep_x, x, r'Deep water point dipole $E_x$',
                 vmin=-14, vmax=-8, mode='abs')
 
 
 ###############################################################################
 
-e3d_deep_y = emg3d.fields.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
+e3d_deep_y = emg3d.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_deep_y, e3d_deep_y, x, r'Deep water point dipole $E_y$',
                 vmin=-14, vmax=-8, mode='abs')
 
 
 ###############################################################################
 
-e3d_deep_z = emg3d.fields.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
+e3d_deep_z = emg3d.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_deep_z, e3d_deep_z, x, r'Deep water point dipole $E_z$',
                 vmin=-14, vmax=-8, mode='abs')
 

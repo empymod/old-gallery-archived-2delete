@@ -1,3 +1,4 @@
+*.npz
 _build/
 gallery/
 examples/reproducing/data/

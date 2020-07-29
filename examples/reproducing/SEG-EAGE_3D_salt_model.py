@@ -1,9 +1,9 @@
 r"""
-SEG-EAGE 3D Salt Model
-======================
+1. SEG-EAGE 3D Salt Model
+=========================
 
 
-In this notebook we reproduce the results by [Muld07]_, which uses the SEG/EAGE
+In this example we reproduce the results by [Muld07]_, which uses the SEG/EAGE
 salt model from [AmBK97]_.
 
 Velocity to resistivity transform
@@ -41,7 +41,6 @@ import emg3d
 import joblib
 import zipfile
 import pyvista
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -67,7 +66,7 @@ plt.style.use('ggplot')
 # ``./data/`` (or adjust the path in the following cell).
 
 try:
-    # Get resistivities if we already calculated them
+    # Get resistivities if we already computed them
     res = joblib.load('./data/res-model.lzma')
 
     # Get dimension
@@ -111,7 +110,7 @@ except FileNotFoundError:  # THE ORIGINAL DATA ARE REQUIRED!
     joblib.dump(res, './data/res-model.lzma')
 
 # Create a discretize-mesh
-mesh = discretize.TensorMesh(
+mesh = emg3d.TensorMesh(
         [np.ones(nx)*20., np.ones(ny)*20., np.ones(nz)*20.], x0='00N')
 models = {'res': np.log10(res.ravel('F'))}
 
@@ -169,10 +168,10 @@ src = [6400, 6600, 6500, 6500, -50, -50]  # source location
 freq = 1.0                                # Frequency
 
 ###############################################################################
-# Initialize calculation mesh
+# Initialize computation mesh
 # ```````````````````````````
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(
         x0=6500, freq=freq, limits=[0, 13500], min_width=[5, 100])
 hz_min, zdomain = emg3d.meshes.get_domain(
@@ -183,7 +182,7 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, 6500)
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, 6500)
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, x0=-100, x1=0)
-grid = discretize.TensorMesh(
+grid = emg3d.TensorMesh(
         [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 grid
 
@@ -195,27 +194,27 @@ grid
 cres = emg3d.maps.grid2grid(mesh, res, grid, 'volume')
 
 # Create model
-model = emg3d.models.Model(grid, cres)
+model = emg3d.Model(grid, property_x=cres, mapping='Resistivity')
 
 # Set air resistivity
 iz = np.argmin(np.abs(grid.vectorNz))
-model.res_x[:, :, iz:] = 1e8
+model.property_x[:, :, iz:] = 1e8
 
 # Ensure at least top layer is water
-model.res_x[:, :, iz] = 0.3
+model.property_x[:, :, iz] = 0.3
 
-cmodels = {'res': np.log10(model.res_x.ravel('F'))}
+cmodels = {'res': np.log10(model.property_x.ravel('F'))}
 
 grid.plot_3d_slicer(
         cmodels['res'], zslice=-2000, zlim=(-4180, 500),
-        clim=np.log10([np.nanmin(model.res_x), 50]))
+        clim=np.log10([np.nanmin(model.property_x), 50]))
 
 ###############################################################################
 # Solve the system
 # ````````````````
 
 # Source field
-sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
+sfield = emg3d.get_source_field(grid, src, freq, 0)
 
 pfield = emg3d.solve(
     grid, model, sfield,
@@ -228,7 +227,7 @@ pfield = emg3d.solve(
 
 grid.plot_3d_slicer(
     pfield.fx.ravel('F'), zslice=-2000, zlim=(-4180, 500),
-    view='abs', vType='Ex',
+    view='abs', v_type='Ex',
     clim=[1e-16, 1e-9], pcolorOpts={'norm': LogNorm()})
 
 ###############################################################################
@@ -239,7 +238,7 @@ y = grid.vectorCCy
 rx = np.repeat([x, ], np.size(x), axis=0)
 ry = rx.transpose()
 rz = -2000
-data = emg3d.fields.get_receiver(grid, pfield.fx, (rx, ry, rz))
+data = emg3d.get_receiver(grid, pfield.fx, (rx, ry, rz))
 
 # Colour limits
 vmin, vmax = -16, -10.5
@@ -278,4 +277,4 @@ plt.show()
 
 ###############################################################################
 
-emg3d.Report([discretize, pyvista])
+emg3d.Report(pyvista)

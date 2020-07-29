@@ -1,6 +1,6 @@
 r"""
-empymod: 1D VTI Laplace-domain
-==============================
+5. empymod: 1D VTI Laplace-domain
+=================================
 
 1D VTI comparison between ``emg3d`` and ``empymod`` in the Laplace domain.
 
@@ -14,16 +14,15 @@ Content:
 2. Layered model for a deep water model with a point dipole source.
 
 
-Both codes, ``empymod`` and ``emg3d``, are able to calculate the EM response in
+Both codes, ``empymod`` and ``emg3d``, are able to compute the EM response in
 the Laplace domain, by using a real value :math:`s` instead of the complex
-value :math:`\mathrm{i}\omega=2\mathrm{i}\pi f`. To calculate the response in
+value :math:`\mathrm{i}\omega=2\mathrm{i}\pi f`. To compute the response in
 the Laplace domain in the two codes you have to provide negative values for the
 ``freq``-parameter, which are then considered ``s-value``.
 
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate as sint
@@ -163,7 +162,7 @@ epm_fs_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90], verb=1,
 # emg3d
 # `````
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
 hz_min, zdomain = emg3d.meshes.get_domain(x0=src[2], freq=0.1, min_width=20)
 
@@ -172,20 +171,20 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src_c[2])
-pgrid = discretize.TensorMesh([hx, hy, hz],
-                              x0=(xdomain[0], xdomain[0], zdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
 
 
 ###############################################################################
 
 # Get the model
-pmodel = emg3d.models.Model(pgrid, res_x=resh, res_z=resv)
+pmodel = emg3d.Model(pgrid, property_x=resh, property_z=resv,
+                     mapping='Resistivity')
 
 # Get the source field
-sfield = emg3d.fields.get_source_field(pgrid, src, sval, strength)
+sfield = emg3d.get_source_field(pgrid, src, sval, strength)
 
-# Calculate the electric field
+# Compute the electric field
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 
@@ -193,21 +192,21 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 # Plot
 # ````
 
-e3d_fs_x = emg3d.fields.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
+e3d_fs_x = emg3d.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_x, e3d_fs_x, x, r'Diffusive Fullspace $E_x$',
                 vmin=-12, vmax=-6)
 
 
 ###############################################################################
 
-e3d_fs_y = emg3d.fields.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
+e3d_fs_y = emg3d.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_y, e3d_fs_y, x, r'Diffusive Fullspace $E_y$',
                 vmin=-12, vmax=-6)
 
 
 ###############################################################################
 
-e3d_fs_z = emg3d.fields.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
+e3d_fs_z = emg3d.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_z, e3d_fs_z, x, r'Diffusive Fullspace $E_z$',
                 vmin=-12, vmax=-6)
 
@@ -262,7 +261,7 @@ epm_deep_z = empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
 # `````
 
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
 hz_min, zdomain = emg3d.meshes.get_domain(
         x0=src[2], freq=0.1, min_width=20, fact_pos=10)
@@ -272,8 +271,7 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx*2, x0=depth[0], x1=0)
-pgrid = discretize.TensorMesh(
-        [hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
 
 
@@ -294,19 +292,20 @@ res_z_full[pgrid.gridCC[:, 2] >= depth[2]] = resv[3]
 res_z_full[pgrid.gridCC[:, 2] >= depth[3]] = resv[4]
 
 # Get the model
-pmodel = emg3d.models.Model(pgrid, res_x_full, res_z=res_z_full)
+pmodel = emg3d.Model(pgrid, property_x=res_x_full,
+                     property_z=res_z_full, mapping='Resistivity')
 
 # Plot it
-pgrid.plot_3d_slicer(pmodel.res_x, zslice=-2000, clim=[0.3, 50],
+pgrid.plot_3d_slicer(pmodel.property_x, zslice=-2000, clim=[0.3, 50],
                      zlim=(-5000, 50), pcolorOpts={'norm': LogNorm()})
 
 
 ###############################################################################
 
 # Get the source field
-sfield = emg3d.fields.get_source_field(pgrid, src, sval, 0)
+sfield = emg3d.get_source_field(pgrid, src, sval, 0)
 
-# Calculate the electric field
+# Compute the electric field
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 
@@ -314,21 +313,21 @@ pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 # Plot
 # ````
 
-e3d_deep_x = emg3d.fields.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
+e3d_deep_x = emg3d.get_receiver(pgrid, pfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_deep_x, e3d_deep_x, x, r'Deep water point dipole $E_x$',
                 vmin=-14, vmax=-8)
 
 
 ###############################################################################
 
-e3d_deep_y = emg3d.fields.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
+e3d_deep_y = emg3d.get_receiver(pgrid, pfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_deep_y, e3d_deep_y, x, r'Deep water point dipole $E_y$',
                 vmin=-14, vmax=-8)
 
 
 ###############################################################################
 
-e3d_deep_z = emg3d.fields.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
+e3d_deep_z = emg3d.get_receiver(pgrid, pfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_deep_z, e3d_deep_z, x, r'Deep water point dipole $E_z$',
                 vmin=-14, vmax=-8)
 
@@ -340,4 +339,4 @@ plot_lineplot_ex(x, x, e3d_deep_x.real, epm_deep_x.real, pgrid)
 
 ###############################################################################
 
-emg3d.Report(empymod)
+emg3d.Report()

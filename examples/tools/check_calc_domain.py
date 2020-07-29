@@ -1,6 +1,6 @@
 r"""
-Ensure calculation domain is big enough
-=======================================
+2. Ensure computation domain is big enough
+==========================================
 
 Ensure the boundary in :math:`\pm x`, :math:`\pm y`, and :math:`+ z` is big
 enough for :math:`\rho_\text{air}`.
@@ -18,7 +18,6 @@ into the sky). This is an example to test boundaries on a simple marine model
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -39,7 +38,7 @@ depth = [-water_depth, 0]            # Simple model
 res = [1, 0.3, 1e8]                  # Simple model
 freq = 0.1                           # Frequency
 
-# Calculate analytical solution
+# Compute analytical solution
 epm = empymod.dipole(src, rec, depth, res, freq)
 
 ###############################################################################
@@ -66,7 +65,7 @@ solver_inp = {
 # -------------------------------------------------
 #
 # Here we are in the water, so the signal is attenuated before it enters the
-# air. So we don't use the resistivity of air to calculate the required
+# air. So we don't use the resistivity of air to compute the required
 # boundary, but 100 Ohm.m instead. (100 is the result of a quick parameter test
 # with :math:`\rho=1e4, 1e3, 1e2, 1e1`, and the result was that after 100 there
 # is not much improvement any longer.)
@@ -85,19 +84,18 @@ yy_1, y0_1 = emg3d.meshes.get_hx_h0(res=[res[1], res[0]], **y_inp, **inp)
 zz_1, z0_1 = emg3d.meshes.get_hx_h0(res=[res[1], res[0], 100], **z_inp, **inp)
 
 # Create grid and correpsoding model
-grid_1 = discretize.TensorMesh(
-        [xx_1, yy_1, zz_1], x0=np.array([x0_1, y0_1, z0_1]))
+grid_1 = emg3d.TensorMesh([xx_1, yy_1, zz_1], x0=np.array([x0_1, y0_1, z0_1]))
 res_1 = res[0]*np.ones(grid_1.nC)
 res_1[grid_1.gridCC[:, 2] > -water_depth] = res[1]
 res_1[grid_1.gridCC[:, 2] > 0] = res[2]
-model_1 = emg3d.models.Model(grid_1, res_x=res_1)
+model_1 = emg3d.Model(grid_1, property_x=res_1, mapping='Resistivity')
 
 # QC
 grid_1.plot_3d_slicer(
-        np.log10(model_1.res_x), zlim=(-2000, 100), clim=[-1, 2])
+        np.log10(model_1.property_x), zlim=(-2000, 100), clim=[-1, 2])
 
 # Define source and solve the system
-sfield_1 = emg3d.fields.get_source_field(
+sfield_1 = emg3d.get_source_field(
         grid_1, [src[0], src[1], src[2], 0, 0], freq)
 efield_1 = emg3d.solve(grid_1, model_1, sfield_1, **solver_inp)
 
@@ -114,19 +112,18 @@ yy_2, y0_2 = emg3d.meshes.get_hx_h0(res=[res[1], 100], **y_inp, **inp)
 zz_2, z0_2 = emg3d.meshes.get_hx_h0(res=[res[1], res[0], 100], **z_inp, **inp)
 
 # Create grid and correpsoding model
-grid_2 = discretize.TensorMesh(
-        [xx_2, yy_2, zz_2], x0=np.array([x0_2, y0_2, z0_2]))
+grid_2 = emg3d.TensorMesh([xx_2, yy_2, zz_2], x0=np.array([x0_2, y0_2, z0_2]))
 res_2 = res[0]*np.ones(grid_2.nC)
 res_2[grid_2.gridCC[:, 2] > -water_depth] = res[1]
 res_2[grid_2.gridCC[:, 2] > 0] = res[2]
-model_2 = emg3d.models.Model(grid_2, res_x=res_2)
+model_2 = emg3d.Model(grid_2, property_x=res_2, mapping='Resistivity')
 
 # QC
 # grid_2.plot_3d_slicer(
-#         np.log10(model_2.res_x), zlim=(-2000, 100), clim=[-1, 2])
+#         np.log10(model_2.property_x), zlim=(-2000, 100), clim=[-1, 2])
 
 # Define source and solve the system
-sfield_2 = emg3d.fields.get_source_field(
+sfield_2 = emg3d.get_source_field(
         grid_2, [src[0], src[1], src[2], 0, 0], freq)
 efield_2 = emg3d.solve(grid_2, model_2, sfield_2, **solver_inp)
 
@@ -136,9 +133,9 @@ efield_2 = emg3d.solve(grid_2, model_2, sfield_2, **solver_inp)
 # -----------------------
 
 # Interpolate fields at receiver positions
-emg_1 = emg3d.fields.get_receiver(
+emg_1 = emg3d.get_receiver(
         grid_1, efield_1.fx, (rec[0], rec[1], rec[2]))
-emg_2 = emg3d.fields.get_receiver(
+emg_2 = emg3d.get_receiver(
         grid_2, efield_2.fx, (rec[0], rec[1], rec[2]))
 
 
@@ -168,7 +165,7 @@ plt.yscale('symlog', linthreshy=1e-15)
 ax5 = plt.subplot(325, sharex=ax3)
 plt.title('(e) clipped 0.01-10')
 
-# Calculate the error
+# Compute the error
 err_real_1 = np.clip(100*abs((epm.real-emg_1.real)/epm.real), 0.01, 10)
 err_real_2 = np.clip(100*abs((epm.real-emg_2.real)/epm.real), 0.01, 10)
 
@@ -201,7 +198,7 @@ plt.yscale('symlog', linthreshy=1e-15)
 ax6 = plt.subplot(326, sharex=ax2)
 plt.title('(f) clipped 0.01-10')
 
-# Calculate error
+# Compute error
 err_imag_1 = np.clip(100*abs((epm.imag-emg_1.imag)/epm.imag), 0.01, 10)
 err_imag_2 = np.clip(100*abs((epm.imag-emg_2.imag)/epm.imag), 0.01, 10)
 
@@ -230,11 +227,11 @@ plt.show()
 # the boundaries :math:`\pm x` and :math:`\pm y`.
 
 grid_1.plot_3d_slicer(
-    efield_1.fx.ravel('F'), view='abs', vType='Ex', clim=[1e-17, 1e-9],
+    efield_1.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xslice=src[0], yslice=src[1], zslice=rec[2],
     pcolorOpts={'norm': LogNorm()})
 grid_1.plot_3d_slicer(
-    efield_1.fx.ravel('F'), view='abs', vType='Ex', clim=[1e-17, 1e-9],
+    efield_1.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     zlim=[-5000, 1000],
     xslice=src[0], yslice=src[1], zslice=rec[2],
     pcolorOpts={'norm': LogNorm()})
@@ -249,11 +246,11 @@ grid_1.plot_3d_slicer(
 # as the lower plot for the first grid, our zone of interest.
 
 grid_2.plot_3d_slicer(
-    efield_2.fx.ravel('F'), view='abs', vType='Ex', clim=[1e-17, 1e-9],
+    efield_2.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xslice=src[0], yslice=src[1], zslice=rec[2],
     pcolorOpts={'norm': LogNorm()})
 grid_2.plot_3d_slicer(
-    efield_2.fx.ravel('F'), view='abs', vType='Ex', clim=[1e-17, 1e-9],
+    efield_2.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xlim=[grid_1.vectorNx[0], grid_1.vectorNx[-1]],  # Same square as grid_1
     ylim=[grid_1.vectorNy[0], grid_1.vectorNy[-1]],  # Same square as grid_1
     zlim=[-5000, 1000],
@@ -263,4 +260,4 @@ grid_2.plot_3d_slicer(
 
 ###############################################################################
 
-emg3d.Report([empymod, discretize])
+emg3d.Report()

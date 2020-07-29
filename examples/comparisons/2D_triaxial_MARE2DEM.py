@@ -1,15 +1,18 @@
 """
-MARE2DEM: 2D with tri-axial anisotropy
-======================================
+2. MARE2DEM: 2D with tri-axial anisotropy
+=========================================
 
 ``MARE2DEM`` is an open-source, finite element 2.5D code for controlled-source
 electromagnetic (CSEM) and magnetotelluric (MT) data, see `mare2dem.ucsd.edu
-<https://mare2dem.ucsd.edu>`_. The ``MARE2DEM`` input- and output-files are
-located in the data-directory.
+<https://mare2dem.ucsd.edu>`_.
+
+The ``MARE2DEM`` input- and output-files are located in the data-directory. You
+have to download the following directory to run this example:
+`github.com/empymod/emg3d-gallery => examples => comparisons => data
+<https://github.com/empymod/emg3d-gallery/tree/master/examples/comparisons/data>`_.
 
 """
 import emg3d
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -56,7 +59,7 @@ zz, z0 = emg3d.meshes.get_hx_h0(
     fixed=[-2000, 0, -4200])
 
 # Initiate mesh.
-grid = discretize.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
+grid = emg3d.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
 grid
 
 ###############################################################################
@@ -91,12 +94,15 @@ res_y_full_tg[xx*zz] = 100
 res_z_full_tg[xx*zz] = 300
 
 # Collect models
-model_bg = emg3d.models.Model(grid, res_x_full, res_y_full, res_z_full)
-model_tg = emg3d.models.Model(
-        grid, res_x_full_tg, res_y_full_tg, res_z_full_tg)
+model_bg = emg3d.Model(
+        grid, property_x=res_x_full, property_y=res_y_full,
+        property_z=res_z_full, mapping='Resistivity')
+model_tg = emg3d.Model(
+        grid, property_x=res_x_full_tg, property_y=res_y_full_tg,
+        property_z=res_z_full_tg, mapping='Resistivity')
 
 # Create source field
-sfield = emg3d.fields.get_source_field(grid, src, freq, 0)
+sfield = emg3d.get_source_field(grid, src, freq, 0)
 
 # Solver parameters
 sparams = {
@@ -108,7 +114,7 @@ sparams = {
 
 # QC model
 grid.plot_3d_slicer(
-        model_tg.res_x, clim=[0.3, 300], zlim=[-6000, 500],
+        model_tg.property_x, clim=[0.3, 300], zlim=[-6000, 500],
         pcolorOpts={'norm': LogNorm()})
 
 
@@ -117,7 +123,7 @@ grid.plot_3d_slicer(
 # ````````````````
 
 efield_bg = emg3d.solve(grid, model_bg, sfield, **sparams)
-em3_bg = emg3d.fields.get_receiver(grid, efield_bg.fx, rec)
+em3_bg = emg3d.get_receiver(grid, efield_bg.fx, rec)
 
 
 ###############################################################################
@@ -125,7 +131,7 @@ em3_bg = emg3d.fields.get_receiver(grid, efield_bg.fx, rec)
 # ````````````
 
 efield_tg = emg3d.solve(grid, model_tg, sfield, **sparams)
-em3_tg = emg3d.fields.get_receiver(grid, efield_tg.fx, rec)
+em3_tg = emg3d.get_receiver(grid, efield_tg.fx, rec)
 
 
 ###############################################################################

@@ -1,6 +1,6 @@
 r"""
-Magnetic field due to an el. source
-===================================
+1. Magnetic field due to an el. source
+======================================
 
 The solver ``emg3d`` returns the electric field in x-, y-, and z-direction.
 Using Farady's law of induction we can obtain the magnetic field from it.
@@ -13,7 +13,7 @@ differential form,
     \nabla \times \mathbf{E} = \rm{i}\omega \mathbf{B} =
     \rm{i}\omega\mu\mathbf{H}\, .
 
-We do exactly this in this notebook, for a rotated finite length bipole in a
+We do exactly this in this example, for a rotated finite length bipole in a
 homogeneous VTI fullspace, and compare it to the semi-analytical solution of
 ``empymod``. (The code ``empymod`` is an open-source code which can model CSEM
 responses for a layered medium including VTI electrical anisotropy, see
@@ -26,7 +26,6 @@ see the result for the electric field.
 """
 import emg3d
 import empymod
-import discretize
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate as sint
@@ -183,7 +182,7 @@ epm_fs_hz = -empymod.bipole(rec=[rx.ravel(), ry.ravel(), zrec, 0, 90],
 # emg3d
 # `````
 
-# Get calculation domain as a function of frequency (resp., skin depth)
+# Get computation domain as a function of frequency (resp., skin depth)
 hx_min, xdomain = emg3d.meshes.get_domain(x0=src[0], freq=0.1, min_width=20)
 hz_min, zdomain = emg3d.meshes.get_domain(x0=src[2], freq=0.1, min_width=20)
 
@@ -192,40 +191,40 @@ nx = 2**7
 hx = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[0])
 hy = emg3d.meshes.get_stretched_h(hx_min, xdomain, nx, src_c[1])
 hz = emg3d.meshes.get_stretched_h(hz_min, zdomain, nx, src_c[2])
-pgrid = discretize.TensorMesh([hx, hy, hz],
-                              x0=(xdomain[0], xdomain[0], zdomain[0]))
+pgrid = emg3d.TensorMesh([hx, hy, hz], x0=(xdomain[0], xdomain[0], zdomain[0]))
 pgrid
 
 ###############################################################################
 
 # Get the model
-pmodel = emg3d.models.Model(pgrid, res_x=resh, res_z=resv)
+pmodel = emg3d.Model(pgrid, property_x=resh, property_z=resv,
+                     mapping='Resistivity')
 
 # Get the source field
-sfield = emg3d.fields.get_source_field(pgrid, src, freq, strength)
+sfield = emg3d.get_source_field(pgrid, src, freq, strength)
 
-# Calculate the electric field
+# Compute the electric field
 pfield = emg3d.solve(pgrid, pmodel, sfield, verb=3)
 
 ###############################################################################
-# Calculate magnetic field :math:`H` from the electric field
-# ----------------------------------------------------------
-hfield = emg3d.fields.get_h_field(pgrid, pmodel, pfield)
+# Compute magnetic field :math:`H` from the electric field
+# --------------------------------------------------------
+hfield = emg3d.get_h_field(pgrid, pmodel, pfield)
 
 ###############################################################################
 # Plot
 # ````
-e3d_fs_hx = emg3d.fields.get_receiver(pgrid, hfield.fx, (rx, ry, zrec))
+e3d_fs_hx = emg3d.get_receiver(pgrid, hfield.fx, (rx, ry, zrec))
 plot_result_rel(epm_fs_hx, e3d_fs_hx, x, r'Diffusive Fullspace $H_x$',
                 vmin=-8, vmax=-4, mode='abs')
 
 ###############################################################################
-e3d_fs_hy = emg3d.fields.get_receiver(pgrid, hfield.fy, (rx, ry, zrec))
+e3d_fs_hy = emg3d.get_receiver(pgrid, hfield.fy, (rx, ry, zrec))
 plot_result_rel(epm_fs_hy, e3d_fs_hy, x, r'Diffusive Fullspace $H_y$',
                 vmin=-8, vmax=-4, mode='abs')
 
 ###############################################################################
-e3d_fs_hz = emg3d.fields.get_receiver(pgrid, hfield.fz, (rx, ry, zrec))
+e3d_fs_hz = emg3d.get_receiver(pgrid, hfield.fz, (rx, ry, zrec))
 plot_result_rel(epm_fs_hz, e3d_fs_hz, x, r'Diffusive Fullspace $H_z$',
                 vmin=-8, vmax=-4, mode='abs')
 
@@ -233,4 +232,4 @@ plot_result_rel(epm_fs_hz, e3d_fs_hz, x, r'Diffusive Fullspace $H_z$',
 plot_lineplot_ex(x, x, e3d_fs_hx.real, epm_fs_hx.real, pgrid)
 
 ###############################################################################
-emg3d.Report(empymod)
+emg3d.Report()

@@ -1,11 +1,11 @@
 """
-CPU and RAM usage
-=================
+1. CPU and RAM usage
+====================
 
 Measuring and estimating runtime and memory usage of ``emg3d`` as a function of
 model size.
 
-The actually calculated results further down are only for relatively small
+The actually computed results further down are only for relatively small
 models, as these examples in the gallery are run very often. Here therefore the
 results of two larger runs that were run on a cluster:
 
@@ -50,8 +50,8 @@ plt.style.use('ggplot')
 #
 # This is the actual model it runs. Adjust this to your needs.
 
-def calculate(nx):
-    """Simple calculation routine.
+def compute(nx):
+    """Simple computation routine.
 
     - Model size is nx * nx * nx, centered around the origin.
     - Source is at the origin, x-directed.
@@ -63,7 +63,7 @@ def calculate(nx):
     # Grid
     hx = np.ones(nx)*50
     x0 = -nx//2*50
-    grid = emg3d.meshes.TensorMesh([hx, hx, hx], x0=(x0, x0, x0))
+    grid = emg3d.TensorMesh([hx, hx, hx], x0=(x0, x0, x0))
 
     # Source location and frequency
     src = [0, 0, 0, 0, 0]
@@ -73,10 +73,10 @@ def calculate(nx):
     res = 1.
 
     # Model and source field
-    model = emg3d.models.Model(grid, res_x=res)
-    sfield = emg3d.fields.get_source_field(grid, src, freq=freq, strength=0)
+    model = emg3d.Model(grid, property_x=res, mapping='Resistivity')
+    sfield = emg3d.get_source_field(grid, src, freq=freq, strength=0)
 
-    # Calculate the field
+    # Compute the field
     _, inf = emg3d.solve(grid, model, sfield, verb=1, return_info=True)
 
     return inf['time']
@@ -95,7 +95,7 @@ runtime = np.zeros(nsizes.shape)
 # Loop over nx
 for i, nx in enumerate(nsizes):
     print(f"  => {nx}^3 = {nx**3:12,d} cells")
-    mem, time = memory_usage((calculate, (nx, ), {}), retval=True)
+    mem, time = memory_usage((compute, (nx, ), {}), retval=True)
     memory[i] = max(mem)
     runtime[i] = time
 

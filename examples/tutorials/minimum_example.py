@@ -2,8 +2,6 @@
 1. Minimum working example
 ==========================
 
-aoeu
-
 This is a simple minimum working example to use the multigrid solver `emg3d`,
 along the lines of the one provided in the manual as `"Basic Example"
 <https://emg3d.readthedocs.io/en/stable/usage.html#basic-example>`_.

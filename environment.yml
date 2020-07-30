@@ -22,8 +22,8 @@ dependencies:
   - sphinx-gallery
   - numpydoc
   - sphinx_rtd_theme
-  - pyvista
   - pip:
+    - pyvista
     - gempy
     - nptyping
     - sphinx_numfig

@@ -85,8 +85,8 @@ plt.style.use('ggplot')
 src = [0, 0, -950, 0, 0]    # x-dir. source at the origin, 50 m above seafloor
 off = np.arange(5, 81)*100  # Offsets
 rec = [off, off*0, -1000]   # In-line receivers on the seafloor
-res = [1e10, 0.3, 1]        # Resistivities (Hz): [air, seawater, background]
-freq = 1.0                  # Frequency (Ohm.m)
+res = [1e10, 0.3, 1]        # 1D resistivities (Ohm.m): [air, water, backgr.]
+freq = 1.0                  # Frequency (Hz)
 
 ###############################################################################
 # Mesh

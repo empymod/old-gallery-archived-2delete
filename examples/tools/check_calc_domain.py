@@ -229,12 +229,12 @@ plt.show()
 grid_1.plot_3d_slicer(
     efield_1.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xslice=src[0], yslice=src[1], zslice=rec[2],
-    pcolorOpts={'norm': LogNorm()})
+    pcolor_opts={'norm': LogNorm()})
 grid_1.plot_3d_slicer(
     efield_1.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     zlim=[-5000, 1000],
     xslice=src[0], yslice=src[1], zslice=rec[2],
-    pcolorOpts={'norm': LogNorm()})
+    pcolor_opts={'norm': LogNorm()})
 
 
 ###############################################################################
@@ -248,14 +248,14 @@ grid_1.plot_3d_slicer(
 grid_2.plot_3d_slicer(
     efield_2.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xslice=src[0], yslice=src[1], zslice=rec[2],
-    pcolorOpts={'norm': LogNorm()})
+    pcolor_opts={'norm': LogNorm()})
 grid_2.plot_3d_slicer(
     efield_2.fx.ravel('F'), view='abs', v_type='Ex', clim=[1e-17, 1e-9],
     xlim=[grid_1.vectorNx[0], grid_1.vectorNx[-1]],  # Same square as grid_1
     ylim=[grid_1.vectorNy[0], grid_1.vectorNy[-1]],  # Same square as grid_1
     zlim=[-5000, 1000],
     xslice=src[0], yslice=src[1], zslice=rec[2],
-    pcolorOpts={'norm': LogNorm()})
+    pcolor_opts={'norm': LogNorm()})
 
 
 ###############################################################################

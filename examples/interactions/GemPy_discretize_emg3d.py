@@ -216,7 +216,7 @@ pfield = emg3d.solve(grid, model, sfield, sslsolver=True, verb=3)
 grid.plot_3d_slicer(
     pfield.fx.ravel('F'), zslice=-1000, zlim=(-2000, 50),
     view='abs', v_type='Ex',
-    pcolorOpts={'cmap': 'viridis', 'norm': LogNorm(vmin=1e-13, vmax=1e-8)})
+    pcolor_opts={'cmap': 'viridis', 'norm': LogNorm(vmin=1e-13, vmax=1e-8)})
 
 
 ###############################################################################

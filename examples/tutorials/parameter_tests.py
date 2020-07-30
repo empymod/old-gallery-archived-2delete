@@ -82,7 +82,7 @@ model_iso = emg3d.Model(grid, property_x=res_x, mapping='Resistivity')
 
 # Plot it for QC
 grid.plot_3d_slicer(model_iso.property_x.ravel('F'),
-                    pcolorOpts={'norm': LogNorm()})
+                    pcolor_opts={'norm': LogNorm()})
 
 ###############################################################################
 # Test 1: F, W, and V MG cycles

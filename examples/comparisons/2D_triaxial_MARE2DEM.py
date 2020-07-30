@@ -115,7 +115,7 @@ sparams = {
 # QC model
 grid.plot_3d_slicer(
         model_tg.property_x, clim=[0.3, 300], zlim=[-6000, 500],
-        pcolorOpts={'norm': LogNorm()})
+        pcolor_opts={'norm': LogNorm()})
 
 
 ###############################################################################

@@ -17,6 +17,10 @@ References
 .. [MuWS08] Mulder, W. A., M. Wirianto, and E. Slob, 2008, Time-domain modeling
    of electromagnetic diffusion with a frequency-domain code: Geophysics, 73,
    F1-F8; DOI: `10.1190/1.2799093 <https://doi.org/10.1190/1.2799093>`_.
+.. [PlMu08] Plessix, R.-É., and W. A. Mulder, 2008, Resistivity imaging with
+   controlled-source electromagnetic data: depth and data weighting: Inverse
+   Problems, 24, no. 3, 034012; DOI: `10.1088/0266-5611/24/3/034012
+   <https://doi.org/10.1088/0266-5611/24/3/034012>`_.
 .. [WeMS19] Werthmüller, D., W. A. Mulder, and E. C. Slob, 2019, emg3d: A
    multigrid solver for 3D electromagnetic diffusion: Journal of Open Source
    Software, 4(39), 1463;

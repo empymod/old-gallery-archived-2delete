@@ -228,7 +228,7 @@ pfield = emg3d.solve(
 grid.plot_3d_slicer(
     pfield.fx.ravel('F'), zslice=-2000, zlim=(-4180, 500),
     view='abs', v_type='Ex',
-    clim=[1e-16, 1e-9], pcolorOpts={'norm': LogNorm()})
+    clim=[1e-16, 1e-9], pcolor_opts={'norm': LogNorm()})
 
 ###############################################################################
 

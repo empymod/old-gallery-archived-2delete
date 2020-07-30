@@ -398,7 +398,7 @@ pmodel = emg3d.Model(
 
 # Plot it
 pgrid.plot_3d_slicer(pmodel.property_x, zslice=-2000, clim=[0.3, 50],
-                     zlim=(-5000, 50), pcolorOpts={'norm': LogNorm()})
+                     zlim=(-5000, 50), pcolor_opts={'norm': LogNorm()})
 
 
 ###############################################################################

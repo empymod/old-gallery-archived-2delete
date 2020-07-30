@@ -121,7 +121,7 @@ efield = emg3d.solve(grid=grid, model=model, sfield=sfield, verb=3)
 
 grid.plot_3d_slicer(
         efield.fx.ravel('F'), view='abs', v_type='Ex',
-        pcolorOpts={'norm': LogNorm()}
+        pcolor_opts={'norm': LogNorm()}
 )
 
 
@@ -135,7 +135,7 @@ grid.plot_3d_slicer(
 hfield = emg3d.get_h_field(grid=grid, model=model, field=efield)
 grid.plot_3d_slicer(
         hfield.fx.ravel('F'), view='abs', v_type='Fx',
-        pcolorOpts={'norm': LogNorm()}
+        pcolor_opts={'norm': LogNorm()}
 )
 
 ###############################################################################

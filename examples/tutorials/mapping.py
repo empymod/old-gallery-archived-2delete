@@ -35,7 +35,6 @@ import emg3d
 import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
-# sphinx_gallery_thumbnail_number = 3
 
 ###############################################################################
 # Survey
@@ -83,35 +82,36 @@ zz = (grid.gridCC[:, 2] > -2500)*(grid.gridCC[:, 2] < -2000)
 res_x[xx*yy*zz] = 100.  # Target resistivity
 
 ###############################################################################
-# Create ``LgResistivity`` model
-# ------------------------------
+# Create ``LgResistivity`` and ``LgConductivity`` models
+# ------------------------------------------------------
 
-# Create model
+# Create log10-res model
 model_lg_res = emg3d.Model(
         grid, property_x=np.log10(res_x), mapping='LgResistivity')
 
-# Plot a slice
-grid.plot_3d_slicer(
-        model_lg_res.property_x, zslice=-2250, clim=[-1, 3],
-        xlim=(-1000, 8000), ylim=(-4000, 4000), zlim=(-3000, 500),
-)
-plt.gcf().suptitle('Resistivity Model (Ohm.m); $\log_{10}$-scale')
-plt.show()
-
-###############################################################################
-# Create ``LgConductivity`` model
-# -------------------------------
-
-# Create model
+# Create log10-con model
 model_lg_con = emg3d.Model(
         grid, property_x=np.log10(1/res_x), mapping='LgConductivity')
 
-# Plot a slice
-grid.plot_3d_slicer(
-        model_lg_con.property_x, zslice=-2250, clim=[-3, 1],
-        xlim=(-1000, 8000), ylim=(-4000, 4000), zlim=(-3000, 500),
-)
-plt.gcf().suptitle('Conductivity Model (S/m); $\log_{10}$-scale')
+# Plot the models
+fig, axs = plt.subplots(figsize=(9, 6), nrows=1, ncols=2)
+
+# log10-res
+f0 = grid.plotSlice(model_lg_res.property_x, v_type='CC',
+                    normal='Y', ind=20, ax=axs[0], clim=[-3, 3])
+axs[0].set_title('Resistivity (Ohm.m); $\log_{10}$-scale')
+axs[0].set_xlim([-1000, 8000])
+axs[0].set_ylim([-3000, 500])
+
+# log10-con
+f1 = grid.plotSlice(model_lg_con.property_x, v_type='CC',
+                    normal='Y', ind=20, ax=axs[1], clim=[-3, 3])
+axs[1].set_title('Conductivity (S/m); $\log_{10}$-scale')
+axs[1].set_xlim([-1000, 8000])
+axs[1].set_ylim([-3000, 500])
+
+plt.tight_layout()
+fig.colorbar(f0[0], ax=axs, orientation='horizontal', fraction=0.05)
 plt.show()
 
 ###############################################################################

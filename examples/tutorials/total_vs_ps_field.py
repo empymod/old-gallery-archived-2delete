@@ -171,8 +171,8 @@ em3_pf = emg3d.solve(grid, model_pf, sfield_pf, **modparams)
 # ```````````````````````````
 
 # Get the difference of conductivity as volume-average values
-dsigma = grid.vol.reshape(grid.vnC, order='F')*(
-            1/model.property_x-1/model_pf.property_x)
+diff = 1/model.property_x-1/model_pf.property_x
+dsigma = grid.vol.reshape(grid.vnC, order='F')*diff
 
 # Here we use the primary field computed with emg3d. This could be done
 # with a 1D modeller such as empymod instead.

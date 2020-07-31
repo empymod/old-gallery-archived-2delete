@@ -53,9 +53,9 @@ plt.style.use('ggplot')
 # ---------------------------------
 #
 # The following cell loads the resistivity model ``res-model.lzma`` (~14 MB),
-# if it already exists in ``./data/SEG-EAGE/``, or alternatively loads the
-# velocity model ``Saltf@@``, carries out the velocity-to-resistivity
-# transform, and stores the resistivity model.
+# if it already exists in ``../data/SEG/``, or alternatively loads the velocity
+# model ``Saltf@@``, carries out the velocity-to-resistivity transform, and
+# stores the resistivity model.
 #
 # You can get the data from the `SEG-website
 # <https://wiki.seg.org/wiki/SEG/EAGE_Salt_and_Overthrust_Models>`_ or via this
@@ -63,11 +63,12 @@ plt.style.use('ggplot')
 # <https://s3.amazonaws.com/open.source.geoscience/open_data/seg_eage_models_cd/Salt_Model_3D.tar.gz>`_.
 # The zip-file is 513.1 MB big. Unzip the archive, and place the file
 # ``Salt_Model_3D/3-D_Salt_Model/VEL_GRIDS/SALTF.ZIP`` (20.0 MB) into
-# ``./data/`` (or adjust the path in the following cell).
+# ``../data/SEG/`` (or adjust the path in the following cell).
 
+path = '../data/SEG/'
 try:
     # Get resistivities if we already computed them
-    res = joblib.load('./data/res-model.lzma')
+    res = joblib.load(path+'res-model.lzma')
 
     # Get dimension
     nx, ny, nz = res.shape
@@ -78,10 +79,10 @@ except FileNotFoundError:  # THE ORIGINAL DATA ARE REQUIRED!
     nx, ny, nz = 676, 676, 210
 
     # Extract Saltf@@ from SALTF.ZIP
-    zipfile.ZipFile('./data/SALTF.ZIP', 'r').extract('Saltf@@', path='./data/')
+    zipfile.ZipFile(path+'SALTF.ZIP', 'r').extract('Saltf@@', path=path)
 
     # Load data
-    with open('./data/Saltf@@', 'r') as file:
+    with open(path+'Saltf@@', 'r') as file:
         v = np.fromfile(file, dtype=np.dtype('float32').newbyteorder('>'))
         v = v.reshape(nx, ny, nz, order='F')
 
@@ -107,7 +108,7 @@ except FileNotFoundError:  # THE ORIGINAL DATA ARE REQUIRED!
     # joblib.dump(res, './res-model', compress=True)
 
     # lzma: very slow, but very effective (~ 18.6 MB).
-    joblib.dump(res, './data/res-model.lzma')
+    joblib.dump(res, path+'res-model.lzma')
 
 # Create a discretize-mesh
 mesh = emg3d.TensorMesh(

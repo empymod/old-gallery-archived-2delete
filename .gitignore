@@ -1,5 +1,5 @@
 *.npz
 _build/
 gallery/
-examples/reproducing/data/
+examples/data/SEG/
 examples/time_domain/data/

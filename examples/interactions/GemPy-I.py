@@ -179,6 +179,15 @@ p.add_mesh(dataset.threshold([1.69, 1.7]), name='vol', **dparams)
 p.camera_position = [(-10000, 25000, 4000), (1000, 1000, -1000), (0, 0, 1)]
 p.show()
 
+
+###############################################################################
+# Plot the model with discretize
+# ------------------------------
+grid.plot_3d_slicer(
+    model.property_x, zslice=-1000, clim=(0.3, 500),
+    pcolor_opts={'cmap': 'viridis', 'norm': LogNorm()})
+
+
 ###############################################################################
 # Create CSEM survey and corresponding computational grid/model
 # -------------------------------------------------------------

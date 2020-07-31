@@ -6,11 +6,6 @@
 electromagnetic (CSEM) and magnetotelluric (MT) data, see `mare2dem.ucsd.edu
 <https://mare2dem.ucsd.edu>`_.
 
-The ``MARE2DEM`` input- and output-files are located in the data-directory. You
-have to download the following directory to run this example:
-`github.com/empymod/emg3d-gallery => examples => comparisons => data
-<https://github.com/empymod/emg3d-gallery/tree/master/examples/comparisons/data>`_.
-
 """
 import emg3d
 import numpy as np
@@ -23,10 +18,14 @@ from matplotlib.colors import LogNorm
 # Load MARE2DEM result
 # --------------------
 
-mar_tg = np.loadtxt('./data/triaxial.0.resp', skiprows=93, usecols=6)
+# Location of data files.
+data_url = 'https://raw.githubusercontent.com/empymod/emg3d-gallery/'
+data_url += 'master/examples/comparisons/data/'
+
+mar_tg = np.loadtxt(data_url+'triaxial.0.resp', skiprows=93, usecols=6)
 mar_tg = mar_tg[::2] + 1j*mar_tg[1::2]
 
-mar_bg = np.loadtxt('./data/triaxial-BG.0.resp', skiprows=93, usecols=6)
+mar_bg = np.loadtxt(data_url+'triaxial-BG.0.resp', skiprows=93, usecols=6)
 mar_bg = mar_bg[::2] + 1j*mar_bg[1::2]
 
 

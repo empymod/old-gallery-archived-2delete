@@ -1,0 +1,12 @@
+
+:orphan:
+
+.. _sphx_glr_gallery_reproducing_sg_execution_times:
+
+Computation times
+=================
+**02:45.374** total execution time for **gallery_reproducing** files:
+
++-----------------------------------------------------------------------------------------------+-----------+-----------+
+| :ref:`sphx_glr_gallery_reproducing_SEG-EAGE_3D_salt_model.py` (``SEG-EAGE_3D_salt_model.py``) | 02:45.374 | 2917.0 MB |
++-----------------------------------------------------------------------------------------------+-----------+-----------+

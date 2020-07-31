@@ -1,0 +1,423 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_gallery_tutorials_mapping.py>`     to download the full example code
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_gallery_tutorials_mapping.py:
+
+
+3. Model property mapping
+=========================
+
+
+Physical rock properties (and their units) can be a tricky thing. And `emg3d`
+is no difference in this respect. It was first developed for oil and gas,
+having resistive bodies in mind. You will therefore find that the documentation
+often talks about resistivity (Ohm.m). However, internally the computation is
+carried out in conductivities (S/m), so resistivities are converted into
+conductivities internally. For the simple forward model this is not a big
+issue, as the output is simply the electromagnetic field. However, moving over
+to optimization makes things more complicated, as the gradient of the misfit
+function, for instance, depends on the parametrization.
+
+Since `emg3d v0.12.0` it is therefore possible to define a
+:class:`emg3d.models.Model` in different ways, thanks to different maps,
+defined with the parameter ``mapping``. Currently implemented are six different
+maps:
+
+- ``'Resistivity'``: :math:`\rho` (Ohm.m), the default;
+- ``'LgResistivity'``: :math:`\log_{10}(\rho)`;
+- ``'LnResistivity'``: :math:`\log_e(\rho)`;
+- ``'Conductivity'``: :math:`\sigma` (S/m);
+- ``'LgConductivity'``: :math:`\log_{10}(\sigma)`;
+- ``'LnConductivity'``: :math:`\log_e(\sigma)`.
+
+We take here the model from
+:ref:`sphx_glr_gallery_tutorials_total_vs_ps_field.py` and map it once as
+``'LgResistivity'`` and once as ``'LgConductivity'``, and verify that the
+resulting electric field is the same.
+
+
+.. code-block:: default
+
+    import emg3d
+    import numpy as np
+    import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
+
+
+
+
+
+
+
+
+Survey
+------
+
+
+.. code-block:: default
+
+
+    src = [0, 0, -950, 0, 0]    # x-dir. source at the origin, 50 m above seafloor
+    off = np.arange(5, 81)*100  # Offsets
+    rec = [off, off*0, -1000]   # In-line receivers on the seafloor
+    res = [1e10, 0.3, 1]        # 1D resistivities (Ohm.m): [air, water, backgr.]
+    freq = 1.0                  # Frequency (Hz)
+
+
+
+
+
+
+
+
+Mesh
+----
+
+We create quite a coarse grid (100 m minimum cell width), to have reasonable
+fast computation times.
+
+
+.. code-block:: default
+
+
+    meshinp = {'freq': freq, 'min_width': 100, 'verb': 0}
+    xx, x0 = emg3d.meshes.get_hx_h0(
+        res=[res[1], 100.], fixed=src[0], domain=[-100, 8100], **meshinp)
+    yy, y0 = emg3d.meshes.get_hx_h0(
+        res=[res[1], 100.], fixed=src[1], domain=[-500, 500], **meshinp)
+    zz, z0 = emg3d.meshes.get_hx_h0(
+        res=[res[1], res[2], 100.], domain=[-2500, 0], fixed=[-1000, 0, -2000],
+        **meshinp)
+
+    grid = emg3d.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
+    grid
+
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table>
+          <tr>
+            <td style='font-weight: bold; font-size: 1.2em; text-align: center;' colspan='3'>TensorMesh</td>
+            <td style='font-size: 1.2em; text-align: center;'colspan='4'>245,760 cells</td>
+          </tr>
+          <tr>
+            <th></th>
+            <th></th>
+            <th colspan='2' style='padding: 5px 20px 5px 20px;'>MESH EXTENT</th>
+            <th colspan='2' style='padding: 5px 20px 5px 20px;'>CELL WIDTH</th>
+            <th style='padding: 5px 20px 5px 20px;'>FACTOR</th>
+          </tr>
+          <tr>
+            <th style='padding: 5px 20px 5px 20px;'>dir</th>
+            <th style='padding: 5px 20px 5px 20px;'>nC</th>
+            <th style='padding: 5px 20px 5px 20px;'>min</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+            <th style='padding: 5px 20px 5px 20px;'>min</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>x</td>
+            <td style='padding: 5px 20px 5px 20px;'>128</td>
+            <td style='padding: 5px 20px 5px 20px;'>-33,701.05</td>
+            <td style='padding: 5px 20px 5px 20px;'>41,701.05</td>
+            <td style='padding: 5px 20px 5px 20px;'>100.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>5,464.87</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.19</td>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>y</td>
+            <td style='padding: 5px 20px 5px 20px;'>40</td>
+            <td style='padding: 5px 20px 5px 20px;'>-31,889.10</td>
+            <td style='padding: 5px 20px 5px 20px;'>31,889.10</td>
+            <td style='padding: 5px 20px 5px 20px;'>100.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>8,064.40</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.34</td>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>z</td>
+            <td style='padding: 5px 20px 5px 20px;'>48</td>
+            <td style='padding: 5px 20px 5px 20px;'>-4,967.82</td>
+            <td style='padding: 5px 20px 5px 20px;'>34,630.95</td>
+            <td style='padding: 5px 20px 5px 20px;'>100.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>8,495.38</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.32</td>
+          </tr>
+        </table>
+
+        <br />
+        <br />
+
+Define resistivities
+--------------------
+
+
+.. code-block:: default
+
+
+    # Layered_background
+    res_x = np.ones(grid.nC)*res[0]            # Air resistivity
+    res_x[grid.gridCC[:, 2] < 0] = res[1]      # Water resistivity
+    res_x[grid.gridCC[:, 2] < -1000] = res[2]  # Background resistivity
+
+    # Include the target
+    xx = (grid.gridCC[:, 0] >= 0) & (grid.gridCC[:, 0] <= 6000)
+    yy = abs(grid.gridCC[:, 1]) <= 500
+    zz = (grid.gridCC[:, 2] > -2500)*(grid.gridCC[:, 2] < -2000)
+
+    res_x[xx*yy*zz] = 100.  # Target resistivity
+
+
+
+
+
+
+
+
+Create ``LgResistivity`` and ``LgConductivity`` models
+------------------------------------------------------
+
+
+.. code-block:: default
+
+
+    # Create log10-res model
+    model_lg_res = emg3d.Model(
+            grid, property_x=np.log10(res_x), mapping='LgResistivity')
+
+    # Create log10-con model
+    model_lg_con = emg3d.Model(
+            grid, property_x=np.log10(1/res_x), mapping='LgConductivity')
+
+    # Plot the models
+    fig, axs = plt.subplots(figsize=(9, 6), nrows=1, ncols=2)
+
+    # log10-res
+    f0 = grid.plotSlice(model_lg_res.property_x, v_type='CC',
+                        normal='Y', ind=20, ax=axs[0], clim=[-3, 3])
+    axs[0].set_title(r'Resistivity (Ohm.m); $\log_{10}$-scale')
+    axs[0].set_xlim([-1000, 8000])
+    axs[0].set_ylim([-3000, 500])
+
+    # log10-con
+    f1 = grid.plotSlice(model_lg_con.property_x, v_type='CC',
+                        normal='Y', ind=20, ax=axs[1], clim=[-3, 3])
+    axs[1].set_title(r'Conductivity (S/m); $\log_{10}$-scale')
+    axs[1].set_xlim([-1000, 8000])
+    axs[1].set_ylim([-3000, 500])
+
+    plt.tight_layout()
+    fig.colorbar(f0[0], ax=axs, orientation='horizontal', fraction=0.05)
+    plt.show()
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_mapping_001.png
+    :alt: Resistivity (Ohm.m); $\log_{10}$-scale, Conductivity (S/m); $\log_{10}$-scale
+    :class: sphx-glr-single-img
+
+
+
+
+
+Compute electric fields
+-----------------------
+
+
+.. code-block:: default
+
+
+    modparams = {
+            'verb': -1, 'sslsolver': True,
+            'semicoarsening': True, 'linerelaxation': True
+    }
+
+    sfield = emg3d.get_source_field(grid, src, freq, strength=0)
+    efield_lg_res = emg3d.solve(grid, model_lg_res, sfield, **modparams)
+    efield_lg_con = emg3d.solve(grid, model_lg_con, sfield, **modparams)
+
+    # Extract responses at receiver locations.
+    rectuple = (rec[0], rec[1], rec[2])
+    rec_lg_res = emg3d.get_receiver(grid, efield_lg_res.fx, rectuple)
+    rec_lg_con = emg3d.get_receiver(grid, efield_lg_con.fx, rectuple)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    :: emg3d :: 2.8e-03; 0(1); 0:00:03    :: emg3d :: 6.4e-05; 0(2); 0:00:07    :: emg3d :: 5.3e-06; 0(3); 0:00:10    :: emg3d :: 6.1e-07; 0(4); 0:00:14    :: emg3d :: 6.1e-07; 1(4); 0:00:14    :: emg3d :: 6.1e-07; 1(4); 0:00:14; CONVERGED
+    :: emg3d :: 2.8e-03; 0(1); 0:00:03    :: emg3d :: 6.4e-05; 0(2); 0:00:07    :: emg3d :: 5.3e-06; 0(3); 0:00:10    :: emg3d :: 6.1e-07; 0(4); 0:00:14    :: emg3d :: 6.1e-07; 1(4); 0:00:14    :: emg3d :: 6.1e-07; 1(4); 0:00:14; CONVERGED
+
+
+
+
+Compare the two results
+-----------------------
+
+
+.. code-block:: default
+
+
+    plt.figure(figsize=(9, 5))
+    plt.title('Comparison')
+
+    # Log_10(resistivity)-model.
+    plt.plot(off/1e3, rec_lg_res.real, 'k',
+             label=r'$\Re[\log_{10}(\rho)]$-model')
+    plt.plot(off/1e3, rec_lg_res.imag, 'C1-',
+             label=r'$\Im[\log_{10}(\rho)]$-model')
+
+    # Log_10(conductivity)-model.
+    plt.plot(off/1e3, rec_lg_con.real, 'C0-.',
+             label=r'$\Re[\log_{10}(\sigma)]$-model')
+    plt.plot(off/1e3, rec_lg_con.imag, 'C4-.',
+             label=r'$\Im[\log_{10}(\sigma)]$-model')
+
+    plt.xlabel('Offset (km)')
+    plt.ylabel('$E_x$ (V/m)')
+    plt.yscale('symlog', linthreshy=1e-17)
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_mapping_002.png
+    :alt: Comparison
+    :class: sphx-glr-single-img
+
+
+
+
+
+
+.. code-block:: default
+
+
+    emg3d.Report()
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table style='border: 3px solid #ddd;'>
+          <tr>
+             <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Fri Jul 31 22:05:44 2020 CEST</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+            <td style='text-align: left; border: 2px solid #fff;'>4</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+            <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+            <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+            <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59) 
+        [GCC 7.3.0]</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+            <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+            <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+          </tr>
+          <tr>
+             <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+          </tr>
+        </table>
+        <br />
+        <br />
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  29.392 seconds)
+
+**Estimated memory usage:**  235 MB
+
+
+.. _sphx_glr_download_gallery_tutorials_mapping.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: mapping.py <mapping.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: mapping.ipynb <mapping.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

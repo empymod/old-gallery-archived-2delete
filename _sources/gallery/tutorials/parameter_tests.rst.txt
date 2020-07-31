@@ -1,0 +1,374 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_gallery_tutorials_parameter_tests.py>`     to download the full example code
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_gallery_tutorials_parameter_tests.py:
+
+
+6. Parameter tests
+==================
+
+The modeller ``emg3d`` has quite a few parameters which can influence the speed
+of a computation. It can be difficult to estimate which is the best setting. In
+the case that speed is of utmost importance, and a lot of similar models are
+going to be computed (e.g. for inversions), it might be worth to do some
+input parameter testing.
+
+**IMPORTANT:** None of the conclusions you can draw from these figures are
+applicable to other models. What is faster depends on your input. Influence has
+particularly the degree of anisotropy and of grid stretching. These are simply
+examples that you can adjust for your problem at hand.
+
+
+.. code-block:: default
+
+    import emg3d
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
+    plt.style.use('ggplot')
+
+
+
+
+
+
+
+
+
+
+.. code-block:: default
+
+    def plotit(infos, labels):
+        """Simple plotting routine for the tests."""
+
+        plt.figure()
+
+        # Loop over infos.
+        for i, info in enumerate(infos):
+            plt.plot(info['runtime_at_cycle'],
+                     info['error_at_cycle']/info1['ref_error'],
+                     '.-', label=labels[i])
+
+        plt.legend()
+        plt.xlabel('Time (s)')
+        plt.ylabel('Rel. Error $(-)$')
+        plt.yscale('log')
+
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+.. code-block:: default
+
+
+    # Survey
+    zwater = 1000                  # Water depth.
+    src = [0, 0, 50-zwater, 0, 0]  # Source at origin, 50 m above seafloor.
+    freq = 1.0                     # Frequency (Hz).
+
+    # Mesh
+    ginp = {'min_width': 100, 'verb': 0}
+    xx, x0 = emg3d.meshes.get_hx_h0(
+        freq=freq, res=[0.3, 1.], fixed=src[0], domain=[-1000, 5000], **ginp)
+    yy, y0 = emg3d.meshes.get_hx_h0(
+        freq=freq, res=[0.3, 1.], fixed=src[1], domain=[-500, 500], **ginp)
+    zz, z0 = emg3d.meshes.get_hx_h0(
+        freq=freq, res=[0.3, 1., 0.3], domain=[-2500, 0],
+        fixed=[-1000, 0, -2100], **ginp)
+    grid = emg3d.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
+    print(grid)
+
+    # Source-field
+    sfield = emg3d.get_source_field(grid, src=src, freq=freq)
+
+    # Create a simple marine model for the tests.
+
+    # Layered_background
+    res_x = 1e8*np.ones(grid.vnC)              # Air
+    res_x[:, :, grid.vectorCCz <= 0] = 0.3     # Water
+    res_x[:, :, grid.vectorCCz <= -1000] = 1.  # Background
+
+    # Target
+    xt = np.nonzero((grid.vectorCCx >= -500) & (grid.vectorCCx <= 5000))[0]
+    yt = np.nonzero((grid.vectorCCy >= -1000) & (grid.vectorCCy <= 1000))[0]
+    zt = np.nonzero((grid.vectorCCz >= -2100) & (grid.vectorCCz <= -1800))[0]
+    res_x[xt[0]:xt[-1]+1, yt[0]:yt[-1]+1, zt[0]:zt[-1]+1] = 100
+
+    # Create a model instance
+    model_iso = emg3d.Model(grid, property_x=res_x, mapping='Resistivity')
+
+    # Plot it for QC
+    grid.plot_3d_slicer(model_iso.property_x.ravel('F'),
+                        pcolor_opts={'norm': LogNorm()})
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_parameter_tests_001.png
+    :alt: parameter tests
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+      TensorMesh: 76,800 cells
+
+                          MESH EXTENT             CELL WIDTH      FACTOR
+      dir    nC        min           max         min       max      max
+      ---   ---  ---------------------------  ------------------  ------
+       x     80     -3,836.09      5,820.04    100.00    334.17    1.09
+       y     24     -3,483.73      3,483.73    100.00    905.82    1.37
+       z     40     -5,127.38      1,232.14    100.00    555.99    1.21
+
+
+
+
+
+
+Test 1: F, W, and V MG cycles
+-----------------------------
+
+
+.. code-block:: default
+
+
+    inp = {'grid': grid, 'model': model_iso, 'sfield': sfield,
+           'verb': 1, 'return_info': True}
+
+    _, info1 = emg3d.solve(cycle='F', **inp)
+    _, info2 = emg3d.solve(cycle='W', **inp)
+    _, info3 = emg3d.solve(cycle='V', **inp)
+
+    plotit([info1, info2, info3], ['F-cycle', 'W-cycle', 'V-cycle'])
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_parameter_tests_002.png
+    :alt: parameter tests
+    :class: sphx-glr-single-img
+
+
+
+
+
+Test 2: semicoarsening, line-relaxation
+---------------------------------------
+
+
+.. code-block:: default
+
+
+    inp = {'grid': grid, 'model': model_iso, 'sfield': sfield,
+           'verb': 1, 'return_info': True}
+
+    _, info1 = emg3d.solve(**inp)
+    _, info2 = emg3d.solve(semicoarsening=True, **inp)
+    _, info3 = emg3d.solve(linerelaxation=True, **inp)
+    _, info4 = emg3d.solve(semicoarsening=True, linerelaxation=True, **inp)
+
+    plotit([info1, info2, info3, info4], ['MG', 'MG+SC', 'MG+LR', 'MG+SC+LR'])
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_parameter_tests_003.png
+    :alt: parameter tests
+    :class: sphx-glr-single-img
+
+
+
+
+
+Test 3: MG and BiCGstab
+-----------------------
+
+
+.. code-block:: default
+
+
+    inp = {'grid': grid, 'model': model_iso, 'sfield': sfield,
+           'semicoarsening': True, 'verb': 1, 'return_info': True, 'maxit': 500}
+
+    _, info1 = emg3d.solve(cycle='F', sslsolver=False, **inp)
+    _, info2 = emg3d.solve(cycle='F', sslsolver=True, **inp)
+    _, info3 = emg3d.solve(cycle=None, sslsolver=True, **inp)
+
+    plotit([info1, info2, info3], ['MG', 'MG+BiCGStab', 'BiCGStab'])
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_parameter_tests_004.png
+    :alt: parameter tests
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    * WARNING :: Error in bicgstab (-10)
+
+
+
+
+Test 4: `nu_init`, `nu_pre`, `nu_coarse`, `nu_post`
+---------------------------------------------------
+
+
+.. code-block:: default
+
+
+    inp = {'grid': grid, 'model': model_iso, 'sfield': sfield,
+           'semicoarsening': True, 'verb': 1, 'return_info': True}
+
+    _, info1 = emg3d.solve(**inp)
+    _, info2 = emg3d.solve(nu_pre=0, **inp)
+    _, info3 = emg3d.solve(nu_post=0, **inp)
+    _, info4 = emg3d.solve(nu_init=2, **inp)
+
+    plotit([info1, info2, info3, info4],
+           ['{0,2,1,2} (default)', '{0,0,1,2}', '{0,2,1,0}', '{2,1,2,1}'])
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_parameter_tests_005.png
+    :alt: parameter tests
+    :class: sphx-glr-single-img
+
+
+
+
+
+
+.. code-block:: default
+
+
+    emg3d.Report()
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table style='border: 3px solid #ddd;'>
+          <tr>
+             <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Thu Jul 30 11:42:45 2020 CEST</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+            <td style='text-align: left; border: 2px solid #fff;'>4</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+            <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+            <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+            <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59) 
+        [GCC 7.3.0]</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+            <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+            <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+          </tr>
+          <tr>
+             <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+          </tr>
+        </table>
+        <br />
+        <br />
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 2 minutes  11.141 seconds)
+
+**Estimated memory usage:**  10 MB
+
+
+.. _sphx_glr_download_gallery_tutorials_parameter_tests.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: parameter_tests.py <parameter_tests.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: parameter_tests.ipynb <parameter_tests.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

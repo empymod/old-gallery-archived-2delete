@@ -1,0 +1,447 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_gallery_tutorials_minimum_example.py>`     to download the full example code
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_gallery_tutorials_minimum_example.py:
+
+
+1. Minimum working example
+==========================
+
+This is a simple minimum working example to use the multigrid solver `emg3d`,
+along the lines of the one provided in the manual as `"Basic Example"
+<https://emg3d.readthedocs.io/en/stable/usage.html#basic-example>`_.
+
+To see some more realistic computations have a look at the other examples in
+this gallery. In particularly at
+:ref:`sphx_glr_gallery_tutorials_simulation.py` to see how to use `emg3d` for a
+complex survey with many sources and frequencies.
+
+This example uses advanced tools of meshing including plotting, for which you
+need to install additionally ``discretize`` and ``matplotlib``. If you are
+interested in a basic example that only requires ``emg3d`` and its mandatory
+dependencies here it is:
+
+.. code-block:: python
+
+    import emg3d
+    import numpy as np
+
+    # Create a simple grid, 8 cells of length 1 in each direction,
+    # starting at the origin.
+    hx = np.ones(8)
+    grid = emg3d.TensorMesh(h=[hx, hx, hx], x0=np.array([0, 0, 0]))
+
+    # The model is a fullspace with tri-axial anisotropy.
+    model = emg3d.Model(grid=grid, property_x=1.5, property_y=1.8,
+                        property_z=3.3, mapping='Resistivity')
+
+    # The source is an x-directed, horizontal dipole at (4, 4, 4),
+    # frequency is 10 Hz.
+    sfield = emg3d.get_source_field(grid=grid, src=[4, 4, 4, 0, 0], freq=10.0)
+
+    # Compute the electric signal.
+    efield = emg3d.solve(grid=grid, model=model, sfield=sfield, verb=3)
+
+    # Get the corresponding magnetic signal.
+    hfield = emg3d.get_h_field(grid=grid, model=model, field=efield)
+
+
+Let's start by loading the required modules:
+
+
+.. code-block:: default
+
+    import emg3d
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
+    plt.style.use('ggplot')
+
+
+
+
+
+
+
+
+1. Mesh
+-------
+
+First we define the mesh (see :class:`emg3d.meshes.TensorMesh` for more
+info). In reality, this task requires some careful considerations. E.g., to
+avoid edge effects, the mesh should be large enough in order for the fields
+to dissipate, yet fine enough around source and receiver to accurately model
+them. This grid is too small by any means, but serves as a minimal example.
+(Note that in order to define a mesh in such a way you must have `discretize`
+installed; see above for more info.)
+
+
+.. code-block:: default
+
+
+    grid = emg3d.TensorMesh(
+            [[(25, 10, -1.04), (25, 28), (25, 10, 1.04)],
+             [(50, 8, -1.03), (50, 16), (50, 8, 1.03)],
+             [(30, 8, -1.05), (30, 16), (30, 8, 1.05)]],
+            x0='CCC')
+    grid
+
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table>
+          <tr>
+            <td style='font-weight: bold; font-size: 1.2em; text-align: center;' colspan='3'>TensorMesh</td>
+            <td style='font-size: 1.2em; text-align: center;'colspan='4'>49,152 cells</td>
+          </tr>
+          <tr>
+            <th></th>
+            <th></th>
+            <th colspan='2' style='padding: 5px 20px 5px 20px;'>MESH EXTENT</th>
+            <th colspan='2' style='padding: 5px 20px 5px 20px;'>CELL WIDTH</th>
+            <th style='padding: 5px 20px 5px 20px;'>FACTOR</th>
+          </tr>
+          <tr>
+            <th style='padding: 5px 20px 5px 20px;'>dir</th>
+            <th style='padding: 5px 20px 5px 20px;'>nC</th>
+            <th style='padding: 5px 20px 5px 20px;'>min</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+            <th style='padding: 5px 20px 5px 20px;'>min</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>x</td>
+            <td style='padding: 5px 20px 5px 20px;'>48</td>
+            <td style='padding: 5px 20px 5px 20px;'>-662.16</td>
+            <td style='padding: 5px 20px 5px 20px;'>662.16</td>
+            <td style='padding: 5px 20px 5px 20px;'>25.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>37.01</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.04</td>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>y</td>
+            <td style='padding: 5px 20px 5px 20px;'>32</td>
+            <td style='padding: 5px 20px 5px 20px;'>-857.96</td>
+            <td style='padding: 5px 20px 5px 20px;'>857.96</td>
+            <td style='padding: 5px 20px 5px 20px;'>50.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>63.34</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.03</td>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>z</td>
+            <td style='padding: 5px 20px 5px 20px;'>32</td>
+            <td style='padding: 5px 20px 5px 20px;'>-540.80</td>
+            <td style='padding: 5px 20px 5px 20px;'>540.80</td>
+            <td style='padding: 5px 20px 5px 20px;'>30.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>44.32</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.05</td>
+          </tr>
+        </table>
+
+        <br />
+        <br />
+
+2. Model
+--------
+
+Next we define a very simple fullspace resistivity model with
+:math:`\rho_x=1.5\,\Omega\,\rm{m}`, :math:`\rho_y=1.8\,\Omega\,\rm{m}`, and
+:math:`\rho_z=3.3\,\Omega\,\rm{m}`.
+
+
+.. code-block:: default
+
+
+    model = emg3d.Model(grid, property_x=1.5, property_y=1.8,
+                        property_z=3.3, mapping='Resistivity')
+
+
+
+
+
+
+
+
+Here we define the model in terms of resistivity. Have a look at the example
+:ref:`sphx_glr_gallery_tutorials_mapping.py` to see how to define models
+in terms of conductivity or their logarithms.
+
+Plotting this model results in an obviously rather boring plot, as it simply
+shows a homogeneous space. Here we plot the x-directed resistivity:
+
+
+.. code-block:: default
+
+
+    grid.plot_3d_slicer(np.ones(grid.vnC)*model.property_x)  # x-resistivity
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_minimum_example_001.png
+    :alt: minimum example
+    :class: sphx-glr-single-img
+
+
+
+
+
+3. Source field
+---------------
+
+The source is an x-directed dipole at the origin, with a 10 Hz signal of 1 A
+(``src`` is defined either as ``[x, y, z, dip, azimuth]`` or ``[x0, x1, y0,
+y1, z0, z1]``; the strength can be set via the ``strength`` parameter).
+
+
+.. code-block:: default
+
+
+    sfield = emg3d.get_source_field(grid=grid, src=[0, 0, 0, 0, 0], freq=10)
+
+
+
+
+
+
+
+
+4. Compute the electric field
+-----------------------------
+
+Finally we can compute the electric field with ``emg3d``:
+
+
+.. code-block:: default
+
+
+    efield = emg3d.solve(grid=grid, model=model, sfield=sfield, verb=3)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    :: emg3d START :: 11:39:32 :: v0.12.0
+
+       MG-cycle       : 'F'                 sslsolver : False
+       semicoarsening : False [0]           tol       : 1e-06
+       linerelaxation : False [0]           maxit     : 50
+       nu_{i,1,c,2}   : 0, 2, 1, 2          verb      : 3
+       Original grid  :  48 x  32 x  32     => 49,152 cells
+       Coarsest grid  :   3 x   2 x   2     => 12 cells
+       Coarsest level :   4 ;   4 ;   4   
+
+       [hh:mm:ss]  rel. error                  [abs. error, last/prev]   l s
+
+           h_
+          2h_ \                  /
+          4h_  \          /\    / 
+          8h_   \    /\  /  \  /  
+         16h_    \/\/  \/    \/   
+
+       [11:39:32]   2.623e-02  after   1 F-cycles   [1.464e-06, 0.026]   0 0
+       [11:39:33]   2.253e-03  after   2 F-cycles   [1.258e-07, 0.086]   0 0
+       [11:39:33]   3.051e-04  after   3 F-cycles   [1.704e-08, 0.135]   0 0
+       [11:39:33]   5.500e-05  after   4 F-cycles   [3.071e-09, 0.180]   0 0
+       [11:39:33]   1.170e-05  after   5 F-cycles   [6.531e-10, 0.213]   0 0
+       [11:39:34]   2.745e-06  after   6 F-cycles   [1.532e-10, 0.235]   0 0
+       [11:39:34]   6.873e-07  after   7 F-cycles   [3.837e-11, 0.250]   0 0
+
+       > CONVERGED
+       > MG cycles        : 7
+       > Final rel. error : 6.873e-07
+
+    :: emg3d END   :: 11:39:34 :: runtime = 0:00:02
+
+
+
+
+
+The computation requires in this case seven multigrid F-cycles and takes just
+a few seconds. It was able to coarsen in each dimension four times, where the
+input grid had 49,152 cells, and the coarsest grid had 12 cells.
+
+5. Plot the result
+------------------
+
+We can again utilize the in-built functions of a ``discretize``-grid to plot,
+e.g., the x-directed electric field.
+
+
+.. code-block:: default
+
+
+    grid.plot_3d_slicer(
+            efield.fx.ravel('F'), view='abs', v_type='Ex',
+            pcolor_opts={'norm': LogNorm()}
+    )
+
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_minimum_example_002.png
+    :alt: minimum example
+    :class: sphx-glr-single-img
+
+
+
+
+
+6. Compute and plot the magnetic field
+--------------------------------------
+
+We can also get the magnetic field and plot it (note that `v_type='Fx'` now,
+not `Ex`, as the magnetic fields lives on the faces of the Yee grid):
+
+
+.. code-block:: default
+
+
+    hfield = emg3d.get_h_field(grid=grid, model=model, field=efield)
+    grid.plot_3d_slicer(
+            hfield.fx.ravel('F'), view='abs', v_type='Fx',
+            pcolor_opts={'norm': LogNorm()}
+    )
+
+
+
+
+.. image:: /gallery/tutorials/images/sphx_glr_minimum_example_003.png
+    :alt: minimum example
+    :class: sphx-glr-single-img
+
+
+
+
+
+
+.. code-block:: default
+
+
+    emg3d.Report()
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table style='border: 3px solid #ddd;'>
+          <tr>
+             <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Thu Jul 30 11:39:35 2020 CEST</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+            <td style='text-align: left; border: 2px solid #fff;'>4</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+            <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+            <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+            <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59) 
+        [GCC 7.3.0]</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+            <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+            <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+          </tr>
+          <tr>
+             <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+          </tr>
+        </table>
+        <br />
+        <br />
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  4.557 seconds)
+
+**Estimated memory usage:**  50 MB
+
+
+.. _sphx_glr_download_gallery_tutorials_minimum_example.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: minimum_example.py <minimum_example.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: minimum_example.ipynb <minimum_example.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

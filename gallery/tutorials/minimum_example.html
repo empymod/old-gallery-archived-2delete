@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1. Minimum working example &mdash; emg3d-gallery 0.12.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/style.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery-dataframe.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="2. Simulation" href="simulation.html" />
+    <link rel="prev" title="Gallery" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html">
+          
+
+          
+            
+            <img src="../../_static/logo-emg3d-cut.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.12.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Example Gallery</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Gallery</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#examples-and-tutorials">Examples and Tutorials</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">1. Minimum working example</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mesh">1. Mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model">2. Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#source-field">3. Source field</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compute-the-electric-field">4. Compute the electric field</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plot-the-result">5. Plot the result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compute-and-plot-the-magnetic-field">6. Compute and plot the magnetic field</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html">2. Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mapping.html">3. Model property mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gradient.html">4. Gradient of the misfit function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="total_vs_ps_field.html">5. Total vs primary/secondary field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parameter_tests.html">6. Parameter tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#comparisons">Comparisons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#magnetic-fields-and-magnetic-permeability">Magnetic fields and magnetic permeability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#time-domain">Time Domain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#tools">Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#reproducing">Reproducing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interactions">Interactions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../manual.html">Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+            
+          
+
+    
+        <p class="caption">
+            <span class="caption-text">Links</span>
+        </p>
+        <ul>
+            
+                <li class="toctree-l1"><a href="https://empymod.github.io"><i class="fa fa-link fa-fw"></i> Website</a></li>
+            
+                <li class="toctree-l1"><a href="https://github.com/empymod/emg3d-gallery"><i class="fa fa-github fa-fw"></i> Source Code</a></li>
+            
+        </ul>
+    
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">emg3d-gallery</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Gallery</a> &raquo;</li>
+        
+      <li>1. Minimum working example</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gallery/tutorials/minimum_example.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="simulation.html" class="btn btn-neutral float-right" title="2. Simulation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral float-left" title="Gallery" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-gallery-tutorials-minimum-example-py"><span class="std std-ref">here</span></a>     to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="minimum-working-example">
+<span id="sphx-glr-gallery-tutorials-minimum-example-py"></span><h1>1. Minimum working example<a class="headerlink" href="#minimum-working-example" title="Permalink to this headline">¶</a></h1>
+<p>This is a simple minimum working example to use the multigrid solver <cite>emg3d</cite>,
+along the lines of the one provided in the manual as <a class="reference external" href="https://emg3d.readthedocs.io/en/stable/usage.html#basic-example">“Basic Example”</a>.</p>
+<p>To see some more realistic computations have a look at the other examples in
+this gallery. In particularly at
+<a class="reference internal" href="simulation.html#sphx-glr-gallery-tutorials-simulation-py"><span class="std std-ref">2. Simulation</span></a> to see how to use <cite>emg3d</cite> for a
+complex survey with many sources and frequencies.</p>
+<p>This example uses advanced tools of meshing including plotting, for which you
+need to install additionally <code class="docutils literal notranslate"><span class="pre">discretize</span></code> and <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>. If you are
+interested in a basic example that only requires <code class="docutils literal notranslate"><span class="pre">emg3d</span></code> and its mandatory
+dependencies here it is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">emg3d</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Create a simple grid, 8 cells of length 1 in each direction,</span>
+<span class="c1"># starting at the origin.</span>
+<span class="n">hx</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html#numpy.ones" title="numpy.ones" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html#numpy.ones" title="numpy.ones" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html#numpy.ones" title="numpy.ones" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html#numpy.ones" title="numpy.ones" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">ones</span></a></a></a></a><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a> <span class="o">=</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class"><span class="n">emg3d</span><span class="o">.</span><span class="n">TensorMesh</span></a></a></a></a><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="p">[</span><span class="n">hx</span><span class="p">,</span> <span class="n">hx</span><span class="p">,</span> <span class="n">hx</span><span class="p">],</span> <span class="n">x0</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+
+<span class="c1"># The model is a fullspace with tri-axial anisotropy.</span>
+<a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a> <span class="o">=</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class"><span class="n">emg3d</span><span class="o">.</span><span class="n">Model</span></a></a></a></a><span class="p">(</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="p">,</span> <span class="n">property_x</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">property_y</span><span class="o">=</span><span class="mf">1.8</span><span class="p">,</span>
+                    <span class="n">property_z</span><span class="o">=</span><span class="mf">3.3</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="s1">&#39;Resistivity&#39;</span><span class="p">)</span>
+
+<span class="c1"># The source is an x-directed, horizontal dipole at (4, 4, 4),</span>
+<span class="c1"># frequency is 10 Hz.</span>
+<a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sfield</span></a></a></a></a> <span class="o">=</span> <span class="n">emg3d</span><span class="o">.</span><span class="n">get_source_field</span><span class="p">(</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">freq</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+
+<span class="c1"># Compute the electric signal.</span>
+<a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">efield</span></a></a></a></a> <span class="o">=</span> <span class="n">emg3d</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="p">,</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a><span class="p">,</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sfield</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sfield</span></a></a></a></a><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Get the corresponding magnetic signal.</span>
+<a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hfield</span></a></a></a></a> <span class="o">=</span> <span class="n">emg3d</span><span class="o">.</span><span class="n">get_h_field</span><span class="p">(</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="p">,</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a><span class="p">,</span> <span class="n">field</span><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">efield</span></a></a></a></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s start by loading the required modules:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">emg3d</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">LogNorm</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;ggplot&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="mesh">
+<h2>1. Mesh<a class="headerlink" href="#mesh" title="Permalink to this headline">¶</a></h2>
+<p>First we define the mesh (see <a class="reference external" href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="(in emg3d v0.12.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">emg3d.meshes.TensorMesh</span></code></a> for more
+info). In reality, this task requires some careful considerations. E.g., to
+avoid edge effects, the mesh should be large enough in order for the fields
+to dissipate, yet fine enough around source and receiver to accurately model
+them. This grid is too small by any means, but serves as a minimal example.
+(Note that in order to define a mesh in such a way you must have <cite>discretize</cite>
+installed; see above for more info.)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a> <span class="o">=</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class"><span class="n">emg3d</span><span class="o">.</span><span class="n">TensorMesh</span></a></a></a></a><span class="p">(</span>
+        <span class="p">[[(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.04</span><span class="p">),</span> <span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> <span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">1.04</span><span class="p">)],</span>
+         <span class="p">[(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.03</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mf">1.03</span><span class="p">)],</span>
+         <span class="p">[(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.05</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">)]],</span>
+        <span class="n">x0</span><span class="o">=</span><span class="s1">&#39;CCC&#39;</span><span class="p">)</span>
+<a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a>
+</pre></div>
+</div>
+<table>
+  <tr>
+    <td style='font-weight: bold; font-size: 1.2em; text-align: center;' colspan='3'>TensorMesh</td>
+    <td style='font-size: 1.2em; text-align: center;'colspan='4'>49,152 cells</td>
+  </tr>
+  <tr>
+    <th></th>
+    <th></th>
+    <th colspan='2' style='padding: 5px 20px 5px 20px;'>MESH EXTENT</th>
+    <th colspan='2' style='padding: 5px 20px 5px 20px;'>CELL WIDTH</th>
+    <th style='padding: 5px 20px 5px 20px;'>FACTOR</th>
+  </tr>
+  <tr>
+    <th style='padding: 5px 20px 5px 20px;'>dir</th>
+    <th style='padding: 5px 20px 5px 20px;'>nC</th>
+    <th style='padding: 5px 20px 5px 20px;'>min</th>
+    <th style='padding: 5px 20px 5px 20px;'>max</th>
+    <th style='padding: 5px 20px 5px 20px;'>min</th>
+    <th style='padding: 5px 20px 5px 20px;'>max</th>
+    <th style='padding: 5px 20px 5px 20px;'>max</th>
+  </tr>
+  <tr>
+    <td style='padding: 5px 20px 5px 20px;'>x</td>
+    <td style='padding: 5px 20px 5px 20px;'>48</td>
+    <td style='padding: 5px 20px 5px 20px;'>-662.16</td>
+    <td style='padding: 5px 20px 5px 20px;'>662.16</td>
+    <td style='padding: 5px 20px 5px 20px;'>25.00</td>
+    <td style='padding: 5px 20px 5px 20px;'>37.01</td>
+    <td style='padding: 5px 20px 5px 20px;'>1.04</td>
+  </tr>
+  <tr>
+    <td style='padding: 5px 20px 5px 20px;'>y</td>
+    <td style='padding: 5px 20px 5px 20px;'>32</td>
+    <td style='padding: 5px 20px 5px 20px;'>-857.96</td>
+    <td style='padding: 5px 20px 5px 20px;'>857.96</td>
+    <td style='padding: 5px 20px 5px 20px;'>50.00</td>
+    <td style='padding: 5px 20px 5px 20px;'>63.34</td>
+    <td style='padding: 5px 20px 5px 20px;'>1.03</td>
+  </tr>
+  <tr>
+    <td style='padding: 5px 20px 5px 20px;'>z</td>
+    <td style='padding: 5px 20px 5px 20px;'>32</td>
+    <td style='padding: 5px 20px 5px 20px;'>-540.80</td>
+    <td style='padding: 5px 20px 5px 20px;'>540.80</td>
+    <td style='padding: 5px 20px 5px 20px;'>30.00</td>
+    <td style='padding: 5px 20px 5px 20px;'>44.32</td>
+    <td style='padding: 5px 20px 5px 20px;'>1.05</td>
+  </tr>
+</table>
+
+<br />
+<br /></div>
+<div class="section" id="model">
+<h2>2. Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h2>
+<p>Next we define a very simple fullspace resistivity model with
+<span class="math notranslate nohighlight">\(\rho_x=1.5\,\Omega\,\rm{m}\)</span>, <span class="math notranslate nohighlight">\(\rho_y=1.8\,\Omega\,\rm{m}\)</span>, and
+<span class="math notranslate nohighlight">\(\rho_z=3.3\,\Omega\,\rm{m}\)</span>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a> <span class="o">=</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class"><span class="n">emg3d</span><span class="o">.</span><span class="n">Model</span></a></a></a></a><span class="p">(</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="p">,</span> <span class="n">property_x</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">property_y</span><span class="o">=</span><span class="mf">1.8</span><span class="p">,</span>
+                    <span class="n">property_z</span><span class="o">=</span><span class="mf">3.3</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="s1">&#39;Resistivity&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here we define the model in terms of resistivity. Have a look at the example
+<a class="reference internal" href="mapping.html#sphx-glr-gallery-tutorials-mapping-py"><span class="std std-ref">3. Model property mapping</span></a> to see how to define models
+in terms of conductivity or their logarithms.</p>
+<p>Plotting this model results in an obviously rather boring plot, as it simply
+shows a homogeneous space. Here we plot the x-directed resistivity:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><span class="n">grid</span><span class="o">.</span><span class="n">plot_3d_slicer</span></a></a></a></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html#numpy.ones" title="numpy.ones" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html#numpy.ones" title="numpy.ones" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html#numpy.ones" title="numpy.ones" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html#numpy.ones" title="numpy.ones" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">ones</span></a></a></a></a><span class="p">(</span><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.vnC" title="discretize.TensorMesh.vnC" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-attribute"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.vnC" title="discretize.TensorMesh.vnC" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-attribute"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.vnC" title="discretize.TensorMesh.vnC" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-attribute"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.vnC" title="discretize.TensorMesh.vnC" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-attribute"><span class="n">grid</span><span class="o">.</span><span class="n">vnC</span></a></a></a></a><span class="p">)</span><span class="o">*</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model.property_x" title="emg3d.models.Model.property_x" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model.property_x" title="emg3d.models.Model.property_x" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model.property_x" title="emg3d.models.Model.property_x" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model.property_x" title="emg3d.models.Model.property_x" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-attribute"><span class="n">model</span><span class="o">.</span><span class="n">property_x</span></a></a></a></a><span class="p">)</span>  <span class="c1"># x-resistivity</span>
+</pre></div>
+</div>
+<img alt="minimum example" class="sphx-glr-single-img" src="../../_images/sphx_glr_minimum_example_001.png" />
+</div>
+<div class="section" id="source-field">
+<h2>3. Source field<a class="headerlink" href="#source-field" title="Permalink to this headline">¶</a></h2>
+<p>The source is an x-directed dipole at the origin, with a 10 Hz signal of 1 A
+(<code class="docutils literal notranslate"><span class="pre">src</span></code> is defined either as <code class="docutils literal notranslate"><span class="pre">[x,</span> <span class="pre">y,</span> <span class="pre">z,</span> <span class="pre">dip,</span> <span class="pre">azimuth]</span></code> or <code class="docutils literal notranslate"><span class="pre">[x0,</span> <span class="pre">x1,</span> <span class="pre">y0,</span>
+<span class="pre">y1,</span> <span class="pre">z0,</span> <span class="pre">z1]</span></code>; the strength can be set via the <code class="docutils literal notranslate"><span class="pre">strength</span></code> parameter).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sfield</span></a></a></a></a> <span class="o">=</span> <span class="n">emg3d</span><span class="o">.</span><span class="n">get_source_field</span><span class="p">(</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">freq</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="compute-the-electric-field">
+<h2>4. Compute the electric field<a class="headerlink" href="#compute-the-electric-field" title="Permalink to this headline">¶</a></h2>
+<p>Finally we can compute the electric field with <code class="docutils literal notranslate"><span class="pre">emg3d</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">efield</span></a></a></a></a> <span class="o">=</span> <span class="n">emg3d</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="p">,</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a><span class="p">,</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sfield</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.SourceField.html#emg3d.fields.SourceField" title="emg3d.fields.SourceField" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sfield</span></a></a></a></a><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>:: emg3d START :: 11:39:32 :: v0.12.0
+
+   MG-cycle       : &#39;F&#39;                 sslsolver : False
+   semicoarsening : False [0]           tol       : 1e-06
+   linerelaxation : False [0]           maxit     : 50
+   nu_{i,1,c,2}   : 0, 2, 1, 2          verb      : 3
+   Original grid  :  48 x  32 x  32     =&gt; 49,152 cells
+   Coarsest grid  :   3 x   2 x   2     =&gt; 12 cells
+   Coarsest level :   4 ;   4 ;   4
+
+   [hh:mm:ss]  rel. error                  [abs. error, last/prev]   l s
+
+       h_
+      2h_ \                  /
+      4h_  \          /\    /
+      8h_   \    /\  /  \  /
+     16h_    \/\/  \/    \/
+
+   [11:39:32]   2.623e-02  after   1 F-cycles   [1.464e-06, 0.026]   0 0
+   [11:39:33]   2.253e-03  after   2 F-cycles   [1.258e-07, 0.086]   0 0
+   [11:39:33]   3.051e-04  after   3 F-cycles   [1.704e-08, 0.135]   0 0
+   [11:39:33]   5.500e-05  after   4 F-cycles   [3.071e-09, 0.180]   0 0
+   [11:39:33]   1.170e-05  after   5 F-cycles   [6.531e-10, 0.213]   0 0
+   [11:39:34]   2.745e-06  after   6 F-cycles   [1.532e-10, 0.235]   0 0
+   [11:39:34]   6.873e-07  after   7 F-cycles   [3.837e-11, 0.250]   0 0
+
+   &gt; CONVERGED
+   &gt; MG cycles        : 7
+   &gt; Final rel. error : 6.873e-07
+
+:: emg3d END   :: 11:39:34 :: runtime = 0:00:02
+</pre></div>
+</div>
+<p>The computation requires in this case seven multigrid F-cycles and takes just
+a few seconds. It was able to coarsen in each dimension four times, where the
+input grid had 49,152 cells, and the coarsest grid had 12 cells.</p>
+</div>
+<div class="section" id="plot-the-result">
+<h2>5. Plot the result<a class="headerlink" href="#plot-the-result" title="Permalink to this headline">¶</a></h2>
+<p>We can again utilize the in-built functions of a <code class="docutils literal notranslate"><span class="pre">discretize</span></code>-grid to plot,
+e.g., the x-directed electric field.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><span class="n">grid</span><span class="o">.</span><span class="n">plot_3d_slicer</span></a></a></a></a><span class="p">(</span>
+        <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field.fx" title="emg3d.fields.Field.fx" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field.fx" title="emg3d.fields.Field.fx" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field.fx" title="emg3d.fields.Field.fx" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field.fx" title="emg3d.fields.Field.fx" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-attribute"><span class="n">efield</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">ravel</span></a></a></a></a><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">),</span> <span class="n">view</span><span class="o">=</span><span class="s1">&#39;abs&#39;</span><span class="p">,</span> <span class="n">v_type</span><span class="o">=</span><span class="s1">&#39;Ex&#39;</span><span class="p">,</span>
+        <span class="n">pcolor_opts</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;norm&#39;</span><span class="p">:</span> <span class="n">LogNorm</span><span class="p">()}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="minimum example" class="sphx-glr-single-img" src="../../_images/sphx_glr_minimum_example_002.png" />
+</div>
+<div class="section" id="compute-and-plot-the-magnetic-field">
+<h2>6. Compute and plot the magnetic field<a class="headerlink" href="#compute-and-plot-the-magnetic-field" title="Permalink to this headline">¶</a></h2>
+<p>We can also get the magnetic field and plot it (note that <cite>v_type=’Fx’</cite> now,
+not <cite>Ex</cite>, as the magnetic fields lives on the faces of the Yee grid):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hfield</span></a></a></a></a> <span class="o">=</span> <span class="n">emg3d</span><span class="o">.</span><span class="n">get_h_field</span><span class="p">(</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.meshes.TensorMesh.html#emg3d.meshes.TensorMesh" title="emg3d.meshes.TensorMesh" class="sphx-glr-backref-module-emg3d-meshes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">grid</span></a></a></a></a><span class="p">,</span> <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.models.Model.html#emg3d.models.Model" title="emg3d.models.Model" class="sphx-glr-backref-module-emg3d-models sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a></a></a></a><span class="p">,</span> <span class="n">field</span><span class="o">=</span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field" title="emg3d.fields.Field" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">efield</span></a></a></a></a><span class="p">)</span>
+<a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><a href="https://discretize.simpeg.xyz/en/master/api/generated/discretize.TensorMesh.html#discretize.TensorMesh.plot_3d_slicer" title="discretize.TensorMesh.plot_3d_slicer" class="sphx-glr-backref-module-discretize sphx-glr-backref-type-py-method"><span class="n">grid</span><span class="o">.</span><span class="n">plot_3d_slicer</span></a></a></a></a><span class="p">(</span>
+        <a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field.fx" title="emg3d.fields.Field.fx" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field.fx" title="emg3d.fields.Field.fx" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field.fx" title="emg3d.fields.Field.fx" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-attribute"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.fields.Field.html#emg3d.fields.Field.fx" title="emg3d.fields.Field.fx" class="sphx-glr-backref-module-emg3d-fields sphx-glr-backref-type-py-attribute"><span class="n">hfield</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">ravel</span></a></a></a></a><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">),</span> <span class="n">view</span><span class="o">=</span><span class="s1">&#39;abs&#39;</span><span class="p">,</span> <span class="n">v_type</span><span class="o">=</span><span class="s1">&#39;Fx&#39;</span><span class="p">,</span>
+        <span class="n">pcolor_opts</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;norm&#39;</span><span class="p">:</span> <span class="n">LogNorm</span><span class="p">()}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="minimum example" class="sphx-glr-single-img" src="../../_images/sphx_glr_minimum_example_003.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.utils.Report.html#emg3d.utils.Report" title="emg3d.utils.Report" class="sphx-glr-backref-module-emg3d-utils sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.utils.Report.html#emg3d.utils.Report" title="emg3d.utils.Report" class="sphx-glr-backref-module-emg3d-utils sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.utils.Report.html#emg3d.utils.Report" title="emg3d.utils.Report" class="sphx-glr-backref-module-emg3d-utils sphx-glr-backref-type-py-class"><a href="https://emg3d.readthedocs.io/en/stable/api/emg3d.utils.Report.html#emg3d.utils.Report" title="emg3d.utils.Report" class="sphx-glr-backref-module-emg3d-utils sphx-glr-backref-type-py-class"><span class="n">emg3d</span><span class="o">.</span><span class="n">Report</span></a></a></a></a><span class="p">()</span>
+</pre></div>
+</div>
+<table style='border: 3px solid #ddd;'>
+  <tr>
+     <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Thu Jul 30 11:39:35 2020 CEST</td>
+  </tr>
+  <tr>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+    <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+    <td style='text-align: left; border: 2px solid #fff;'>4</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+    <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+  </tr>
+  <tr>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+    <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+    <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+    <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+  </tr>
+  <tr>
+     <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59)
+[GCC 7.3.0]</td>
+  </tr>
+  <tr>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+    <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+    <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+    <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+  </tr>
+  <tr>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+    <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+    <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+    <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+  </tr>
+  <tr>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+    <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+    <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+    <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+  </tr>
+  <tr>
+    <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+    <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+    <td style= border: 2px solid #fff;'></td>
+    <td style= border: 2px solid #fff;'></td>
+    <td style= border: 2px solid #fff;'></td>
+    <td style= border: 2px solid #fff;'></td>
+  </tr>
+  <tr>
+     <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+  </tr>
+</table>
+<br />
+<br /><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.557 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  50 MB</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-gallery-tutorials-minimum-example-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/36adde89e5cdaa56375c2014323b9a00/minimum_example.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">minimum_example.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/391ca70907e5e3c825b308b67433c6aa/minimum_example.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">minimum_example.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="simulation.html" class="btn btn-neutral float-right" title="2. Simulation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral float-left" title="Gallery" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018-2020, The emg3d Developers.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

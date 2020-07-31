@@ -1,0 +1,740 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_gallery_time_domain_marine_1D.py>`     to download the full example code
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_gallery_time_domain_marine_1D.py:
+
+
+2. Transient CSEM for a marine model
+====================================
+
+Example how to use ``emg3d`` to model time-domain data using FFTLog.
+
+
+.. code-block:: default
+
+    import emg3d
+    import empymod
+    import numpy as np
+    import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
+    clim = np.log10([0.2, 200])
+
+    # Name is used to store the data for each frequency.
+    name = 'Marine-1D'
+
+
+
+
+
+
+
+
+
+Model and Survey
+----------------
+
+Model
+`````
+- 1 km water depth, 0.3 Ohm.m.
+- Target of 100 Ohm.m, 500 m thick, 1 km below seafloor.
+- Air set to 1e8 Ohm.m, background is 1 Ohm.m.
+
+Survey
+``````
+- Source at origin, 50 m above seafloor.
+- Receiver on the seafloor at an inline-offset of 4 km.
+- Both source and receiver are x-directed electric dipoles.
+
+
+.. code-block:: default
+
+
+    src = [0, 0, -950]
+    rec = [4000, 0, -1000]
+    res = np.array([1, 100, 1, 0.3, 1e8])
+    depth = np.array([-2500, -2000, -1000, 0])
+
+
+
+
+
+
+
+
+
+Here we create a dummy mesh with one cell in x- and y-directions, and our 1D
+model in z-direction. From this, we can interpolate the model to our varying
+meshes afterwards.
+
+
+.. code-block:: default
+
+
+    # Create the mesh.
+    orig_mesh = emg3d.TensorMesh(
+        [[1, ], [1, ], np.r_[1000, np.diff(depth), 1000]],
+        x0=('C', 'C', depth[0]-1000))
+
+    # Create a resistivity model using the 1D model and the above mesh.
+    orig_model = emg3d.Model(
+            orig_mesh, property_x=np.array(res), mapping='Resistivity')
+
+    # QC.
+    orig_mesh.plot_3d_slicer(
+            np.log10(orig_model.property_x), zlim=[-3000, 500], clim=clim)
+
+    # Get figure and axes
+    fig = plt.gcf()
+    axs = fig.get_children()
+
+    fig.suptitle(r'Resistivity model')
+
+    # Adjust the y-labels on the first subplot (XY)
+    axs[1].set_yticks([-0.4, -0.2, 0, 0.2, 0.4])
+    axs[1].set_yticklabels(['', '', '0.0', '', ''])
+    axs[1].set_ylabel('y-direction (m)')
+
+    # Adjust x- and y-labels on the second subplot (XZ)
+    axs[2].set_xticks([-0.4, -0.2, 0, 0.2, 0.4])
+    axs[2].set_xticklabels(['', '', '0.0', '', ''])
+    axs[2].set_xlabel('Easting (m)')
+
+    # plt.setp(axs[2].yaxis.get_majorticklabels(), rotation=90)
+    axs[2].set_yticks([0, -1000, -2000, -2500])
+    axs[2].set_yticklabels(['$0.0$', '-1.0', '-2.0', '-2.5'])
+    axs[2].set_ylabel('Elevation (km)')
+
+    # Adjust x-labels on the third subplot (ZY)
+    axs[3].set_xticks([400, 0, -1000, -2000, -2500, -3000])
+    axs[3].set_xticklabels(['', '$0.0$', '-1.0', '-2.0', '-2.5'])
+
+    # Adjust colorbar
+    axs[4].set_ylabel(r'$\rm{log}_{10}-$resistivity ($\Omega\,$m)')
+
+    # Ensure sufficient margins so nothing is clipped
+    plt.subplots_adjust(bottom=0.1, top=0.9, left=0.1, right=0.9)
+
+
+
+
+
+.. image:: /gallery/time_domain/images/sphx_glr_marine_1D_001.png
+    :alt: Resistivity model
+    :class: sphx-glr-single-img
+
+
+
+
+
+Fourier Transform parameters
+----------------------------
+
+We only compute frequencies :math:`0.003 < f < 5` Hz, which yields enough
+precision for our purpose.
+
+This means, instead of 30 frequencies from 0.00002 - 12.6 Hz, we only need 16
+frequencies from 0.003 - 3.2 Hz.
+
+
+.. code-block:: default
+
+
+    # Define desired times.
+    time = np.logspace(-1, 2, 201)
+
+    # Initiate a Fourier instance
+    Fourier = emg3d.Fourier(
+        time=time,
+        fmin=0.003,
+        fmax=5,
+        ft='fftlog',  # Fourier transform to use
+        ftarg={'pts_per_dec': 5, 'add_dec': [-2, 1], 'q': 0},
+    )
+
+    # Dense frequencies for comparison reasons
+    freq_dense = np.logspace(
+            np.log10(Fourier.freq_req.min()),
+            np.log10(Fourier.freq_req.max()),
+            301
+    )
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+       time        [s] :  0.1 - 100 : 201  [min-max; #]
+       Fourier         :  FFTLog
+         > pts_per_dec :  5
+         > add_dec     :  [-2.  1.]
+         > q           :  0.0
+       Req. freq  [Hz] :  2.00364E-05 - 12.6421 : 30  [min-max; #]
+       Calc. freq [Hz] :  0.00317556 - 3.17556 : 16  [min-max; #]
+
+
+
+
+Frequency-domain computation
+----------------------------
+
+
+.. code-block:: default
+
+
+    # To store the info of each frequency.
+    values = {}
+
+    gridinput = {
+        'min_width': 100,    # Fix cell width within the survey domain to 100 m.
+        'return_info': True,  # To get back some information for later.
+        'max_domain': 50000,
+        'verb': 0,
+    }
+
+    # Start the timer.
+    runtime = emg3d.utils.Time()
+
+    # Loop over frequencies, going from high to low.
+    for fi, frq in enumerate(Fourier.freq_calc[::-1]):
+        print(f"  {fi+1:2}/{Fourier.freq_calc.size} :: {frq:10.6f} Hz")
+
+        # Key is used to store the data etc.
+        key = int(frq*1e6)
+
+        # Initiate log for this frequency.
+        values[key] = {}
+        values[key]['freq'] = frq
+
+        # Get cell widths and origin in each direction
+        xx, x0, hix = emg3d.meshes.get_hx_h0(
+            freq=frq, res=[0.3, 1e5], fixed=src[0], domain=[-100, 7100],
+            **gridinput)
+        yy, y0, hiy = emg3d.meshes.get_hx_h0(
+            freq=frq, res=[0.3, 1e5], fixed=src[1], domain=[400, 400], **gridinput)
+        zz, z0, hiz = emg3d.meshes.get_hx_h0(
+            freq=frq, res=[0.3, 1., 1e5], domain=[-2300, 0], **gridinput,
+            fixed=[depth[2], depth[3], depth[0]])
+
+        # Store values in log.
+        values[key]['alpha'] = [np.min([hix['amin'], hiy['amin'], hiz['amin']]),
+                                np.max([hix['amax'], hiy['amax'], hiz['amax']])]
+        values[key]['dminmax'] = [np.min([hix['dmin'], hiy['dmin'], hiz['dmin']]),
+                                  np.max([hix['dmax'], hiy['dmax'], hiz['dmax']])]
+
+        # Initiate mesh.
+        grid = emg3d.TensorMesh([xx, yy, zz], x0=np.array([x0, y0, z0]))
+        # print(grid)
+        values[key]['nC'] = grid.nC  # Store number of cells in log.
+
+        # Generate model (interpolate on log-scale from our coarse model).
+        res_x = 10**emg3d.maps.grid2grid(
+                orig_mesh, np.log10(orig_model.property_x), grid, 'volume')
+        model = emg3d.Model(grid, property_x=res_x, mapping='Resistivity')
+
+        # QC
+        # grid.plot_3d_slicer(np.log10(model.property_x),
+        #                     zlim=[-3000, 500], clim=clim)
+
+        # Define source.
+        sfield = emg3d.get_source_field(
+            grid, [src[0], src[1], src[2], 0, 0], frq, strength=0)
+
+        # Solve the system.
+        efield, info = emg3d.solve(
+            grid, model, sfield, verb=-1, return_info=True,
+            sslsolver=True,  semicoarsening=True, linerelaxation=True,
+        )
+
+        # Store info
+        values[key]['info'] = info
+
+        # Store value
+        values[key]['data'] = emg3d.get_receiver(
+                grid, efield.fx, (rec[0], rec[1], rec[2]))
+
+    # Stop the timer.
+    total_time = runtime.runtime
+
+    # Store data and info to disk
+    emg3d.save(name+'.npz', values=values)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+       1/16 ::   3.175559 Hz
+    :: emg3d :: 2.5e-03; 0(1); 0:00:02    :: emg3d :: 5.2e-05; 0(2); 0:00:05    :: emg3d :: 8.8e-06; 0(3); 0:00:07    :: emg3d :: 2.2e-06; 0(4); 0:00:09    :: emg3d :: 2.4e-07; 0(5); 0:00:11    :: emg3d :: 2.4e-07; 1(5); 0:00:11    :: emg3d :: 2.4e-07; 1(5); 0:00:11; CONVERGED
+       2/16 ::   2.003642 Hz
+    :: emg3d :: 3.8e-03; 0(1); 0:00:03    :: emg3d :: 8.5e-05; 0(2); 0:00:05    :: emg3d :: 2.5e-05; 0(3); 0:00:08    :: emg3d :: 6.5e-06; 0(4); 0:00:11    :: emg3d :: 4.0e-07; 0(5); 0:00:14    :: emg3d :: 3.9e-07; 1(5); 0:00:14    :: emg3d :: 3.9e-07; 1(5); 0:00:14; CONVERGED
+       3/16 ::   1.264213 Hz
+    :: emg3d :: 4.7e-03; 0(1); 0:00:03    :: emg3d :: 1.2e-04; 0(2); 0:00:05    :: emg3d :: 7.9e-05; 0(3); 0:00:08    :: emg3d :: 1.9e-05; 0(4); 0:00:11    :: emg3d :: 1.3e-06; 0(5); 0:00:14    :: emg3d :: 1.2e-06; 0(6); 0:00:16    :: emg3d :: 9.6e-07; 1(6); 0:00:16    :: emg3d :: 9.6e-07; 1(6); 0:00:16; CONVERGED
+       4/16 ::   0.797664 Hz
+    :: emg3d :: 5.9e-03; 0(1); 0:00:03    :: emg3d :: 2.4e-04; 0(2); 0:00:05    :: emg3d :: 2.2e-04; 0(3); 0:00:08    :: emg3d :: 5.0e-05; 0(4); 0:00:11    :: emg3d :: 3.4e-06; 0(5); 0:00:14    :: emg3d :: 3.1e-06; 0(6); 0:00:16    :: emg3d :: 2.9e-06; 1(6); 0:00:16    :: emg3d :: 1.3e-06; 1(7); 0:00:19    :: emg3d :: 8.6e-08; 1(8); 0:00:22    :: emg3d :: 7.6e-08; 2(8); 0:00:22    :: emg3d :: 7.6e-08; 2(8); 0:00:22; CONVERGED
+       5/16 ::   0.503292 Hz
+    :: emg3d :: 6.7e-03; 0(1); 0:00:03    :: emg3d :: 3.8e-04; 0(2); 0:00:05    :: emg3d :: 4.9e-04; 0(3); 0:00:08    :: emg3d :: 1.2e-04; 0(4); 0:00:11    :: emg3d :: 1.1e-05; 0(5); 0:00:14    :: emg3d :: 1.7e-05; 0(6); 0:00:16    :: emg3d :: 1.3e-05; 1(6); 0:00:16    :: emg3d :: 4.4e-06; 1(7); 0:00:19    :: emg3d :: 4.3e-07; 1(8); 0:00:22    :: emg3d :: 4.3e-07; 2(8); 0:00:22    :: emg3d :: 4.3e-07; 2(8); 0:00:22; CONVERGED
+       6/16 ::   0.317556 Hz
+    :: emg3d :: 7.7e-03; 0(1); 0:00:03    :: emg3d :: 4.3e-04; 0(2); 0:00:05    :: emg3d :: 6.3e-04; 0(3); 0:00:08    :: emg3d :: 1.9e-04; 0(4); 0:00:11    :: emg3d :: 1.8e-05; 0(5); 0:00:14    :: emg3d :: 4.0e-05; 0(6); 0:00:16    :: emg3d :: 1.9e-05; 1(6); 0:00:16    :: emg3d :: 2.6e-06; 1(7); 0:00:19    :: emg3d :: 2.9e-07; 1(8); 0:00:22    :: emg3d :: 5.7e-07; 1(9); 0:00:24    :: emg3d :: 4.1e-07; 2(9); 0:00:25    :: emg3d :: 4.1e-07; 2(9); 0:00:25; CONVERGED
+       7/16 ::   0.200364 Hz
+    :: emg3d :: 9.3e-03; 0(1); 0:00:03    :: emg3d :: 7.6e-04; 0(2); 0:00:05    :: emg3d :: 1.1e-03; 0(3); 0:00:08    :: emg3d :: 3.2e-04; 0(4); 0:00:11    :: emg3d :: 3.9e-05; 0(5); 0:00:14    :: emg3d :: 9.9e-05; 0(6); 0:00:16    :: emg3d :: 4.6e-05; 1(6); 0:00:16    :: emg3d :: 6.2e-06; 1(7); 0:00:19    :: emg3d :: 8.2e-07; 1(8); 0:00:22    :: emg3d :: 2.4e-06; 1(9); 0:00:25    :: emg3d :: 2.7e-07; 1(10); 0:00:27    :: emg3d :: 2.7e-07; 2(10); 0:00:27    :: emg3d :: 2.7e-07; 2(10); 0:00:27; CONVERGED
+       8/16 ::   0.126421 Hz
+    :: emg3d :: 1.1e-02; 0(1); 0:00:03    :: emg3d :: 1.3e-03; 0(2); 0:00:05    :: emg3d :: 1.7e-03; 0(3); 0:00:08    :: emg3d :: 4.7e-04; 0(4); 0:00:11    :: emg3d :: 8.5e-05; 0(5); 0:00:14    :: emg3d :: 2.2e-04; 0(6); 0:00:16    :: emg3d :: 1.4e-04; 1(6); 0:00:16    :: emg3d :: 3.4e-05; 1(7); 0:00:19    :: emg3d :: 6.0e-06; 1(8); 0:00:22    :: emg3d :: 1.0e-05; 1(9); 0:00:24    :: emg3d :: 1.6e-06; 1(10); 0:00:27    :: emg3d :: 2.3e-07; 1(11); 0:00:30    :: emg3d :: 2.3e-07; 2(11); 0:00:30    :: emg3d :: 2.3e-07; 2(11); 0:00:30; CONVERGED
+       9/16 ::   0.079766 Hz
+    :: emg3d :: 1.4e-02; 0(1); 0:00:03    :: emg3d :: 2.1e-03; 0(2); 0:00:05    :: emg3d :: 2.4e-03; 0(3); 0:00:08    :: emg3d :: 6.5e-04; 0(4); 0:00:11    :: emg3d :: 1.5e-04; 0(5); 0:00:14    :: emg3d :: 4.0e-04; 0(6); 0:00:16    :: emg3d :: 2.8e-04; 1(6); 0:00:16    :: emg3d :: 5.9e-05; 1(7); 0:00:19    :: emg3d :: 1.2e-05; 1(8); 0:00:22    :: emg3d :: 2.3e-05; 1(9); 0:00:24    :: emg3d :: 4.2e-06; 1(10); 0:00:27    :: emg3d :: 7.4e-07; 1(11); 0:00:30    :: emg3d :: 7.4e-07; 2(11); 0:00:30    :: emg3d :: 7.4e-07; 2(11); 0:00:30; CONVERGED
+      10/16 ::   0.050329 Hz
+    :: emg3d :: 1.8e-02; 0(1); 0:00:03    :: emg3d :: 3.1e-03; 0(2); 0:00:05    :: emg3d :: 3.9e-03; 0(3); 0:00:08    :: emg3d :: 9.9e-04; 0(4); 0:00:11    :: emg3d :: 2.6e-04; 0(5); 0:00:14    :: emg3d :: 8.2e-04; 0(6); 0:00:16    :: emg3d :: 5.9e-04; 1(6); 0:00:16    :: emg3d :: 1.1e-04; 1(7); 0:00:19    :: emg3d :: 2.3e-05; 1(8); 0:00:22    :: emg3d :: 6.1e-05; 1(9); 0:00:24    :: emg3d :: 9.2e-06; 1(10); 0:00:27    :: emg3d :: 2.1e-06; 1(11); 0:00:30    :: emg3d :: 4.0e-06; 1(12); 0:00:32    :: emg3d :: 3.7e-06; 2(12); 0:00:33    :: emg3d :: 9.6e-07; 2(13); 0:00:35    :: emg3d :: 9.7e-07; 3(13); 0:00:35    :: emg3d :: 9.7e-07; 3(13); 0:00:35; CONVERGED
+      11/16 ::   0.031756 Hz
+    :: emg3d :: 2.4e-02; 0(1); 0:00:03    :: emg3d :: 4.4e-03; 0(2); 0:00:05    :: emg3d :: 5.6e-03; 0(3); 0:00:08    :: emg3d :: 1.6e-03; 0(4); 0:00:11    :: emg3d :: 5.0e-04; 0(5); 0:00:14    :: emg3d :: 1.5e-03; 0(6); 0:00:16    :: emg3d :: 1.1e-03; 1(6); 0:00:16    :: emg3d :: 2.1e-04; 1(7); 0:00:19    :: emg3d :: 5.4e-05; 1(8); 0:00:22    :: emg3d :: 1.6e-04; 1(9); 0:00:24    :: emg3d :: 2.1e-05; 1(10); 0:00:27    :: emg3d :: 5.7e-06; 1(11); 0:00:30    :: emg3d :: 1.2e-05; 1(12); 0:00:33    :: emg3d :: 1.1e-05; 2(12); 0:00:33    :: emg3d :: 2.5e-06; 2(13); 0:00:35    :: emg3d :: 8.1e-07; 2(14); 0:00:38    :: emg3d :: 2.4e-06; 2(15); 0:00:41    :: emg3d :: 4.4e-07; 2(16); 0:00:43    :: emg3d :: 4.2e-07; 3(16); 0:00:43    :: emg3d :: 4.2e-07; 3(16); 0:00:43; CONVERGED
+      12/16 ::   0.020036 Hz
+    :: emg3d :: 3.5e-02; 0(1); 0:00:03    :: emg3d :: 6.3e-03; 0(2); 0:00:05    :: emg3d :: 7.8e-03; 0(3); 0:00:08    :: emg3d :: 2.8e-03; 0(4); 0:00:11    :: emg3d :: 1.0e-03; 0(5); 0:00:14    :: emg3d :: 2.5e-03; 0(6); 0:00:16    :: emg3d :: 1.8e-03; 1(6); 0:00:16    :: emg3d :: 4.5e-04; 1(7); 0:00:19    :: emg3d :: 1.1e-04; 1(8); 0:00:22    :: emg3d :: 3.5e-04; 1(9); 0:00:24    :: emg3d :: 5.1e-05; 1(10); 0:00:27    :: emg3d :: 1.4e-05; 1(11); 0:00:30    :: emg3d :: 2.9e-05; 1(12); 0:00:32    :: emg3d :: 2.4e-05; 2(12); 0:00:32    :: emg3d :: 5.3e-06; 2(13); 0:00:35    :: emg3d :: 2.2e-06; 2(14); 0:00:38    :: emg3d :: 7.4e-06; 2(15); 0:00:40    :: emg3d :: 4.4e-07; 2(16); 0:00:43    :: emg3d :: 4.3e-07; 3(16); 0:00:43    :: emg3d :: 4.3e-07; 3(16); 0:00:43; CONVERGED
+      13/16 ::   0.012642 Hz
+    :: emg3d :: 4.6e-02; 0(1); 0:00:03    :: emg3d :: 8.2e-03; 0(2); 0:00:05    :: emg3d :: 1.1e-02; 0(3); 0:00:08    :: emg3d :: 4.5e-03; 0(4); 0:00:10    :: emg3d :: 1.7e-03; 0(5); 0:00:13    :: emg3d :: 4.4e-03; 0(6); 0:00:16    :: emg3d :: 2.9e-03; 1(6); 0:00:16    :: emg3d :: 1.1e-03; 1(7); 0:00:18    :: emg3d :: 2.8e-04; 1(8); 0:00:21    :: emg3d :: 7.4e-04; 1(9); 0:00:24    :: emg3d :: 1.4e-04; 1(10); 0:00:26    :: emg3d :: 4.1e-05; 1(11); 0:00:29    :: emg3d :: 9.7e-05; 1(12); 0:00:31    :: emg3d :: 7.1e-05; 2(12); 0:00:31    :: emg3d :: 1.9e-05; 2(13); 0:00:34    :: emg3d :: 7.5e-06; 2(14); 0:00:37    :: emg3d :: 2.3e-05; 2(15); 0:00:39    :: emg3d :: 1.8e-06; 2(16); 0:00:42    :: emg3d :: 5.1e-07; 2(17); 0:00:44    :: emg3d :: 5.1e-07; 3(17); 0:00:45    :: emg3d :: 5.1e-07; 3(17); 0:00:45; CONVERGED
+      14/16 ::   0.007977 Hz
+    :: emg3d :: 6.1e-02; 0(1); 0:00:03    :: emg3d :: 1.1e-02; 0(2); 0:00:05    :: emg3d :: 1.4e-02; 0(3); 0:00:08    :: emg3d :: 7.3e-03; 0(4); 0:00:10    :: emg3d :: 2.8e-03; 0(5); 0:00:13    :: emg3d :: 7.0e-03; 0(6); 0:00:16    :: emg3d :: 4.8e-03; 1(6); 0:00:16    :: emg3d :: 2.2e-03; 1(7); 0:00:18    :: emg3d :: 5.9e-04; 1(8); 0:00:21    :: emg3d :: 1.5e-03; 1(9); 0:00:24    :: emg3d :: 3.3e-04; 1(10); 0:00:26    :: emg3d :: 1.1e-04; 1(11); 0:00:29    :: emg3d :: 2.8e-04; 1(12); 0:00:31    :: emg3d :: 1.9e-04; 2(12); 0:00:31    :: emg3d :: 5.9e-05; 2(13); 0:00:34    :: emg3d :: 2.1e-05; 2(14); 0:00:37    :: emg3d :: 6.6e-05; 2(15); 0:00:39    :: emg3d :: 8.7e-06; 2(16); 0:00:42    :: emg3d :: 2.5e-06; 2(17); 0:00:45    :: emg3d :: 5.3e-06; 2(18); 0:00:47    :: emg3d :: 4.1e-06; 3(18); 0:00:47    :: emg3d :: 1.1e-06; 3(19); 0:00:50    :: emg3d :: 4.9e-07; 3(20); 0:00:52    :: emg3d :: 9.4e-07; 3(21); 0:00:55    :: emg3d :: 4.7e-07; 4(21); 0:00:55    :: emg3d :: 4.7e-07; 4(21); 0:00:55; CONVERGED
+      15/16 ::   0.005033 Hz
+    :: emg3d :: 6.2e-02; 0(1); 0:00:04    :: emg3d :: 9.7e-03; 0(2); 0:00:07    :: emg3d :: 2.0e-02; 0(3); 0:00:11    :: emg3d :: 8.2e-03; 0(4); 0:00:14    :: emg3d :: 3.1e-03; 0(5); 0:00:18    :: emg3d :: 1.3e-02; 0(6); 0:00:21    :: emg3d :: 8.4e-03; 1(6); 0:00:21    :: emg3d :: 4.0e-03; 1(7); 0:00:25    :: emg3d :: 1.1e-03; 1(8); 0:00:28    :: emg3d :: 3.3e-03; 1(9); 0:00:32    :: emg3d :: 7.6e-04; 1(10); 0:00:35    :: emg3d :: 2.6e-04; 1(11); 0:00:39    :: emg3d :: 1.2e-03; 1(12); 0:00:42    :: emg3d :: 6.8e-04; 2(12); 0:00:43    :: emg3d :: 2.2e-04; 2(13); 0:00:46    :: emg3d :: 7.3e-05; 2(14); 0:00:50    :: emg3d :: 2.7e-04; 2(15); 0:00:53    :: emg3d :: 5.1e-05; 2(16); 0:00:57    :: emg3d :: 1.5e-05; 2(17); 0:01:00    :: emg3d :: 3.5e-05; 2(18); 0:01:04    :: emg3d :: 2.6e-05; 3(18); 0:01:04    :: emg3d :: 7.0e-06; 3(19); 0:01:07    :: emg3d :: 3.1e-06; 3(20); 0:01:11    :: emg3d :: 1.2e-05; 3(21); 0:01:14    :: emg3d :: 9.8e-07; 3(22); 0:01:18    :: emg3d :: 9.8e-07; 4(22); 0:01:18    :: emg3d :: 9.8e-07; 4(22); 0:01:18; CONVERGED
+      16/16 ::   0.003176 Hz
+    :: emg3d :: 7.7e-02; 0(1); 0:00:04    :: emg3d :: 1.2e-02; 0(2); 0:00:07    :: emg3d :: 2.3e-02; 0(3); 0:00:11    :: emg3d :: 1.2e-02; 0(4); 0:00:14    :: emg3d :: 4.5e-03; 0(5); 0:00:18    :: emg3d :: 1.7e-02; 0(6); 0:00:21    :: emg3d :: 1.2e-02; 1(6); 0:00:21    :: emg3d :: 7.3e-03; 1(7); 0:00:25    :: emg3d :: 2.0e-03; 1(8); 0:00:28    :: emg3d :: 5.5e-03; 1(9); 0:00:32    :: emg3d :: 1.5e-03; 1(10); 0:00:35    :: emg3d :: 6.0e-04; 1(11); 0:00:39    :: emg3d :: 2.7e-03; 1(12); 0:00:42    :: emg3d :: 1.5e-03; 2(12); 0:00:42    :: emg3d :: 6.2e-04; 2(13); 0:00:46    :: emg3d :: 1.9e-04; 2(14); 0:00:50    :: emg3d :: 5.9e-04; 2(15); 0:00:53    :: emg3d :: 1.7e-04; 2(16); 0:00:57    :: emg3d :: 4.8e-05; 2(17); 0:01:00    :: emg3d :: 1.0e-04; 2(18); 0:01:04    :: emg3d :: 7.4e-05; 3(18); 0:01:04    :: emg3d :: 2.6e-05; 3(19); 0:01:07    :: emg3d :: 1.2e-05; 3(20); 0:01:11    :: emg3d :: 4.3e-05; 3(21); 0:01:14    :: emg3d :: 4.2e-06; 3(22); 0:01:18    :: emg3d :: 1.8e-06; 3(23); 0:01:21    :: emg3d :: 5.9e-06; 3(24); 0:01:25    :: emg3d :: 2.6e-06; 4(24); 0:01:25    :: emg3d :: 9.4e-07; 4(25); 0:01:28    :: emg3d :: 1.1e-06; 4(26); 0:01:32    :: emg3d :: 1.9e-06; 4(27); 0:01:35    :: emg3d :: 4.0e-07; 4(28); 0:01:39    :: emg3d :: 4.0e-07; 5(28); 0:01:39    :: emg3d :: 4.0e-07; 5(28); 0:01:39; CONVERGED
+    Data saved to «/home/dtr/Desktop/emg3d-gallery/examples/time_domain/Marine-1D.npz»
+    [emg3d v0.12.0 (format 0.12.0) on 2020-07-29T22:56:01.337841].
+
+
+
+
+
+.. code-block:: default
+
+
+    # Load info and data
+    values = emg3d.load(name+'.npz')['values']
+
+    runtime = 0
+    for key, value in values.items():
+        print(f"  {value['freq']:7.3f} Hz: "
+              f"{value['info']['it_mg']:2g}/{value['info']['it_ssl']:g} it; "
+              f"{value['info']['time']:4.0f} s; "
+              f"a: {value['alpha'][0]:.3f} / {value['alpha'][1]:.3f} ; "
+              f"nC: {value['nC']:8,.0f}; "
+              f"a: {value['dminmax'][0]:5.0f} / {value['dminmax'][1]:7.0f}")
+        runtime += value['info']['time']
+
+    print(f"\n                **** TOTAL RUNTIME :: "
+          f"{runtime//60:.0f} min {runtime%60:.1f} s ****\n")
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Data loaded from «/home/dtr/Desktop/emg3d-gallery/examples/time_domain/Marine-1D.npz»
+    [emg3d v0.12.0 (format 0.12.0) on 2020-07-29T22:56:01.337841].
+        3.176 Hz:  5/1 it;   11 s; a: 1.000 / 1.480 ; nC:  163,840; a:   100 /   24192
+        2.004 Hz:  5/1 it;   14 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        1.264 Hz:  6/1 it;   16 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.798 Hz:  8/2 it;   22 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.503 Hz:  8/2 it;   22 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.318 Hz:  9/2 it;   25 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.200 Hz: 10/2 it;   27 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.126 Hz: 11/2 it;   30 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.080 Hz: 11/2 it;   30 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.050 Hz: 13/3 it;   35 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.032 Hz: 16/3 it;   43 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.020 Hz: 16/3 it;   43 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.013 Hz: 17/3 it;   45 s; a: 1.000 / 1.480 ; nC:  196,608; a:   100 /   24192
+        0.008 Hz: 21/4 it;   55 s; a: 1.000 / 1.490 ; nC:  196,608; a:   100 /   24192
+        0.005 Hz: 22/4 it;   78 s; a: 1.000 / 1.480 ; nC:  262,144; a:   100 /   24192
+        0.003 Hz: 28/5 it;   99 s; a: 1.000 / 1.480 ; nC:  262,144; a:   100 /   24192
+
+                    **** TOTAL RUNTIME :: 9 min 55.0 s ****
+
+
+
+
+
+Load data, interpolate at receiver location
+```````````````````````````````````````````
+
+
+.. code-block:: default
+
+
+    # Initiate data with zeros.
+    data = np.zeros((Fourier.freq_calc.size), dtype=complex)
+
+    # Loop over frequencies.
+    for fi, frq in enumerate(Fourier.freq_calc):
+        key = str(int(frq*1e6))
+        data[fi] = values[key]['data']
+
+
+
+
+
+
+
+
+
+Interpolate missing frequencies and compute analytical result
+`````````````````````````````````````````````````````````````
+
+
+.. code-block:: default
+
+
+    data_int = Fourier.interpolate(data)
+
+    # Compute analytical result using empymod (epm)
+    epm_req = empymod.dipole(src, rec, depth, res, Fourier.freq_req, verb=1)
+    epm_calc = empymod.dipole(src, rec, depth, res, Fourier.freq_calc, verb=1)
+    epm_dense = empymod.dipole(src, rec, depth, res, freq_dense, verb=1)
+
+
+
+
+
+
+
+
+
+Plot frequency-domain result
+````````````````````````````
+
+
+.. code-block:: default
+
+
+    plt.figure(figsize=(10, 7))
+
+    # Real, log-lin
+    ax1 = plt.subplot(321)
+    plt.title('(a) log-lin Real')
+    plt.plot(freq_dense, 1e9*epm_dense.real, 'C1')
+    plt.plot(Fourier.freq_req, 1e9*data_int.real, 'k.', label='interpolated')
+    plt.plot(Fourier.freq_calc, 1e9*data.real, 'C0*')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xscale('log')
+
+    # Real, log-symlog
+    ax3 = plt.subplot(323, sharex=ax1)
+    plt.title('(c) log-symlog Real')
+    plt.plot(freq_dense, 1e9*epm_dense.real, 'C1')
+    plt.plot(Fourier.freq_req, 1e9*data_int.real, 'k.')
+    plt.plot(Fourier.freq_calc, 1e9*data.real, 'C0*')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xscale('log')
+    plt.yscale('symlog', linthreshy=1e-5)
+
+    # Real, error
+    ax5 = plt.subplot(325, sharex=ax3)
+    plt.title('(e) clipped 0.01-10')
+
+    # Compute the error
+    err_int_r = np.clip(100*abs((data_int.real-epm_req.real) /
+                                epm_req.real), 0.01, 10)
+    err_cal_r = np.clip(100*abs((data.real-epm_calc.real) /
+                                epm_calc.real), 0.01, 10)
+
+    plt.ylabel('Rel. error %')
+    plt.plot(Fourier.freq_req, err_int_r, 'k.')
+    plt.plot(Fourier.freq_calc, err_cal_r, 'C0*')
+    plt.axhline(1, color='.4')
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.ylim([0.008, 12])
+    plt.xlabel('Frequency (Hz)')
+
+    # Imaginary, log-lin
+    ax2 = plt.subplot(322)
+    plt.title('(b) log-lin Imag')
+    plt.plot(freq_dense, 1e9*epm_dense.imag, 'C1')
+    plt.plot(Fourier.freq_req, 1e9*data_int.imag, 'k.', label='interpolated')
+    plt.plot(Fourier.freq_calc, 1e9*data.imag, 'C0*')
+    plt.xscale('log')
+
+    # Imaginary, log-symlog
+    ax4 = plt.subplot(324, sharex=ax2)
+    plt.title('(d) log-symlog Imag')
+    plt.plot(freq_dense, 1e9*epm_dense.imag, 'C1')
+    plt.plot(Fourier.freq_req, 1e9*data_int.imag, 'k.')
+    plt.plot(Fourier.freq_calc, 1e9*data.imag, 'C0*')
+
+    plt.xscale('log')
+    plt.yscale('symlog', linthreshy=1e-5)
+
+    # Imaginary, error
+    ax6 = plt.subplot(326, sharex=ax2)
+    plt.title('(f) clipped 0.01-10')
+
+    # Compute error
+    err_int_i = np.clip(100*abs((data_int.imag-epm_req.imag) /
+                                epm_req.imag), 0.01, 10)
+    err_cal_i = np.clip(100*abs((data.imag-epm_calc.imag) /
+                                epm_calc.imag), 0.01, 10)
+
+    plt.plot(Fourier.freq_req, err_int_i, 'k.')
+    plt.plot(Fourier.freq_calc, err_cal_i, 'C0*')
+    plt.axhline(1, color='.4')
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.ylim([0.008, 12])
+    plt.xlabel('Frequency (Hz)')
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/time_domain/images/sphx_glr_marine_1D_002.png
+    :alt: (a) log-lin Real, (c) log-symlog Real, (e) clipped 0.01-10, (b) log-lin Imag, (d) log-symlog Imag, (f) clipped 0.01-10
+    :class: sphx-glr-single-img
+
+
+
+
+
+Fourier Transform
+-----------------
+
+Carry-out Fourier transform, compute analytical result
+
+
+.. code-block:: default
+
+
+    # Compute corresponding time-domain signal.
+    data_time = Fourier.freq2time(data, rec[0])
+
+    # Analytical result
+    epm_time_precise = empymod.dipole(src, rec, depth, res, time, signal=0, verb=1)
+    epm_time = empymod.dipole(
+            src, rec, depth, res, time, signal=0,
+            ft=Fourier.ft, ftarg=Fourier.ftarg, verb=1)
+
+
+
+
+
+
+
+
+
+Plot time-domain result
+```````````````````````
+
+
+.. code-block:: default
+
+
+    fig = plt.figure(figsize=(8, 6))
+
+    # lin-lin
+    plt.subplot(221)
+    plt.title('(a) lin-lin')
+    plt.plot(time, epm_time_precise*1e9, 'k', lw=2)
+    plt.plot(time, epm_time*1e9, 'C1')
+    plt.plot(time, data_time*1e9, 'C0')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xlim([-0.1, 12])
+    plt.xlabel('Time (s)')
+
+    # log-log
+    ax2 = plt.subplot(222)
+    plt.title('(b) log-log')
+    plt.plot(time, epm_time_precise*1e9, 'k', lw=2, label='empymod, analytical')
+    plt.plot(time, epm_time*1e9, 'C1', label='empymod, same FT as emg3d')
+    plt.plot(time, data_time*1e9, 'C0', label='emg3d, FFTLog')
+    perr = 100*(max(data_time)-max(epm_time_precise))/max(epm_time_precise)
+    plt.plot(-1, 1e9, 'k>', label=f"Peak error: {perr:.2f} %")
+    plt.ylim([1e-8, 1e-3])
+    plt.xscale('log')
+    plt.yscale('log')
+
+    # Error
+    ax4 = plt.subplot(224, sharex=ax2)
+    plt.title('(c) clipped 0.01-10 %')
+
+    # Compute error
+    err = np.clip(100*abs((data_time-epm_time_precise)/epm_time_precise), 0.01, 10)
+    err2 = np.clip(100*abs((epm_time-epm_time_precise)/epm_time_precise), 0.01, 10)
+
+    plt.loglog(time, err2, 'C1.')
+    plt.loglog(time, err, 'C0.')
+    plt.hlines(1, 0, 100)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Rel. error %')
+    plt.ylim([0.008, 12])
+
+    plt.tight_layout()
+
+    # Plot peak error
+    ax2.legend(bbox_to_anchor=(-0.5, -0.5))
+
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/time_domain/images/sphx_glr_marine_1D_003.png
+    :alt: (a) lin-lin, (b) log-log, (c) clipped 0.01-10 %
+    :class: sphx-glr-single-img
+
+
+
+
+
+Further explanations to the results in the above figure:
+````````````````````````````````````````````````````````
+
+- The black line is a very accurate result using ``empymod`` and the
+  following characteristics for the Fourier transform:
+
+  - Filter: Key 201 CosSin (2012)
+  - DLF type: Lagged Convolution
+  - Required frequencies: 251, from 1.5e-9 to 1.8e6 Hz
+
+- The blue result was equally obtained with ``empymod``, but with the
+  Fourier-transform parameters as used for ``emg3d``, hence FFTLog with 5 pts
+  per decade. However, in contrary to the red response, all frequencies are
+  computed, with a very high precision.
+- The red result is the result obtain with ``emg3d``.
+
+
+
+.. code-block:: default
+
+
+    emg3d.Report()
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table style='border: 3px solid #ddd;'>
+          <tr>
+             <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Wed Jul 29 22:56:05 2020 CEST</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+            <td style='text-align: left; border: 2px solid #fff;'>4</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+            <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+            <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+            <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59) 
+        [GCC 7.3.0]</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+            <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+            <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+          </tr>
+          <tr>
+             <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+          </tr>
+        </table>
+        <br />
+        <br />
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 10 minutes  2.640 seconds)
+
+**Estimated memory usage:**  9 MB
+
+
+.. _sphx_glr_download_gallery_time_domain_marine_1D.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: marine_1D.py <marine_1D.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: marine_1D.ipynb <marine_1D.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

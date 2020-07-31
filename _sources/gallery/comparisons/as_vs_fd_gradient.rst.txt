@@ -1,0 +1,1020 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_gallery_comparisons_as_vs_fd_gradient.py>`     to download the full example code
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_gallery_comparisons_as_vs_fd_gradient.py:
+
+
+4. Adjoint-state vs. FD gradient
+================================
+
+The **gradient of the misfit function**, as implemented in `emg3d`, uses the
+adjoint-state method following [PlMu08]_ (see :func:`emg3d.optimize.gradient`).
+The method has the advantage that it is very fast. However, it can be tricky to
+implement and it is always good to verify the implementation against another
+method.
+
+We compare in this example the adjoint-state gradient to a simple forward
+finite-difference gradient. (See :ref:`sphx_glr_gallery_tutorials_gradient.py`
+for more details regarding the adjoint-state gradient.)
+
+
+.. code-block:: default
+
+    import emg3d
+    import itertools
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+    from matplotlib.colors import LogNorm, SymLogNorm
+    plt.style.use('ggplot')
+
+
+
+
+
+
+
+
+1. Create a survey and a simple model
+-------------------------------------
+
+Create a simple block model and a survey for the comparison.
+
+Survey
+''''''
+The survey consists of one source, one receiver, both electric, x-directed
+point-dipoles, where the receiver is on the seafloor and the source 50 m
+above. Offset is 3.2 km, and acquisition frequency is 1 Hz.
+
+
+.. code-block:: default
+
+
+    survey = emg3d.surveys.Survey(
+        name='Gradient Test-Survey',
+        sources=(-1600, 0, -1950, 0, 0),
+        receivers=(1600, 0, -2000, 0, 0),
+        frequencies=1.0,
+    )
+
+
+
+
+
+
+
+
+Model
+'''''
+
+As `emg3d` internally computes with conductivities we use conductivities to
+compare the gradient in its purest implementation. Note that if we define our
+model in terms of resistivities or :math:`\log_{\{e;10\}}(\{\sigma;\rho\})`,
+the gradient would look differently.
+
+
+.. code-block:: default
+
+
+    # Create a simple block model.
+    hx = np.array([1000, 1500, 1000, 1500, 1000])
+    hy = np.array([1000, 1500, 1000, 1500, 1000])
+    hz = np.array([1800., 200., 200., 200., 300., 300., 2000.,  500.])
+    model_grid = emg3d.TensorMesh([hx, hy, hz], x0=np.array([-3000, -3000, -5000]))
+
+    # Initiate model with conductivities of 1 S/m.
+    model = emg3d.Model(model_grid, np.ones(model_grid.nC), mapping='Conductivity')
+    model.property_x[:, :, -1] = 1e-8  # Add air layer.
+    model.property_x[:, :, -2] = 3.33  # Add seawater layer.
+    model_bg = model.copy()  # Make a copy for the background model.
+
+    # Add three blocks.
+    model.property_x[1, 1:3, 1:3] = 0.02
+    model.property_x[3, 2:4, 2:4] = 0.01
+    model.property_x[2, 1:4, 4] = 0.005
+
+
+
+
+
+
+
+
+QC
+''
+
+
+.. code-block:: default
+
+
+    model_grid.plot_3d_slicer(model.property_x.ravel('F'), clim=[0.002, 3.5],
+                              pcolor_opts={'norm': LogNorm()}, zslice=-2900)
+
+    plt.suptitle('Conductivity (S/m)')
+    axs = plt.gcf().get_children()
+    axs[1].plot(survey.rec_coords[0], survey.rec_coords[1], 'bv')
+    axs[2].plot(survey.rec_coords[0], survey.rec_coords[2], 'bv')
+    axs[3].plot(survey.rec_coords[2], survey.rec_coords[1], 'bv')
+    axs[1].plot(survey.src_coords[0], survey.src_coords[1], 'r*')
+    axs[2].plot(survey.src_coords[0], survey.src_coords[2], 'r*')
+    axs[3].plot(survey.src_coords[2], survey.src_coords[1], 'r*')
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/comparisons/images/sphx_glr_as_vs_fd_gradient_001.png
+    :alt: Conductivity (S/m)
+    :class: sphx-glr-single-img
+
+
+
+
+
+Generate synthetic data
+-----------------------
+
+Generate a computational grid to create synthetic data (note that in the
+future we can use the automatic gridding functionality, which should land in
+v0.13.0).
+
+
+.. code-block:: default
+
+
+    # Get cell widths and origin in each direction.
+    gridinput = {'min_width': 100, 'freq': survey.frequencies[0], 'verb': 0}
+    xy, xy0 = emg3d.meshes.get_hx_h0(  # Same in x and y.
+        res=[0.3, 1], fixed=0, domain=[-2000, 2000], **gridinput)
+    zz, z0 = emg3d.meshes.get_hx_h0(
+        res=[0.3, 1, 0.3], domain=[-3200, -2000], **gridinput, fixed=[-2000, 0])
+
+
+    data_grid = emg3d.TensorMesh([xy, xy, zz], x0=np.array([xy0, xy0, z0]))
+
+    # Define a simulation for the data.
+    simulation_data = emg3d.simulations.Simulation(
+        name='Data for Gradient Test',
+        survey=survey,
+        grid=data_grid,
+        model=model.interpolate2grid(model_grid, data_grid),
+        gridding='same',  # Same grid as for input model.
+        max_workers=4,
+    )
+
+    # Simulate the data and store them as observed.
+    simulation_data.compute(observed=True)
+
+    # Let's print the survey to check that the observed data are now set.
+    survey
+
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <h4>Survey: Gradient Test-Survey</h4><br><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+        <defs>
+        <symbol id="icon-database" viewBox="0 0 32 32">
+        <path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
+        <path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+        <path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+        </symbol>
+        <symbol id="icon-file-text2" viewBox="0 0 32 32">
+        <path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
+        <path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+        <path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+        <path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+        </symbol>
+        </defs>
+        </svg>
+        <style>/* CSS stylesheet for displaying xarray objects in jupyterlab.
+         *
+         */
+
+        :root {
+          --xr-font-color0: var(--jp-content-font-color0, rgba(0, 0, 0, 1));
+          --xr-font-color2: var(--jp-content-font-color2, rgba(0, 0, 0, 0.54));
+          --xr-font-color3: var(--jp-content-font-color3, rgba(0, 0, 0, 0.38));
+          --xr-border-color: var(--jp-border-color2, #e0e0e0);
+          --xr-disabled-color: var(--jp-layout-color3, #bdbdbd);
+          --xr-background-color: var(--jp-layout-color0, white);
+          --xr-background-color-row-even: var(--jp-layout-color1, white);
+          --xr-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+        }
+
+        html[theme=dark],
+        body.vscode-dark {
+          --xr-font-color0: rgba(255, 255, 255, 1);
+          --xr-font-color2: rgba(255, 255, 255, 0.54);
+          --xr-font-color3: rgba(255, 255, 255, 0.38);
+          --xr-border-color: #1F1F1F;
+          --xr-disabled-color: #515151;
+          --xr-background-color: #111111;
+          --xr-background-color-row-even: #111111;
+          --xr-background-color-row-odd: #313131;
+        }
+
+        .xr-wrap {
+          display: block;
+          min-width: 300px;
+          max-width: 700px;
+        }
+
+        .xr-text-repr-fallback {
+          /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
+          display: none;
+        }
+
+        .xr-header {
+          padding-top: 6px;
+          padding-bottom: 6px;
+          margin-bottom: 4px;
+          border-bottom: solid 1px var(--xr-border-color);
+        }
+
+        .xr-header > div,
+        .xr-header > ul {
+          display: inline;
+          margin-top: 0;
+          margin-bottom: 0;
+        }
+
+        .xr-obj-type,
+        .xr-array-name {
+          margin-left: 2px;
+          margin-right: 10px;
+        }
+
+        .xr-obj-type {
+          color: var(--xr-font-color2);
+        }
+
+        .xr-sections {
+          padding-left: 0 !important;
+          display: grid;
+          grid-template-columns: 150px auto auto 1fr 20px 20px;
+        }
+
+        .xr-section-item {
+          display: contents;
+        }
+
+        .xr-section-item input {
+          display: none;
+        }
+
+        .xr-section-item input + label {
+          color: var(--xr-disabled-color);
+        }
+
+        .xr-section-item input:enabled + label {
+          cursor: pointer;
+          color: var(--xr-font-color2);
+        }
+
+        .xr-section-item input:enabled + label:hover {
+          color: var(--xr-font-color0);
+        }
+
+        .xr-section-summary {
+          grid-column: 1;
+          color: var(--xr-font-color2);
+          font-weight: 500;
+        }
+
+        .xr-section-summary > span {
+          display: inline-block;
+          padding-left: 0.5em;
+        }
+
+        .xr-section-summary-in:disabled + label {
+          color: var(--xr-font-color2);
+        }
+
+        .xr-section-summary-in + label:before {
+          display: inline-block;
+          content: '►';
+          font-size: 11px;
+          width: 15px;
+          text-align: center;
+        }
+
+        .xr-section-summary-in:disabled + label:before {
+          color: var(--xr-disabled-color);
+        }
+
+        .xr-section-summary-in:checked + label:before {
+          content: '▼';
+        }
+
+        .xr-section-summary-in:checked + label > span {
+          display: none;
+        }
+
+        .xr-section-summary,
+        .xr-section-inline-details {
+          padding-top: 4px;
+          padding-bottom: 4px;
+        }
+
+        .xr-section-inline-details {
+          grid-column: 2 / -1;
+        }
+
+        .xr-section-details {
+          display: none;
+          grid-column: 1 / -1;
+          margin-bottom: 5px;
+        }
+
+        .xr-section-summary-in:checked ~ .xr-section-details {
+          display: contents;
+        }
+
+        .xr-array-wrap {
+          grid-column: 1 / -1;
+          display: grid;
+          grid-template-columns: 20px auto;
+        }
+
+        .xr-array-wrap > label {
+          grid-column: 1;
+          vertical-align: top;
+        }
+
+        .xr-preview {
+          color: var(--xr-font-color3);
+        }
+
+        .xr-array-preview,
+        .xr-array-data {
+          padding: 0 5px !important;
+          grid-column: 2;
+        }
+
+        .xr-array-data,
+        .xr-array-in:checked ~ .xr-array-preview {
+          display: none;
+        }
+
+        .xr-array-in:checked ~ .xr-array-data,
+        .xr-array-preview {
+          display: inline-block;
+        }
+
+        .xr-dim-list {
+          display: inline-block !important;
+          list-style: none;
+          padding: 0 !important;
+          margin: 0;
+        }
+
+        .xr-dim-list li {
+          display: inline-block;
+          padding: 0;
+          margin: 0;
+        }
+
+        .xr-dim-list:before {
+          content: '(';
+        }
+
+        .xr-dim-list:after {
+          content: ')';
+        }
+
+        .xr-dim-list li:not(:last-child):after {
+          content: ',';
+          padding-right: 5px;
+        }
+
+        .xr-has-index {
+          font-weight: bold;
+        }
+
+        .xr-var-list,
+        .xr-var-item {
+          display: contents;
+        }
+
+        .xr-var-item > div,
+        .xr-var-item label,
+        .xr-var-item > .xr-var-name span {
+          background-color: var(--xr-background-color-row-even);
+          margin-bottom: 0;
+        }
+
+        .xr-var-item > .xr-var-name:hover span {
+          padding-right: 5px;
+        }
+
+        .xr-var-list > li:nth-child(odd) > div,
+        .xr-var-list > li:nth-child(odd) > label,
+        .xr-var-list > li:nth-child(odd) > .xr-var-name span {
+          background-color: var(--xr-background-color-row-odd);
+        }
+
+        .xr-var-name {
+          grid-column: 1;
+        }
+
+        .xr-var-dims {
+          grid-column: 2;
+        }
+
+        .xr-var-dtype {
+          grid-column: 3;
+          text-align: right;
+          color: var(--xr-font-color2);
+        }
+
+        .xr-var-preview {
+          grid-column: 4;
+        }
+
+        .xr-var-name,
+        .xr-var-dims,
+        .xr-var-dtype,
+        .xr-preview,
+        .xr-attrs dt {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          padding-right: 10px;
+        }
+
+        .xr-var-name:hover,
+        .xr-var-dims:hover,
+        .xr-var-dtype:hover,
+        .xr-attrs dt:hover {
+          overflow: visible;
+          width: auto;
+          z-index: 1;
+        }
+
+        .xr-var-attrs,
+        .xr-var-data {
+          display: none;
+          background-color: var(--xr-background-color) !important;
+          padding-bottom: 5px !important;
+        }
+
+        .xr-var-attrs-in:checked ~ .xr-var-attrs,
+        .xr-var-data-in:checked ~ .xr-var-data {
+          display: block;
+        }
+
+        .xr-var-data > table {
+          float: right;
+        }
+
+        .xr-var-name span,
+        .xr-var-data,
+        .xr-attrs {
+          padding-left: 25px !important;
+        }
+
+        .xr-attrs,
+        .xr-var-attrs,
+        .xr-var-data {
+          grid-column: 1 / -1;
+        }
+
+        dl.xr-attrs {
+          padding: 0;
+          margin: 0;
+          display: grid;
+          grid-template-columns: 125px auto;
+        }
+
+        .xr-attrs dt, dd {
+          padding: 0;
+          margin: 0;
+          float: left;
+          padding-right: 10px;
+          width: auto;
+        }
+
+        .xr-attrs dt {
+          font-weight: normal;
+          grid-column: 1;
+        }
+
+        .xr-attrs dt:hover span {
+          display: inline-block;
+          background: var(--xr-background-color);
+          padding-right: 10px;
+        }
+
+        .xr-attrs dd {
+          grid-column: 2;
+          white-space: pre-wrap;
+          word-break: break-all;
+        }
+
+        .xr-icon-database,
+        .xr-icon-file-text2 {
+          display: inline-block;
+          vertical-align: middle;
+          width: 1em;
+          height: 1.5em !important;
+          stroke-width: 0;
+          stroke: currentColor;
+          fill: currentColor;
+        }
+        </style><pre class='xr-text-repr-fallback'>&lt;xarray.Dataset&gt;
+        Dimensions:    (freq: 1, rec: 1, src: 1)
+        Coordinates:
+          * src        (src) &lt;U3 &#x27;Tx0&#x27;
+          * rec        (rec) &lt;U3 &#x27;Rx0&#x27;
+          * freq       (freq) float64 1.0
+        Data variables:
+            observed   (src, rec, freq) complex128 (-1.4618939487307975e-13+9.8439313...
+            synthetic  (src, rec, freq) complex128 (nan+nanj)</pre><div class='xr-wrap' hidden><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-679db092-dac8-4bae-a819-bfafaaadee20' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-679db092-dac8-4bae-a819-bfafaaadee20' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>freq</span>: 1</li><li><span class='xr-has-index'>rec</span>: 1</li><li><span class='xr-has-index'>src</span>: 1</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-0b0a03c0-0578-406e-a28a-da9c3d75fdda' class='xr-section-summary-in' type='checkbox'  checked><label for='section-0b0a03c0-0578-406e-a28a-da9c3d75fdda' class='xr-section-summary' >Coordinates: <span>(3)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>src</span></div><div class='xr-var-dims'>(src)</div><div class='xr-var-dtype'>&lt;U3</div><div class='xr-var-preview xr-preview'>&#x27;Tx0&#x27;</div><input id='attrs-4fe74580-7b2d-4b69-b72c-2586101f4ee1' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-4fe74580-7b2d-4b69-b72c-2586101f4ee1' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-70f15410-40be-4b3f-bdb3-d72103065684' class='xr-var-data-in' type='checkbox'><label for='data-70f15410-40be-4b3f-bdb3-d72103065684' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Source dipole</dd><dt><span>src-dipoles :</span></dt><dd>{&#x27;Tx0&#x27;: Dipole(Tx0, E, {-1,600.0m; 0.0m; -1,950.0m}, θ=0.0°, φ=0.0°, l=1.0m)}</dd></dl></div><div class='xr-var-data'><pre>array([&#x27;Tx0&#x27;], dtype=&#x27;&lt;U3&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>rec</span></div><div class='xr-var-dims'>(rec)</div><div class='xr-var-dtype'>&lt;U3</div><div class='xr-var-preview xr-preview'>&#x27;Rx0&#x27;</div><input id='attrs-7949a2f7-0d39-4aaa-9715-55a83a0eaf03' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-7949a2f7-0d39-4aaa-9715-55a83a0eaf03' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-9450e8ff-ac66-4daa-a938-6ac7b53a923d' class='xr-var-data-in' type='checkbox'><label for='data-9450e8ff-ac66-4daa-a938-6ac7b53a923d' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Receiver dipole</dd><dt><span>rec-dipoles :</span></dt><dd>{&#x27;Rx0&#x27;: Dipole(Rx0, E, {1,600.0m; 0.0m; -2,000.0m}, θ=0.0°, φ=0.0°, l=1.0m)}</dd></dl></div><div class='xr-var-data'><pre>array([&#x27;Rx0&#x27;], dtype=&#x27;&lt;U3&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>freq</span></div><div class='xr-var-dims'>(freq)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.0</div><input id='attrs-ae0856df-b8fb-456b-a932-cf259f555b78' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-ae0856df-b8fb-456b-a932-cf259f555b78' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-a1ebdafc-68cd-437f-964f-fa228ca63ef7' class='xr-var-data-in' type='checkbox'><label for='data-a1ebdafc-68cd-437f-964f-fa228ca63ef7' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Source frequency</dd><dt><span>units :</span></dt><dd>Hz</dd></dl></div><div class='xr-var-data'><pre>array([1.])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-352378de-9a42-4016-888c-8555516ddb86' class='xr-section-summary-in' type='checkbox'  checked><label for='section-352378de-9a42-4016-888c-8555516ddb86' class='xr-section-summary' >Data variables: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>observed</span></div><div class='xr-var-dims'>(src, rec, freq)</div><div class='xr-var-dtype'>complex128</div><div class='xr-var-preview xr-preview'>(-1.4618939487307975e-13+9.84393...</div><input id='attrs-2ef51fd6-4523-4f28-8a47-073682b09fd8' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-2ef51fd6-4523-4f28-8a47-073682b09fd8' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-db946162-8320-41d7-865f-df0f927ff849' class='xr-var-data-in' type='checkbox'><label for='data-db946162-8320-41d7-865f-df0f927ff849' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[[-1.46189395e-13+9.84393137e-14j]]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>synthetic</span></div><div class='xr-var-dims'>(src, rec, freq)</div><div class='xr-var-dtype'>complex128</div><div class='xr-var-preview xr-preview'>(nan+nanj)</div><input id='attrs-baa1984b-e813-4c6d-94cc-7b1c196a45b5' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-baa1984b-e813-4c6d-94cc-7b1c196a45b5' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-fda1baa1-b1c4-4f79-89bb-771b6e4c084f' class='xr-var-data-in' type='checkbox'><label for='data-fda1baa1-b1c4-4f79-89bb-771b6e4c084f' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[[nan+nanj]]])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-849b1b7a-85fa-4e00-9727-84a8c0267846' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-849b1b7a-85fa-4e00-9727-84a8c0267846' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div>
+        <br />
+        <br />
+
+Adjoint-state gradient
+----------------------
+
+For the actual comparison we use a very coarse mesh. The reason is that we
+have to compute an extra forward model for each cell for the forward
+finite-difference approximation, so we try to keep that number low (even
+though we only do a cross-section, not the entire cube).
+
+
+.. code-block:: default
+
+
+    # Get cell widths and origin in each direction
+    gridinput = {'min_width': 200, 'freq': survey.frequencies[0], 'verb': 0}
+    xy, xy0 = emg3d.meshes.get_hx_h0(  # Same in x and y.
+        res=[0.3, 1], fixed=0, domain=[-2000, 2000], **gridinput)
+    zz, z0 = emg3d.meshes.get_hx_h0(
+        res=[0.3, 1, 0.3], domain=[-3200, -2000], **gridinput, fixed=[-2000, 0])
+
+    comp_grid = emg3d.TensorMesh([xy, xy, zz], x0=np.array([xy0, xy0, z0]))
+
+    comp_grid
+
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table>
+          <tr>
+            <td style='font-weight: bold; font-size: 1.2em; text-align: center;' colspan='3'>TensorMesh</td>
+            <td style='font-size: 1.2em; text-align: center;'colspan='4'>16,384 cells</td>
+          </tr>
+          <tr>
+            <th></th>
+            <th></th>
+            <th colspan='2' style='padding: 5px 20px 5px 20px;'>MESH EXTENT</th>
+            <th colspan='2' style='padding: 5px 20px 5px 20px;'>CELL WIDTH</th>
+            <th style='padding: 5px 20px 5px 20px;'>FACTOR</th>
+          </tr>
+          <tr>
+            <th style='padding: 5px 20px 5px 20px;'>dir</th>
+            <th style='padding: 5px 20px 5px 20px;'>nC</th>
+            <th style='padding: 5px 20px 5px 20px;'>min</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+            <th style='padding: 5px 20px 5px 20px;'>min</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>x</td>
+            <td style='padding: 5px 20px 5px 20px;'>32</td>
+            <td style='padding: 5px 20px 5px 20px;'>-4,228.30</td>
+            <td style='padding: 5px 20px 5px 20px;'>4,228.30</td>
+            <td style='padding: 5px 20px 5px 20px;'>200.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>539.91</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.18</td>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>y</td>
+            <td style='padding: 5px 20px 5px 20px;'>32</td>
+            <td style='padding: 5px 20px 5px 20px;'>-4,228.30</td>
+            <td style='padding: 5px 20px 5px 20px;'>4,228.30</td>
+            <td style='padding: 5px 20px 5px 20px;'>200.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>539.91</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.18</td>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>z</td>
+            <td style='padding: 5px 20px 5px 20px;'>16</td>
+            <td style='padding: 5px 20px 5px 20px;'>-5,817.26</td>
+            <td style='padding: 5px 20px 5px 20px;'>-46.82</td>
+            <td style='padding: 5px 20px 5px 20px;'>200.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>864.08</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.34</td>
+          </tr>
+        </table>
+
+        <br />
+        <br />
+
+Our computational grid has only 16,384 cells, which should be fast enough to
+compute the FD gradient of a cross-section in a few minutes. A
+cross-section along the survey-line has :math:`32 \times 11 = 352` cells, so
+we need to compute an extra 352 forward models. (There are 16 cells in z, but
+only 11 below the seafloor.)
+
+
+.. code-block:: default
+
+
+    # Interpolate the background model onto the computational grid.
+    comp_model = model_bg.interpolate2grid(model_grid, comp_grid)
+
+    # Switch-off all data weighting in order to compare the pure gradient.
+    data_weight_opts = {
+        'gamma_d': 0,
+        'beta_d': 0,
+        'beta_f': 0,
+        'min_off': 0,
+        'noise_floor': 0,
+    }
+
+    # AS gradient simulation.
+    simulation_as = emg3d.simulations.Simulation(
+        name='AS Gradient Test',
+        survey=survey,
+        grid=comp_grid,
+        model=comp_model,
+        gridding='same',  # Same grid as for input model.
+        max_workers=4,    # For parallel workers, adjust if you have more.
+        data_weight_opts=data_weight_opts,
+    )
+
+    simulation_as
+
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <h3>Simulation «AS Gradient Test»</h3>of Survey «Gradient Test-Survey»<ul><li>Survey: 1 sources; 1 receivers; 1 frequencies</li><li>Model [conductivity]; isotropic; 32 x 32 x 16 (16,384)</li><li>Gridding: Same grid as for model</li></ul>
+        <br />
+        <br />
+
+
+.. code-block:: default
+
+
+    # Get the misfit and the gradient of the misfit.
+    data_misfit = simulation_as.misfit
+    as_grad = simulation_as.gradient
+
+    # Set water and air gradient to NaN for the plots.
+    as_grad[:, :, comp_grid.vectorCCz > -2000] = np.nan
+
+
+
+
+
+
+
+
+
+Finite-Difference gradient
+--------------------------
+
+To test if the adjoint-state gradient indeed returns the gradient we can
+compare it to a one-sided finite-difference approximated gradient as given by
+
+.. math::
+        \left(\nabla_p J \left(\textbf{p}\right)\right)_{FD} =
+        \frac{J(\textbf{p}+\epsilon) - J(\textbf{p})}{\epsilon} \ .
+
+Define a fct to compute FD gradient for one voxel
+'''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+.. code-block:: default
+
+
+    # Define epsilon (some small conductivity value, S/m).
+    epsilon = 0.0001
+
+    # Define the cross-section.
+    iy = comp_grid.nCy//2
+
+
+    def comp_fd_grad(ixiz):
+        """Compute forward-FD gradient for one voxel."""
+
+        # Copy the computational model.
+        fd_model = comp_model.copy()
+
+        # Add conductivity-epsilon to this (ix, iy, iz) voxel.
+        fd_model.property_x[ixiz[0], iy, ixiz[1]] += epsilon
+
+        # Create a new simulation with this model
+        simulation_fd = emg3d.simulations.Simulation(
+            name='FD Gradient Test',
+            survey=survey, grid=comp_grid, model=fd_model, gridding='same',
+            max_workers=1, data_weight_opts=data_weight_opts,
+            solver_opts={'verb': 1})
+
+        # Switch-of progress bar in this case
+        simulation_fd._tqdm_opts['disable'] = True
+
+        # Get misfit
+        fd_data_misfit = simulation_fd.misfit
+
+        # Return gradient
+        return float((fd_data_misfit - data_misfit)/epsilon)
+
+
+
+
+
+
+
+
+
+Loop over all required voxels
+'''''''''''''''''''''''''''''
+
+
+.. code-block:: default
+
+
+    # Initiate FD gradient.
+    fd_grad = np.zeros_like(as_grad)
+
+    # Get all ix-iz combinations (without air/water).
+    ixiz = list(itertools.product(
+        range(comp_grid.nCx),
+        range(len(comp_grid.vectorCCz[comp_grid.vectorCCz < -2000])))
+    )
+
+    # Wrap it asynchronously
+    out = emg3d.simulations.process_map(
+            comp_fd_grad,
+            ixiz,
+            max_workers=4,  # Adjust max worker here!
+    )
+
+    # Collect result
+    for i, (ix, iz) in enumerate(ixiz):
+        fd_grad[ix, iy, iz] = out[i]
+
+
+
+
+
+
+
+
+
+Compare the two gradients
+'''''''''''''''''''''''''
+
+
+.. code-block:: default
+
+
+    # Compute NRMSD between AS and FD (%).
+    nrmsd = 200*abs(as_grad-fd_grad)/(abs(as_grad)+abs(fd_grad))
+    nrmsd[fd_grad == 0] = np.nan
+
+    # Compute sign.
+    diff_sign = np.sign(as_grad/fd_grad)
+
+
+    def plot_diff(ax, diff):
+        """Helper routine to show voxels of big NRMSD or different sign."""
+
+        for ix in range(comp_grid.hx.size):
+            for iz in range(comp_grid.hz.size):
+
+                if diff_sign[ix, iy, iz] < 0:
+                    ax.add_patch(
+                            Rectangle(
+                                (comp_grid.vectorNx[ix], comp_grid.vectorNz[iz]),
+                                comp_grid.hx[ix], comp_grid.hz[iz], fill=False,
+                                color='k', lw=1))
+
+                if nrmsd[ix, iy, iz] >= diff:
+                    ax.add_patch(
+                            Rectangle(
+                                (comp_grid.vectorNx[ix], comp_grid.vectorNz[iz]),
+                                comp_grid.hx[ix], comp_grid.hz[iz], fill=False,
+                                color='m', linestyle='--', lw=0.5))
+
+
+    def set_axis(axs, i):
+        """Helper routine to adjust subplots."""
+
+        # Show source and receiver.
+        axs[i].plot(survey.rec_coords[0], survey.rec_coords[2], 'bv')
+        axs[i].plot(survey.src_coords[0], survey.src_coords[2], 'r*')
+
+        # x-label.
+        axs[i].set_xlabel('Easting')
+
+        # y-label depending on column.
+        if i == 0:
+            axs[i].set_ylabel('Depth')
+        else:
+            axs[i].set_ylabel('')
+            axs[i].axes.yaxis.set_ticklabels([])
+
+        # Set limits.
+        axs[i].set_xlim(-3000, 3000)
+        axs[i].set_ylim(-4000, -1900)
+
+
+    # Plotting options.
+    vmin, vmax = 1e-31, 1e-26
+    pcolor_opts = {'cmap': 'RdBu_r', 'norm': SymLogNorm(linthresh=vmin, base=10)}
+
+    fig, axs = plt.subplots(figsize=(9, 6), nrows=1, ncols=2)
+
+    # Adjoint-State Gradient
+    f0 = comp_grid.plotSlice(as_grad, normal='Y', ind=iy, ax=axs[0],
+                             clim=[-vmax, vmax], pcolor_opts=pcolor_opts)
+    axs[0].set_title("Adjoint-State Gradient")
+    set_axis(axs, 0)
+    plot_diff(axs[0], 10)
+
+    # Finite-Difference Gradient
+    f1 = comp_grid.plotSlice(fd_grad, normal='Y', ind=iy, ax=axs[1],
+                             clim=[-vmax, vmax], pcolor_opts=pcolor_opts)
+    axs[1].set_title("Finite-Difference Gradient")
+    set_axis(axs, 1)
+    plot_diff(axs[1], 10)
+
+    plt.tight_layout()
+    fig.colorbar(f0[0], ax=axs, orientation='horizontal', fraction=0.05)
+    plt.show()
+
+
+
+
+.. image:: /gallery/comparisons/images/sphx_glr_as_vs_fd_gradient_002.png
+    :alt: Adjoint-State Gradient, Finite-Difference Gradient
+    :class: sphx-glr-single-img
+
+
+
+
+
+Visually the two gradients are almost identical. This is amazing, given that
+the adjoint-state gradient requires one (1) extra forward computation for the
+entire cube, whereas the finite-difference gradient requires one extra
+forward computation for each voxel, for this cross-section 352 (!).
+
+There are differences, and they are highlighted:
+
+  - Voxels surrounded by a dashed, magenta line: NRMSD is bigger than 10 %.
+  - Voxels surrounded by a black line: The two gradients have different
+    signs.
+
+These differences only happen in three distinct regions:
+
+  1. Close to the source and the receiver;
+  2. where the gradient rapidly changes (changes sign);
+  3. where the amplitude of the gradient is very small.
+
+The first point is mainly because of the coarse meshing we used, using a more
+appropriate, finer mesh would decrease this difference. The second point
+comes mainly from the fact that both, AS and FD, are approximations, and
+where the gradient changes rapidly this can lead to differences. Again, using
+a finer mesh would most likely eliminate these errors. The last point is more
+a difficulty in computing the error between two values which both go to zero,
+and not really related to the gradients.
+
+
+.. code-block:: default
+
+
+    emg3d.Report()
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table style='border: 3px solid #ddd;'>
+          <tr>
+             <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Fri Jul 31 22:01:09 2020 CEST</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+            <td style='text-align: left; border: 2px solid #fff;'>4</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+            <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+            <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+            <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59) 
+        [GCC 7.3.0]</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+            <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+            <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+          </tr>
+          <tr>
+             <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+          </tr>
+        </table>
+        <br />
+        <br />
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 3 minutes  6.859 seconds)
+
+**Estimated memory usage:**  57 MB
+
+
+.. _sphx_glr_download_gallery_comparisons_as_vs_fd_gradient.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: as_vs_fd_gradient.py <as_vs_fd_gradient.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: as_vs_fd_gradient.ipynb <as_vs_fd_gradient.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

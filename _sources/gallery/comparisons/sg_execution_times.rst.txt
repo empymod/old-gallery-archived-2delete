@@ -1,0 +1,20 @@
+
+:orphan:
+
+.. _sphx_glr_gallery_comparisons_sg_execution_times:
+
+Computation times
+=================
+**03:06.859** total execution time for **gallery_comparisons** files:
+
++-----------------------------------------------------------------------------------------------+-----------+---------+
+| :ref:`sphx_glr_gallery_comparisons_as_vs_fd_gradient.py` (``as_vs_fd_gradient.py``)           | 03:06.859 | 56.9 MB |
++-----------------------------------------------------------------------------------------------+-----------+---------+
+| :ref:`sphx_glr_gallery_comparisons_1D_VTI_empymod.py` (``1D_VTI_empymod.py``)                 | 00:00.000 | 0.0 MB  |
++-----------------------------------------------------------------------------------------------+-----------+---------+
+| :ref:`sphx_glr_gallery_comparisons_1D_VTI_empymod_Laplace.py` (``1D_VTI_empymod_Laplace.py``) | 00:00.000 | 0.0 MB  |
++-----------------------------------------------------------------------------------------------+-----------+---------+
+| :ref:`sphx_glr_gallery_comparisons_2D_triaxial_MARE2DEM.py` (``2D_triaxial_MARE2DEM.py``)     | 00:00.000 | 0.0 MB  |
++-----------------------------------------------------------------------------------------------+-----------+---------+
+| :ref:`sphx_glr_gallery_comparisons_3D_triaxial_SimPEG.py` (``3D_triaxial_SimPEG.py``)         | 00:00.000 | 0.0 MB  |
++-----------------------------------------------------------------------------------------------+-----------+---------+

@@ -1,0 +1,470 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Gallery &mdash; emg3d-gallery 0.12.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-dataframe.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="1. Minimum working example" href="tutorials/minimum_example.html" />
+    <link rel="prev" title="emg3d-gallery" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo-emg3d-cut.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.12.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Example Gallery</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Gallery</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#examples-and-tutorials">Examples and Tutorials</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/minimum_example.html">1. Minimum working example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/simulation.html">2. Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/mapping.html">3. Model property mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/gradient.html">4. Gradient of the misfit function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/total_vs_ps_field.html">5. Total vs primary/secondary field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/parameter_tests.html">6. Parameter tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#comparisons">Comparisons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="comparisons/1D_VTI_empymod.html">1. empymod: 1D VTI resistivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comparisons/2D_triaxial_MARE2DEM.html">2. MARE2DEM: 2D with tri-axial anisotropy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comparisons/3D_triaxial_SimPEG.html">3. SimPEG: 3D with tri-axial anisotropy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comparisons/as_vs_fd_gradient.html">4. Adjoint-state vs. FD gradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comparisons/1D_VTI_empymod_Laplace.html">5. empymod: 1D VTI Laplace-domain</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#magnetic-fields-and-magnetic-permeability">Magnetic fields and magnetic permeability</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="magnetics/magnetic_field.html">1. Magnetic field due to an el. source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="magnetics/magnetic_source_el_loop.html">2. Magnetic source using an el. loop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="magnetics/magnetic_source_duality.html">3. Magnetic source using duality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="magnetics/magnetic_permeability.html">4. Magnetic permeability</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#time-domain">Time Domain</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="time_domain/fullspace.html">1. Transient CSEM for a homogeneous space</a></li>
+<li class="toctree-l3"><a class="reference internal" href="time_domain/marine_1D.html">2. Transient CSEM for a marine model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="time_domain/freqselect.html">3. Interactive frequency selection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tools">Tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tools/CPU-and-RAM.html">1. CPU and RAM usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tools/check_calc_domain.html">2. Ensure computation domain is big enough</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#reproducing">Reproducing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reproducing/SEG-EAGE_3D_salt_model.html">1. SEG-EAGE 3D Salt Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#interactions">Interactions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interactions/GemPy-I.html">1. GemPy-I: <em>Simple Fault Model</em></a></li>
+<li class="toctree-l3"><a class="reference internal" href="interactions/GemPy-II.html">2. GemPy-II: <em>Perth Basin</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../manual.html">Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+            
+          
+
+    
+        <p class="caption">
+            <span class="caption-text">Links</span>
+        </p>
+        <ul>
+            
+                <li class="toctree-l1"><a href="https://empymod.github.io"><i class="fa fa-link fa-fw"></i> Website</a></li>
+            
+                <li class="toctree-l1"><a href="https://github.com/empymod/emg3d-gallery"><i class="fa fa-github fa-fw"></i> Source Code</a></li>
+            
+        </ul>
+    
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">emg3d-gallery</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Gallery</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gallery/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="tutorials/minimum_example.html" class="btn btn-neutral float-right" title="1. Minimum working example" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral float-left" title="emg3d-gallery" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="gallery">
+<span id="sphx-glr-gallery"></span><h1>Gallery<a class="headerlink" href="#gallery" title="Permalink to this headline">¶</a></h1>
+<p>Gallery for <a class="reference external" href="https://emg3d.rtfd.io">emg3d</a>, a multigrid solver for 3D
+electromagnetic diffusion <a class="reference internal" href="../references.html#wems19" id="id1"><span>[WeMS19]</span></a>.</p>
+<div class="sphx-glr-clear"></div><div class="section" id="examples-and-tutorials">
+<span id="sphx-glr-gallery-tutorials"></span><h2>Examples and Tutorials<a class="headerlink" href="#examples-and-tutorials" title="Permalink to this headline">¶</a></h2>
+<p>Basic examples, a good point to get started with <code class="docutils literal notranslate"><span class="pre">emg3d</span></code>.</p>
+<div class="sphx-glr-thumbcontainer" tooltip="This is a simple minimum working example to use the multigrid solver emg3d, along the lines of ..."><div class="figure align-default" id="id2">
+<img alt="1. Minimum working example" src="../_images/sphx_glr_minimum_example_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="tutorials/minimum_example.html#sphx-glr-gallery-tutorials-minimum-example-py"><span class="std std-ref">1. Minimum working example</span></a></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="TODO: An example how to use the new emg3d.surveys.Survey- and emg3d.simulations.Simulation-clas..."><div class="figure align-default" id="id3">
+<img alt="2. Simulation" src="../_images/sphx_glr_simulation_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="tutorials/simulation.html#sphx-glr-gallery-tutorials-simulation-py"><span class="std std-ref">2. Simulation</span></a></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip=" Physical rock properties (and their units) can be a tricky thing. And emg3d is no difference i..."><div class="figure align-default" id="id4">
+<img alt="3. Model property mapping" src="../_images/sphx_glr_mapping_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="tutorials/mapping.html#sphx-glr-gallery-tutorials-mapping-py"><span class="std std-ref">3. Model property mapping</span></a></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="TODO: An example how to use the new emg3d.optimize.gradient routine to compute the adjoint-stat..."><div class="figure align-default" id="id5">
+<img alt="4. Gradient of the misfit function" src="../_images/sphx_glr_gradient_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="tutorials/gradient.html#sphx-glr-gallery-tutorials-gradient-py"><span class="std std-ref">4. Gradient of the misfit function</span></a></span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="We usually use emg3d for total field computations. However, we can also use it in a primary-sec..."><div class="figure align-default" id="id6">
+<img alt="5. Total vs primary/secondary field" src="../_images/sphx_glr_total_vs_ps_field_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="tutorials/total_vs_ps_field.html#sphx-glr-gallery-tutorials-total-vs-ps-field-py"><span class="std std-ref">5. Total vs primary/secondary field</span></a></span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="The modeller emg3d has quite a few parameters which can influence the speed of a computation. I..."><div class="figure align-default" id="id7">
+<img alt="6. Parameter tests" src="../_images/sphx_glr_parameter_tests_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="tutorials/parameter_tests.html#sphx-glr-gallery-tutorials-parameter-tests-py"><span class="std std-ref">6. Parameter tests</span></a></span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-clear"></div></div>
+<div class="section" id="comparisons">
+<span id="sphx-glr-gallery-comparisons"></span><h2>Comparisons<a class="headerlink" href="#comparisons" title="Permalink to this headline">¶</a></h2>
+<p>Comparisons with other codes.</p>
+<div class="sphx-glr-thumbcontainer" tooltip="The code empymod is an open-source code which can model CSEM responses for a layered medium inc..."><div class="figure align-default" id="id8">
+<img alt="1. empymod: 1D VTI resistivity" src="../_images/sphx_glr_1D_VTI_empymod_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="comparisons/1D_VTI_empymod.html#sphx-glr-gallery-comparisons-1d-vti-empymod-py"><span class="std std-ref">1. empymod: 1D VTI resistivity</span></a></span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="MARE2DEM is an open-source, finite element 2.5D code for controlled-source electromagnetic (CSE..."><div class="figure align-default" id="id9">
+<img alt="2. MARE2DEM: 2D with tri-axial anisotropy" src="../_images/sphx_glr_2D_triaxial_MARE2DEM_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="comparisons/2D_triaxial_MARE2DEM.html#sphx-glr-gallery-comparisons-2d-triaxial-mare2dem-py"><span class="std std-ref">2. MARE2DEM: 2D with tri-axial anisotropy</span></a></span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="`SimPEG &lt;https://simpeg.xyz&gt;`_ is an open source python package for simulation and gradient bas..."><div class="figure align-default" id="id10">
+<img alt="3. SimPEG: 3D with tri-axial anisotropy" src="../_images/sphx_glr_3D_triaxial_SimPEG_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="comparisons/3D_triaxial_SimPEG.html#sphx-glr-gallery-comparisons-3d-triaxial-simpeg-py"><span class="std std-ref">3. SimPEG: 3D with tri-axial anisotropy</span></a></span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="The **gradient of the misfit function**, as implemented in emg3d, uses the adjoint-state method..."><div class="figure align-default" id="id11">
+<img alt="4. Adjoint-state vs. FD gradient" src="../_images/sphx_glr_as_vs_fd_gradient_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="comparisons/as_vs_fd_gradient.html#sphx-glr-gallery-comparisons-as-vs-fd-gradient-py"><span class="std std-ref">4. Adjoint-state vs. FD gradient</span></a></span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="1D VTI comparison between emg3d and empymod in the Laplace domain."><div class="figure align-default" id="id12">
+<img alt="5. empymod: 1D VTI Laplace-domain" src="../_images/sphx_glr_1D_VTI_empymod_Laplace_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="comparisons/1D_VTI_empymod_Laplace.html#sphx-glr-gallery-comparisons-1d-vti-empymod-laplace-py"><span class="std std-ref">5. empymod: 1D VTI Laplace-domain</span></a></span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-clear"></div></div>
+<div class="section" id="magnetic-fields-and-magnetic-permeability">
+<span id="sphx-glr-gallery-magnetics"></span><h2>Magnetic fields and magnetic permeability<a class="headerlink" href="#magnetic-fields-and-magnetic-permeability" title="Permalink to this headline">¶</a></h2>
+<p>The main implementation of <code class="docutils literal notranslate"><span class="pre">emg3d</span></code> obtains the electric field due to an
+electric source. However, <code class="docutils literal notranslate"><span class="pre">emg3d</span></code> can also be used to model a magnetic
+source, obtain the magnetic field, or any combination thereof (<span class="math notranslate nohighlight">\(ee\)</span>,
+<span class="math notranslate nohighlight">\(em\)</span>, <span class="math notranslate nohighlight">\(me\)</span>, <span class="math notranslate nohighlight">\(mm\)</span>).</p>
+<div class="sphx-glr-thumbcontainer" tooltip="The solver emg3d returns the electric field in x-, y-, and z-direction. Using Farady&#x27;s law of i..."><div class="figure align-default" id="id13">
+<img alt="1. Magnetic field due to an el. source" src="../_images/sphx_glr_magnetic_field_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="magnetics/magnetic_field.html#sphx-glr-gallery-magnetics-magnetic-field-py"><span class="std std-ref">1. Magnetic field due to an el. source</span></a></span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="Computing the E and H fields generated by a magnetic source"><div class="figure align-default" id="id14">
+<img alt="2. Magnetic source using an el. loop" src="../_images/sphx_glr_magnetic_source_el_loop_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="magnetics/magnetic_source_el_loop.html#sphx-glr-gallery-magnetics-magnetic-source-el-loop-py"><span class="std std-ref">2. Magnetic source using an el. loop</span></a></span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="Computing the E and H fields from a magnetic source using the duality principle."><div class="figure align-default" id="id15">
+<img alt="3. Magnetic source using duality" src="../_images/sphx_glr_magnetic_source_duality_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="magnetics/magnetic_source_duality.html#sphx-glr-gallery-magnetics-magnetic-source-duality-py"><span class="std std-ref">3. Magnetic source using duality</span></a></span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="The solver emg3d uses the diffusive approximation of Maxwell&#x27;s equations; the relative electric..."><div class="figure align-default" id="id16">
+<img alt="4. Magnetic permeability" src="../_images/sphx_glr_magnetic_permeability_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="magnetics/magnetic_permeability.html#sphx-glr-gallery-magnetics-magnetic-permeability-py"><span class="std std-ref">4. Magnetic permeability</span></a></span><a class="headerlink" href="#id16" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-clear"></div></div>
+<div class="section" id="time-domain">
+<span id="sphx-glr-gallery-time-domain"></span><h2>Time Domain<a class="headerlink" href="#time-domain" title="Permalink to this headline">¶</a></h2>
+<p>The multigrid solver <code class="docutils literal notranslate"><span class="pre">emg3d</span></code> is a frequency-domain (or Laplace-domain)
+code. However, we can also use <code class="docutils literal notranslate"><span class="pre">emg3d</span></code> to model time-domain data.</p>
+<div class="sphx-glr-thumbcontainer" tooltip="Example how to use emg3d to model time-domain data, using FFTLog and DLF."><div class="figure align-default" id="id17">
+<img alt="1. Transient CSEM for a homogeneous space" src="../_images/sphx_glr_fullspace_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="time_domain/fullspace.html#sphx-glr-gallery-time-domain-fullspace-py"><span class="std std-ref">1. Transient CSEM for a homogeneous space</span></a></span><a class="headerlink" href="#id17" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="Example how to use emg3d to model time-domain data using FFTLog."><div class="figure align-default" id="id18">
+<img alt="2. Transient CSEM for a marine model" src="../_images/sphx_glr_marine_1D_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="time_domain/marine_1D.html#sphx-glr-gallery-time-domain-marine-1d-py"><span class="std std-ref">2. Transient CSEM for a marine model</span></a></span><a class="headerlink" href="#id18" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="The time domain examples sphx_glr_gallery_time_domain_fullspace.py and sphx_glr_gallery_time_do..."><div class="figure align-default" id="id19">
+<img alt="3. Interactive frequency selection" src="../_images/sphx_glr_freqselect_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="time_domain/freqselect.html#sphx-glr-gallery-time-domain-freqselect-py"><span class="std std-ref">3. Interactive frequency selection</span></a></span><a class="headerlink" href="#id19" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-clear"></div></div>
+<div class="section" id="tools">
+<span id="sphx-glr-gallery-tools"></span><h2>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h2>
+<p>Examples to measure and track the performance of <code class="docutils literal notranslate"><span class="pre">emg3d</span></code>.</p>
+<div class="sphx-glr-thumbcontainer" tooltip="Measuring and estimating runtime and memory usage of emg3d as a function of model size."><div class="figure align-default" id="id20">
+<img alt="1. CPU and RAM usage" src="../_images/sphx_glr_CPU-and-RAM_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="tools/CPU-and-RAM.html#sphx-glr-gallery-tools-cpu-and-ram-py"><span class="std std-ref">1. CPU and RAM usage</span></a></span><a class="headerlink" href="#id20" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="Ensure the boundary in \pm x, \pm y, and + z is big enough for \rho_\text{air}."><div class="figure align-default" id="id21">
+<img alt="2. Ensure computation domain is big enough" src="../_images/sphx_glr_check_calc_domain_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="tools/check_calc_domain.html#sphx-glr-gallery-tools-check-calc-domain-py"><span class="std std-ref">2. Ensure computation domain is big enough</span></a></span><a class="headerlink" href="#id21" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-clear"></div></div>
+<div class="section" id="reproducing">
+<span id="sphx-glr-gallery-reproducing"></span><h2>Reproducing<a class="headerlink" href="#reproducing" title="Permalink to this headline">¶</a></h2>
+<p>Reproducing published results.</p>
+<div class="sphx-glr-thumbcontainer" tooltip=" In this example we reproduce the results by [Muld07]_, which uses the SEG/EAGE salt model from..."><div class="figure align-default" id="id22">
+<img alt="1. SEG-EAGE 3D Salt Model" src="../_images/sphx_glr_SEG-EAGE_3D_salt_model_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="reproducing/SEG-EAGE_3D_salt_model.html#sphx-glr-gallery-reproducing-seg-eage-3d-salt-model-py"><span class="std std-ref">1. SEG-EAGE 3D Salt Model</span></a></span><a class="headerlink" href="#id22" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-clear"></div></div>
+<div class="section" id="interactions">
+<span id="sphx-glr-gallery-interactions"></span><h2>Interactions<a class="headerlink" href="#interactions" title="Permalink to this headline">¶</a></h2>
+<p>Some examples how other big packages can be used together with <code class="docutils literal notranslate"><span class="pre">emg3d</span></code>.</p>
+<div class="sphx-glr-thumbcontainer" tooltip="This example uses `GemPy &lt;https://www.gempy.org&gt;`_ to create a geological model as input to emg..."><div class="figure align-default" id="id23">
+<img alt="1. GemPy-I: *Simple Fault Model*" src="../_images/sphx_glr_GemPy-I_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="interactions/GemPy-I.html#sphx-glr-gallery-interactions-gempy-i-py"><span class="std std-ref">1. GemPy-I: Simple Fault Model</span></a></span><a class="headerlink" href="#id23" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-thumbcontainer" tooltip="This example is mainly about building a deep marine resistivity model that can be used in other..."><div class="figure align-default" id="id24">
+<img alt="2. GemPy-II: *Perth Basin*" src="../_images/sphx_glr_GemPy-II_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="interactions/GemPy-II.html#sphx-glr-gallery-interactions-gempy-ii-py"><span class="std std-ref">2. GemPy-II: Perth Basin</span></a></span><a class="headerlink" href="#id24" title="Permalink to this image">¶</a></p>
+</div>
+</div><div class="toctree-wrapper compound">
+</div>
+<div class="sphx-glr-clear"></div><div class="sphx-glr-footer class sphx-glr-footer-gallery docutils container">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/bf9d1b3e7e9b9b9f54a1243077431d3e/gallery_python.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">all</span> <span class="pre">examples</span> <span class="pre">in</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">gallery_python.zip</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/4d5dc6ea5ed1046e6d4bae35d7b2cff6/gallery_jupyter.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">all</span> <span class="pre">examples</span> <span class="pre">in</span> <span class="pre">Jupyter</span> <span class="pre">notebooks:</span> <span class="pre">gallery_jupyter.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tutorials/minimum_example.html" class="btn btn-neutral float-right" title="1. Minimum working example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral float-left" title="emg3d-gallery" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018-2020, The emg3d Developers.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

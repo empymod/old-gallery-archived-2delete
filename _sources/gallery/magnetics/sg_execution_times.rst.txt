@@ -1,0 +1,18 @@
+
+:orphan:
+
+.. _sphx_glr_gallery_magnetics_sg_execution_times:
+
+Computation times
+=================
+**06:15.891** total execution time for **gallery_magnetics** files:
+
++-----------------------------------------------------------------------------------------------+-----------+-----------+
+| :ref:`sphx_glr_gallery_magnetics_magnetic_field.py` (``magnetic_field.py``)                   | 01:51.533 | 1171.7 MB |
++-----------------------------------------------------------------------------------------------+-----------+-----------+
+| :ref:`sphx_glr_gallery_magnetics_magnetic_permeability.py` (``magnetic_permeability.py``)     | 01:35.931 | 1074.7 MB |
++-----------------------------------------------------------------------------------------------+-----------+-----------+
+| :ref:`sphx_glr_gallery_magnetics_magnetic_source_duality.py` (``magnetic_source_duality.py``) | 01:33.316 | 1522.5 MB |
++-----------------------------------------------------------------------------------------------+-----------+-----------+
+| :ref:`sphx_glr_gallery_magnetics_magnetic_source_el_loop.py` (``magnetic_source_el_loop.py``) | 01:15.110 | 1627.6 MB |
++-----------------------------------------------------------------------------------------------+-----------+-----------+

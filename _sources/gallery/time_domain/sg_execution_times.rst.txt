@@ -1,0 +1,16 @@
+
+:orphan:
+
+.. _sphx_glr_gallery_time_domain_sg_execution_times:
+
+Computation times
+=================
+**11:57.092** total execution time for **gallery_time_domain** files:
+
++-----------------------------------------------------------------------+-----------+--------+
+| :ref:`sphx_glr_gallery_time_domain_marine_1D.py` (``marine_1D.py``)   | 10:02.640 | 8.6 MB |
++-----------------------------------------------------------------------+-----------+--------+
+| :ref:`sphx_glr_gallery_time_domain_fullspace.py` (``fullspace.py``)   | 01:53.766 | 9.0 MB |
++-----------------------------------------------------------------------+-----------+--------+
+| :ref:`sphx_glr_gallery_time_domain_freqselect.py` (``freqselect.py``) | 00:00.685 | 8.6 MB |
++-----------------------------------------------------------------------+-----------+--------+

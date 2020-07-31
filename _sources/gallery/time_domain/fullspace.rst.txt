@@ -1,0 +1,977 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_gallery_time_domain_fullspace.py>`     to download the full example code
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_gallery_time_domain_fullspace.py:
+
+
+1. Transient CSEM for a homogeneous space
+=========================================
+
+Example how to use ``emg3d`` to model time-domain data, using FFTLog and DLF.
+
+This example is based on the first example (Figures 3-4) of [MuWS08]_, those
+original results are shown at the bottom of this example.
+
+
+.. code-block:: default
+
+    import emg3d
+    import empymod
+    import numpy as np
+    import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
+
+    # Name is used to store the data for each frequency.
+    name = 'Fullspace'
+
+
+
+
+
+
+
+
+Model and Survey
+----------------
+
+Model
+`````
+
+- Homogeneous fullspace of 1 Ohm.m.
+
+Survey
+``````
+- Source at origin.
+- Receiver at an inline-offset of 900 m.
+- Both source and receiver are x-directed electric dipoles.
+
+
+.. code-block:: default
+
+
+    src = [0, 0, 0]
+    rec = [900, 0, 0]
+    res = 1                  # Fullspace resistivity
+    depth = []
+
+
+
+
+
+
+
+
+
+Fourier Transforms parameters
+-----------------------------
+
+We only compute frequencies :math:`0.05 < f < 21` Hz, which yields enough
+precision for our purpose.
+
+This means, instead of 30 frequencies from 0.0002 - 126.4 Hz, we only need 14
+frequencies from 0.05 - 20.0 Hz.
+
+
+.. code-block:: default
+
+
+    # Define desired times.
+    time = np.logspace(-2, 1, 201)
+
+    # Initiate a Fourier instance
+    Fourier = emg3d.Fourier(
+        time=time,
+        fmin=0.05,
+        fmax=21,
+        ft='fftlog',  # Fourier transform to use
+        ftarg={'pts_per_dec': 5, 'add_dec': [-2, 1], 'q': 0},
+    )
+
+    # Dense frequencies for comparison reasons
+    freq_dense = np.logspace(
+            np.log10(Fourier.freq_req.min()),
+            np.log10(Fourier.freq_req.max()),
+            301
+    )
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+       time        [s] :  0.01 - 10 : 201  [min-max; #]
+       Fourier         :  FFTLog
+         > pts_per_dec :  5
+         > add_dec     :  [-2.  1.]
+         > q           :  0.0
+       Req. freq  [Hz] :  0.000200364 - 126.421 : 30  [min-max; #]
+       Calc. freq [Hz] :  0.0503292 - 20.0364 : 14  [min-max; #]
+
+
+
+
+Frequency-domain computation
+----------------------------
+
+
+.. code-block:: default
+
+
+    # To store the info of each frequency.
+    values = {}
+    #
+    gridinput = {
+        'res': res,               # Fullspace resistivity.
+        'min_width': [20., 40.],  # Restr. the cell width within the survey domain.
+        'return_info': True,      # To get back some information for later.
+        'pps': 12,                # Many points, to have a small min cell width.
+        'alpha': [1, 1.3, 0.01],  # Lower the alpha will improve the result, but
+        'verb': 0,                # slow down computation.
+    }
+    #
+    # Start the timer.
+    runtime = emg3d.utils.Time()
+    #
+    # Loop over frequencies, going from high to low.
+    old_grid = None
+    for fi, frq in enumerate(Fourier.freq_calc[::-1]):
+        print(f"  {fi+1:2}/{Fourier.freq_calc.size} :: {frq:10.6f} Hz")
+
+        # Initiate log for this frequency.
+        thislog = {}
+        thislog['freq'] = frq
+
+        # Get cell widths and origin in each direction
+        xx, x0, hix = emg3d.meshes.get_hx_h0(
+            freq=frq, fixed=src[0], domain=[-200, 1100], **gridinput)
+        yz, yz0, hiyz = emg3d.meshes.get_hx_h0(
+            freq=frq, fixed=src[1], domain=[-50, 50], **gridinput)
+
+        # Store values in log.
+        thislog['alpha'] = [np.min([hix['amin'], hiyz['amin']]),
+                            np.max([hix['amax'], hiyz['amax']])]
+        thislog['dminmax'] = [np.min([hix['dmin'], hiyz['dmin']]),
+                              np.max([hix['dmax'], hiyz['dmax']])]
+
+        # Initiate mesh.
+        grid = emg3d.TensorMesh([xx, yz, yz], x0=np.array([x0, yz0, yz0]))
+        # print(grid)
+        thislog['nC'] = grid.nC  # Store number of cells in log.
+
+        # Interpolate the starting electric field from the last one (can speed-up
+        # the computation).
+        if fi == 0:
+            efield = emg3d.Field(grid, freq=frq)
+        else:
+            efield = emg3d.maps.grid2grid(old_grid, efield, grid,
+                                          method='cubic', extrapolate=False)
+            efield = emg3d.Field(grid, efield, freq=frq)
+
+        # Generate model
+        model = emg3d.Model(grid, property_x=res, mapping='Resistivity')
+
+        # Define source.
+        sfield = emg3d.get_source_field(
+            grid, [src[0], src[1], src[2], 0, 0], frq, strength=0)
+
+        # Solve the system.
+        info = emg3d.solve(
+            grid, model, sfield, efield=efield,
+            verb=-1, return_info=True,
+            sslsolver=True,  semicoarsening=True, linerelaxation=True,
+        )
+
+        # Store info
+        thislog['info'] = info
+
+        # Store value
+        thislog['data'] = emg3d.get_receiver(
+                grid, efield.fx, (rec[0], rec[1], rec[2]))
+
+        # Store thislog in values.
+        values[int(frq*1e6)] = thislog
+
+        # Store the grid for the interpolation.
+        old_grid = grid
+
+    # Stop the timer.
+    total_time = runtime.runtime
+
+    # Store data and info to disk
+    emg3d.save(name+'.npz', values=values)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+       1/14 ::  20.036420 Hz
+    :: emg3d :: 3.8e-03; 0(1); 0:00:01    :: emg3d :: 2.3e-04; 0(2); 0:00:01    :: emg3d :: 5.0e-06; 0(3); 0:00:02    :: emg3d :: 1.2e-06; 0(4); 0:00:02    :: emg3d :: 2.0e-07; 0(5); 0:00:03    :: emg3d :: 1.9e-07; 1(5); 0:00:03    :: emg3d :: 1.9e-07; 1(5); 0:00:03; CONVERGED
+       2/14 ::  12.642126 Hz
+    :: emg3d :: 1.1e-03; 0(1); 0:00:01    :: emg3d :: 7.2e-05; 0(2); 0:00:03    :: emg3d :: 1.5e-06; 0(3); 0:00:04    :: emg3d :: 4.9e-07; 0(4); 0:00:05    :: emg3d :: 4.3e-07; 1(4); 0:00:05    :: emg3d :: 4.3e-07; 1(4); 0:00:05; CONVERGED
+       3/14 ::   7.976643 Hz
+    :: emg3d :: 1.5e-03; 0(1); 0:00:01    :: emg3d :: 1.6e-04; 0(2); 0:00:03    :: emg3d :: 5.6e-06; 0(3); 0:00:04    :: emg3d :: 1.7e-06; 0(4); 0:00:05    :: emg3d :: 3.6e-07; 0(5); 0:00:07    :: emg3d :: 3.5e-07; 1(5); 0:00:07    :: emg3d :: 3.5e-07; 1(5); 0:00:07; CONVERGED
+       4/14 ::   5.032921 Hz
+    :: emg3d :: 1.9e-03; 0(1); 0:00:01    :: emg3d :: 2.9e-04; 0(2); 0:00:03    :: emg3d :: 1.5e-05; 0(3); 0:00:04    :: emg3d :: 4.0e-06; 0(4); 0:00:05    :: emg3d :: 9.1e-07; 0(5); 0:00:07    :: emg3d :: 8.9e-07; 1(5); 0:00:07    :: emg3d :: 8.9e-07; 1(5); 0:00:07; CONVERGED
+       5/14 ::   3.175559 Hz
+    :: emg3d :: 1.9e-03; 0(1); 0:00:01    :: emg3d :: 3.1e-04; 0(2); 0:00:02    :: emg3d :: 2.4e-05; 0(3); 0:00:03    :: emg3d :: 4.9e-06; 0(4); 0:00:04    :: emg3d :: 1.1e-06; 0(5); 0:00:05    :: emg3d :: 9.1e-08; 0(6); 0:00:07    :: emg3d :: 8.3e-08; 1(6); 0:00:07    :: emg3d :: 8.3e-08; 1(6); 0:00:07; CONVERGED
+       6/14 ::   2.003642 Hz
+    :: emg3d :: 1.9e-03; 0(1); 0:00:01    :: emg3d :: 2.7e-04; 0(2); 0:00:02    :: emg3d :: 1.6e-05; 0(3); 0:00:03    :: emg3d :: 3.7e-06; 0(4); 0:00:04    :: emg3d :: 8.3e-07; 0(5); 0:00:06    :: emg3d :: 8.2e-07; 1(5); 0:00:06    :: emg3d :: 8.2e-07; 1(5); 0:00:06; CONVERGED
+       7/14 ::   1.264213 Hz
+    :: emg3d :: 1.8e-03; 0(1); 0:00:01    :: emg3d :: 2.9e-04; 0(2); 0:00:02    :: emg3d :: 2.1e-05; 0(3); 0:00:03    :: emg3d :: 3.8e-06; 0(4); 0:00:04    :: emg3d :: 8.7e-07; 0(5); 0:00:04    :: emg3d :: 8.6e-07; 1(5); 0:00:04    :: emg3d :: 8.6e-07; 1(5); 0:00:04; CONVERGED
+       8/14 ::   0.797664 Hz
+    :: emg3d :: 2.1e-03; 0(1); 0:00:01    :: emg3d :: 3.8e-04; 0(2); 0:00:02    :: emg3d :: 3.2e-05; 0(3); 0:00:03    :: emg3d :: 6.3e-06; 0(4); 0:00:04    :: emg3d :: 1.4e-06; 0(5); 0:00:04    :: emg3d :: 1.1e-07; 0(6); 0:00:05    :: emg3d :: 9.1e-08; 1(6); 0:00:05    :: emg3d :: 9.1e-08; 1(6); 0:00:05; CONVERGED
+       9/14 ::   0.503292 Hz
+    :: emg3d :: 2.5e-03; 0(1); 0:00:01    :: emg3d :: 5.3e-04; 0(2); 0:00:02    :: emg3d :: 6.4e-05; 0(3); 0:00:03    :: emg3d :: 1.4e-05; 0(4); 0:00:04    :: emg3d :: 3.1e-06; 0(5); 0:00:04    :: emg3d :: 4.5e-07; 0(6); 0:00:05    :: emg3d :: 3.3e-07; 1(6); 0:00:05    :: emg3d :: 3.3e-07; 1(6); 0:00:05; CONVERGED
+      10/14 ::   0.317556 Hz
+    :: emg3d :: 2.8e-03; 0(1); 0:00:01    :: emg3d :: 6.7e-04; 0(2); 0:00:02    :: emg3d :: 1.1e-04; 0(3); 0:00:03    :: emg3d :: 2.8e-05; 0(4); 0:00:04    :: emg3d :: 6.8e-06; 0(5); 0:00:04    :: emg3d :: 1.5e-06; 0(6); 0:00:05    :: emg3d :: 9.9e-07; 1(6); 0:00:05    :: emg3d :: 9.9e-07; 1(6); 0:00:05; CONVERGED
+      11/14 ::   0.200364 Hz
+    :: emg3d :: 2.3e-03; 0(1); 0:00:01    :: emg3d :: 5.8e-04; 0(2); 0:00:03    :: emg3d :: 1.5e-04; 0(3); 0:00:04    :: emg3d :: 2.8e-05; 0(4); 0:00:06    :: emg3d :: 8.4e-06; 0(5); 0:00:07    :: emg3d :: 2.8e-06; 0(6); 0:00:08    :: emg3d :: 1.7e-06; 1(6); 0:00:08    :: emg3d :: 1.6e-07; 1(7); 0:00:10    :: emg3d :: 2.0e-07; 2(7); 0:00:10    :: emg3d :: 2.0e-07; 2(7); 0:00:10; CONVERGED
+      12/14 ::   0.126421 Hz
+    :: emg3d :: 2.6e-03; 0(1); 0:00:01    :: emg3d :: 6.8e-04; 0(2); 0:00:03    :: emg3d :: 2.0e-04; 0(3); 0:00:04    :: emg3d :: 4.3e-05; 0(4); 0:00:06    :: emg3d :: 1.6e-05; 0(5); 0:00:07    :: emg3d :: 6.3e-06; 0(6); 0:00:08    :: emg3d :: 3.6e-06; 1(6); 0:00:08    :: emg3d :: 4.2e-07; 1(7); 0:00:10    :: emg3d :: 4.4e-07; 2(7); 0:00:10    :: emg3d :: 4.4e-07; 2(7); 0:00:10; CONVERGED
+      13/14 ::   0.079766 Hz
+    :: emg3d :: 3.1e-03; 0(1); 0:00:02    :: emg3d :: 6.9e-04; 0(2); 0:00:03    :: emg3d :: 1.8e-04; 0(3); 0:00:05    :: emg3d :: 6.2e-05; 0(4); 0:00:07    :: emg3d :: 2.2e-05; 0(5); 0:00:09    :: emg3d :: 8.2e-06; 0(6); 0:00:10    :: emg3d :: 5.0e-06; 1(6); 0:00:10    :: emg3d :: 1.2e-06; 1(7); 0:00:12    :: emg3d :: 4.6e-07; 1(8); 0:00:14    :: emg3d :: 7.2e-07; 2(8); 0:00:14    :: emg3d :: 7.2e-07; 2(8); 0:00:14; CONVERGED
+      14/14 ::   0.050329 Hz
+    :: emg3d :: 3.3e-03; 0(1); 0:00:02    :: emg3d :: 7.5e-04; 0(2); 0:00:03    :: emg3d :: 2.3e-04; 0(3); 0:00:05    :: emg3d :: 7.6e-05; 0(4); 0:00:07    :: emg3d :: 3.3e-05; 0(5); 0:00:08    :: emg3d :: 1.4e-05; 0(6); 0:00:10    :: emg3d :: 9.0e-06; 1(6); 0:00:10    :: emg3d :: 2.4e-06; 1(7); 0:00:12    :: emg3d :: 1.1e-06; 1(8); 0:00:13    :: emg3d :: 4.6e-07; 1(9); 0:00:15    :: emg3d :: 6.8e-07; 2(9); 0:00:15    :: emg3d :: 6.8e-07; 2(9); 0:00:15; CONVERGED
+    Data saved to «/home/dtr/Desktop/emg3d-gallery/examples/time_domain/Fullspace.npz»
+    [emg3d v0.12.0 (format 0.12.0) on 2020-07-29T22:45:55.741779].
+
+
+
+
+
+.. code-block:: default
+
+
+    # Load info and data
+    values = emg3d.load(name+'.npz')['values']
+
+    runtime = 0
+    for key, value in values.items():
+        print(f"  {value['freq']:7.3f} Hz: "
+              f"{value['info']['it_mg']:2g}/{value['info']['it_ssl']:g} it; "
+              f"{value['info']['time']:4.0f} s; "
+              f"a: {value['alpha'][0]:.3f} / {value['alpha'][1]:.3f} ; "
+              f"nC: {value['nC']:8,.0f}; "
+              f"a: {value['dminmax'][0]:5.0f} / {value['dminmax'][1]:7.0f}")
+        runtime += value['info']['time']
+
+    print(f"\n                **** TOTAL RUNTIME :: "
+          f"{runtime//60:.0f} min {runtime%60:.1f} s ****\n")
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Data loaded from «/home/dtr/Desktop/emg3d-gallery/examples/time_domain/Fullspace.npz»
+    [emg3d v0.12.0 (format 0.12.0) on 2020-07-29T22:45:55.741779].
+       20.036 Hz:  5/1 it;    3 s; a: 1.000 / 1.260 ; nC:   46,080; a:    20 /     160
+       12.642 Hz:  4/1 it;    5 s; a: 1.000 / 1.170 ; nC:   98,304; a:    20 /     154
+        7.977 Hz:  5/1 it;    7 s; a: 1.000 / 1.200 ; nC:   98,304; a:    20 /     214
+        5.033 Hz:  5/1 it;    7 s; a: 1.000 / 1.230 ; nC:   98,304; a:    20 /     295
+        3.176 Hz:  6/1 it;    7 s; a: 1.000 / 1.250 ; nC:   81,920; a:    24 /     428
+        2.004 Hz:  5/1 it;    6 s; a: 1.000 / 1.210 ; nC:   81,920; a:    30 /     427
+        1.264 Hz:  5/1 it;    4 s; a: 1.000 / 1.210 ; nC:   65,536; a:    37 /     538
+        0.798 Hz:  6/1 it;    5 s; a: 1.000 / 1.230 ; nC:   65,536; a:    40 /     726
+        0.503 Hz:  6/1 it;    5 s; a: 1.000 / 1.260 ; nC:   65,536; a:    40 /    1017
+        0.318 Hz:  6/1 it;    5 s; a: 1.000 / 1.280 ; nC:   65,536; a:    40 /    1421
+        0.200 Hz:  7/2 it;   10 s; a: 1.000 / 1.270 ; nC:  102,400; a:    40 /    1832
+        0.126 Hz:  7/2 it;   10 s; a: 1.000 / 1.300 ; nC:  102,400; a:    40 /    2662
+        0.080 Hz:  8/2 it;   14 s; a: 1.000 / 1.260 ; nC:  128,000; a:    40 /    2563
+        0.050 Hz:  9/2 it;   15 s; a: 1.000 / 1.280 ; nC:  128,000; a:    40 /    3403
+
+                    **** TOTAL RUNTIME :: 1 min 42.6 s ****
+
+
+
+
+
+Load data, interpolate at receiver location
+```````````````````````````````````````````
+
+
+.. code-block:: default
+
+
+    # Initiate data with zeros.
+    data = np.zeros(Fourier.freq_calc.size, dtype=complex)
+
+    # Loop over frequencies.
+    for fi, frq in enumerate(Fourier.freq_calc):
+        key = str(int(frq*1e6))
+        data[fi] = values[key]['data']
+
+
+
+
+
+
+
+
+
+1. Using FFTLog
+---------------
+
+Interpolate missing frequencies and compute analytical result
+`````````````````````````````````````````````````````````````
+
+
+.. code-block:: default
+
+
+    data_int = Fourier.interpolate(data)
+
+    # Compute analytical result using empymod (epm)
+    epm_req = empymod.dipole(src, rec, depth, res, Fourier.freq_req, verb=1)
+    epm_calc = empymod.dipole(src, rec, depth, res, Fourier.freq_calc, verb=1)
+    epm_dense = empymod.dipole(src, rec, depth, res, freq_dense, verb=1)
+
+
+
+
+
+
+
+
+
+Plot frequency-domain result
+````````````````````````````
+
+
+.. code-block:: default
+
+
+    plt.figure(figsize=(10, 7))
+
+    # Real, log-lin
+    ax1 = plt.subplot(321)
+    plt.title('(a) log-lin Real')
+    plt.plot(freq_dense, 1e9*epm_dense.real, 'C1')
+    plt.plot(Fourier.freq_req, 1e9*data_int.real, 'k.', label='interpolated')
+    plt.plot(Fourier.freq_calc, 1e9*data.real, 'C0*')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xscale('log')
+
+    # Real, log-symlog
+    ax3 = plt.subplot(323, sharex=ax1)
+    plt.title('(c) log-symlog Real')
+    plt.plot(freq_dense, 1e9*epm_dense.real, 'C1')
+    plt.plot(Fourier.freq_req, 1e9*data_int.real, 'k.')
+    plt.plot(Fourier.freq_calc, 1e9*data.real, 'C0*')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xscale('log')
+    plt.yscale('symlog', linthreshy=1e-5)
+
+    # Real, error
+    ax5 = plt.subplot(325, sharex=ax3)
+    plt.title('(e) clipped 0.01-10')
+
+    # Compute the error
+    err_int_r = np.clip(100*abs((data_int.real-epm_req.real) /
+                                epm_req.real), 0.01, 10)
+    err_cal_r = np.clip(100*abs((data.real-epm_calc.real) /
+                                epm_calc.real), 0.01, 10)
+
+    plt.ylabel('Rel. error %')
+    plt.plot(Fourier.freq_req, err_int_r, 'k.')
+    plt.plot(Fourier.freq_calc, err_cal_r, 'C0*')
+    plt.axhline(1, color='.4')
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.ylim([0.008, 12])
+    plt.xlabel('Frequency (Hz)')
+
+    # Imaginary, log-lin
+    ax2 = plt.subplot(322)
+    plt.title('(b) log-lin Imag')
+    plt.plot(freq_dense, 1e9*epm_dense.imag, 'C1')
+    plt.plot(Fourier.freq_req, 1e9*data_int.imag, 'k.', label='interpolated')
+    plt.plot(Fourier.freq_calc, 1e9*data.imag, 'C0*')
+    plt.xscale('log')
+
+    # Imaginary, log-symlog
+    ax4 = plt.subplot(324, sharex=ax2)
+    plt.title('(d) log-symlog Imag')
+    plt.plot(freq_dense, 1e9*epm_dense.imag, 'C1')
+    plt.plot(Fourier.freq_req, 1e9*data_int.imag, 'k.')
+    plt.plot(Fourier.freq_calc, 1e9*data.imag, 'C0*')
+
+    plt.xscale('log')
+    plt.yscale('symlog', linthreshy=1e-5)
+
+    # Imaginary, error
+    ax6 = plt.subplot(326, sharex=ax2)
+    plt.title('(f) clipped 0.01-10')
+
+    # Compute error
+    err_int_i = np.clip(100*abs((data_int.imag-epm_req.imag) /
+                                epm_req.imag), 0.01, 10)
+    err_cal_i = np.clip(100*abs((data.imag-epm_calc.imag) /
+                                epm_calc.imag), 0.01, 10)
+
+    plt.plot(Fourier.freq_req, err_int_i, 'k.')
+    plt.plot(Fourier.freq_calc, err_cal_i, 'C0*')
+    plt.axhline(1, color='.4')
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.ylim([0.008, 12])
+    plt.xlabel('Frequency (Hz)')
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/time_domain/images/sphx_glr_fullspace_001.png
+    :alt: (a) log-lin Real, (c) log-symlog Real, (e) clipped 0.01-10, (b) log-lin Imag, (d) log-symlog Imag, (f) clipped 0.01-10
+    :class: sphx-glr-single-img
+
+
+
+
+
+Fourier Transform
+`````````````````
+
+Carry-out Fourier transform, compute analytical result
+
+
+.. code-block:: default
+
+
+    # Compute corresponding time-domain signal.
+    data_time = Fourier.freq2time(data, rec[0])
+
+    # Analytical result
+    epm_time_precise = empymod.dipole(src, rec, depth, res, time, signal=0, verb=1)
+    epm_time = empymod.dipole(
+            src, rec, depth, res, time, signal=0,
+            ft=Fourier.ft, ftarg=Fourier.ftarg, verb=1)
+
+
+
+
+
+
+
+
+
+Plot time-domain result
+```````````````````````
+
+
+.. code-block:: default
+
+
+    fig = plt.figure(figsize=(8, 6))
+
+    # lin-lin
+    plt.subplot(221)
+    plt.title('(a) lin-lin')
+    plt.plot(time, epm_time_precise*1e9, 'k', lw=2)
+    plt.plot(time, epm_time*1e9, 'C1')
+    plt.plot(time, data_time*1e9, 'C0')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xlim([0, 2])
+    plt.xlabel('Time (s)')
+
+    # log-log
+    ax2 = plt.subplot(222)
+    plt.title('(b) log-log')
+    plt.plot(time, epm_time_precise*1e9, 'k', lw=2, label='empymod, analytical')
+    plt.plot(time, epm_time*1e9, 'C1', label='empymod, same FT as emg3d')
+    plt.plot(time, data_time*1e9, 'C0', label='emg3d, FFTLog')
+    perr = 100*(max(data_time)-max(epm_time_precise))/max(epm_time_precise)
+    plt.plot(-1, 1e9, 'k>', label=f"Peak error: {perr:.2f} %")
+    plt.xlim([1.5e-2, 2e0])
+    plt.ylim([1e-6, 1e0])
+    plt.xscale('log')
+    plt.yscale('log')
+
+    # Error
+    ax4 = plt.subplot(224, sharex=ax2)
+    plt.title('(c) clipped 0.01-10 %')
+
+    # Compute error
+    err = np.clip(100*abs((data_time-epm_time_precise)/epm_time_precise), 0.01, 10)
+    err2 = np.clip(100*abs((epm_time-epm_time_precise)/epm_time_precise), 0.01, 10)
+
+    plt.loglog(time, err2, 'C1.')
+    plt.loglog(time, err, 'C0.')
+    plt.hlines(1, 0, 100)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Rel. error %')
+    plt.ylim([0.008, 12])
+
+    plt.tight_layout()
+
+    # Plot peak error
+    ax2.legend(bbox_to_anchor=(-0.5, -0.5))
+
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/time_domain/images/sphx_glr_fullspace_002.png
+    :alt: (a) lin-lin, (b) log-log, (c) clipped 0.01-10 %
+    :class: sphx-glr-single-img
+
+
+
+
+
+Further explanations to the results in the above figure:
+````````````````````````````````````````````````````````
+
+- The black line is the analytical fullspace solution in the time-domain.
+- The blue result was obtained with empymod, using the same Fourier-transform
+  parameters as used for ``emg3d``, hence FFTLog with 5 pts per decade.
+  However, in contrary to the red response, all frequencies are computed,
+  with a very high precision.
+- The red result is the result obtain with ``emg3d``.
+
+2. Using DLF
+------------
+
+We use the same frequencies and computed data as in the FFTLog example, but
+apply the digital-linear-filter method for the transformation.
+
+Fourier Transform parameters for DLF
+````````````````````````````````````
+
+
+.. code-block:: default
+
+
+    Fourier_dlf = emg3d.Fourier(
+        time=time,
+        fmin=0.05,
+        fmax=21,
+        ft='dlf',  # Fourier transform to use
+        ftarg={'pts_per_dec': -1},
+        freq_inp=Fourier.freq_req,  # Use same frequencies as in above example
+    )
+
+
+    # Dense frequencies for comparison reasons
+    freq_dense_dlf = np.logspace(
+            np.log10(Fourier_dlf.freq_req.min()),
+            np.log10(Fourier_dlf.freq_req.max()),
+            301)
+
+    # Get data
+    data_int_dlf = Fourier_dlf.interpolate(data)
+
+    # Compute analytical result using empymod (epm)
+    epm_req_dlf = empymod.dipole(
+            src, rec, depth, res, Fourier_dlf.freq_req, verb=1)
+    epm_calc_dlf = empymod.dipole(
+            src, rec, depth, res, Fourier_dlf.freq_calc, verb=1)
+    epm_dense_dlf = empymod.dipole(src, rec, depth, res, freq_dense_dlf, verb=1)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+       time        [s] :  0.01 - 10 : 201  [min-max; #]
+       Fourier         :  DLF (Sine-Filter)
+         > Filter      :  Key 201 CosSin (2012)
+         > DLF type    :  Lagged Convolution
+       Req. freq  [Hz] :  1.4626E-08 - 1.80659E+07 : 251  [min-max; #]
+       Calc. freq [Hz] :  0.0503292 - 20.0364 : 14  [min-max; #]
+
+
+
+
+Interpolate missing frequencies and compute analytical result
+`````````````````````````````````````````````````````````````
+
+
+.. code-block:: default
+
+
+    data_int_dlf = Fourier_dlf.interpolate(data)
+
+    # Compute analytical result using empymod (epm)
+    epm_req_dlf = empymod.dipole(
+            src, rec, depth, res, Fourier_dlf.freq_req, verb=1)
+    epm_calc_dlf = empymod.dipole(
+            src, rec, depth, res, Fourier_dlf.freq_calc, verb=1)
+    epm_dense_dlf = empymod.dipole(src, rec, depth, res, freq_dense_dlf, verb=1)
+
+
+
+
+
+
+
+
+
+Plot frequency-domain result
+````````````````````````````
+
+
+.. code-block:: default
+
+
+    plt.figure(figsize=(10, 7))
+
+    # Real, log-lin
+    ax1 = plt.subplot(321)
+    plt.title('(a) log-lin Real')
+    plt.plot(freq_dense_dlf, 1e9*epm_dense_dlf.real, 'C1')
+    plt.plot(Fourier_dlf.freq_req, 1e9*data_int_dlf.real, 'k--',
+             label='interpolated')
+    plt.plot(Fourier_dlf.freq_calc, 1e9*data.real, 'C0*')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xscale('log')
+
+    # Real, log-symlog
+    ax3 = plt.subplot(323, sharex=ax1)
+    plt.title('(c) log-symlog Real')
+    plt.plot(freq_dense_dlf, 1e9*epm_dense_dlf.real, 'C1')
+    plt.plot(Fourier_dlf.freq_req, 1e9*data_int_dlf.real, 'k--')
+    plt.plot(Fourier_dlf.freq_calc, 1e9*data.real, 'C0*')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xscale('log')
+    plt.yscale('symlog', linthreshy=1e-5)
+
+    # Real, error
+    ax5 = plt.subplot(325, sharex=ax3)
+    plt.title('(e) clipped 0.01-10')
+
+    # Compute the error
+    err_int_r = np.clip(100*abs((data_int_dlf.real-epm_req_dlf.real) /
+                                epm_req_dlf.real), 0.01, 10)
+    err_cal_r = np.clip(100*abs((data.real-epm_calc_dlf.real) /
+                                epm_calc_dlf.real), 0.01, 10)
+
+    plt.ylabel('Rel. error %')
+    plt.plot(Fourier_dlf.freq_req, err_int_r, 'k.')
+    plt.plot(Fourier_dlf.freq_calc, err_cal_r, 'C0*')
+    plt.axhline(1, color='.4')
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.ylim([0.008, 12])
+    plt.xlabel('Frequency (Hz)')
+
+    # Imaginary, log-lin
+    ax2 = plt.subplot(322)
+    plt.title('(b) log-lin Imag')
+    plt.plot(freq_dense_dlf, 1e9*epm_dense_dlf.imag, 'C1')
+    plt.plot(Fourier_dlf.freq_req, 1e9*data_int_dlf.imag, 'k--',
+             label='interpolated')
+    plt.plot(Fourier_dlf.freq_calc, 1e9*data.imag, 'C0*')
+    plt.xscale('log')
+
+    # Imaginary, log-symlog
+    ax4 = plt.subplot(324, sharex=ax2)
+    plt.title('(d) log-symlog Imag')
+    plt.plot(freq_dense_dlf, 1e9*epm_dense_dlf.imag, 'C1')
+    plt.plot(Fourier_dlf.freq_req, 1e9*data_int_dlf.imag, 'k--')
+    plt.plot(Fourier_dlf.freq_calc, 1e9*data.imag, 'C0*')
+
+    plt.xscale('log')
+    plt.yscale('symlog', linthreshy=1e-5)
+
+    # Imaginary, error
+    ax6 = plt.subplot(326, sharex=ax2)
+    plt.title('(f) clipped 0.01-10')
+
+    # Compute error
+    err_int_i = np.clip(100*abs((data_int_dlf.imag-epm_req_dlf.imag) /
+                                epm_req_dlf.imag), 0.01, 10)
+    err_cal_i = np.clip(100*abs((data.imag-epm_calc_dlf.imag) /
+                                epm_calc_dlf.imag), 0.01, 10)
+
+    plt.plot(Fourier_dlf.freq_req, err_int_i, 'k.')
+    plt.plot(Fourier_dlf.freq_calc, err_cal_i, 'C0*')
+    plt.axhline(1, color='.4')
+
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.ylim([0.008, 12])
+    plt.xlabel('Frequency (Hz)')
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/time_domain/images/sphx_glr_fullspace_003.png
+    :alt: (a) log-lin Real, (c) log-symlog Real, (e) clipped 0.01-10, (b) log-lin Imag, (d) log-symlog Imag, (f) clipped 0.01-10
+    :class: sphx-glr-single-img
+
+
+
+
+
+Fourier Transform
+`````````````````
+
+Carry-out Fourier transform.
+
+
+.. code-block:: default
+
+
+    # Compute corresponding time-domain signal.
+    data_time_dlf = Fourier_dlf.freq2time(data, rec[0])
+
+
+
+
+
+
+
+
+
+Plot time-domain result
+```````````````````````
+
+
+.. code-block:: default
+
+
+    fig = plt.figure(figsize=(8, 6))
+
+    # lin-lin
+    plt.subplot(221)
+    plt.title('(a) lin-lin')
+    plt.plot(time, epm_time_precise*1e9, 'k', lw=2)
+    plt.plot(time, epm_time*1e9, 'C1')
+    plt.plot(time, data_time_dlf*1e9, 'C0')
+    plt.ylabel('$E_x$ (nV/m)')
+    plt.xlim([0, 2])
+    plt.xlabel('Time (s)')
+
+    # log-log
+    ax2 = plt.subplot(222)
+    plt.title('(b) log-log')
+    plt.plot(time, epm_time_precise*1e9, 'k', lw=2, label='empymod, analytical')
+    plt.plot(time, epm_time*1e9, 'C1', label='empymod, same FT as emg3d')
+    plt.plot(time, data_time_dlf*1e9, 'C0', label='emg3d, DLF')
+    perr = 100*(max(data_time_dlf)-max(epm_time_precise))/max(epm_time_precise)
+    plt.plot(-1, 1e9, 'k>', label=f"Peak error: {perr:.2f} %")
+    plt.xlim([1.5e-2, 2e0])
+    plt.ylim([1e-6, 1e0])
+    plt.xscale('log')
+    plt.yscale('log')
+
+    # Error
+    ax4 = plt.subplot(224, sharex=ax2)
+    plt.title('(c) clipped 0.01-10 %')
+
+    # Compute error
+    err = np.clip(100*abs((data_time_dlf-epm_time_precise)/epm_time_precise),
+                  0.01, 10)
+    err2 = np.clip(100*abs((epm_time-epm_time_precise)/epm_time_precise),
+                   0.01, 10)
+
+    plt.loglog(time, err2, 'C1.')
+    plt.loglog(time, err, 'C0.')
+    plt.hlines(1, 0, 100)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Rel. error %')
+    plt.ylim([0.008, 12])
+
+    plt.tight_layout()
+
+    # Plot peak error
+    ax2.legend(bbox_to_anchor=(-0.5, -0.5))
+
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/time_domain/images/sphx_glr_fullspace_004.png
+    :alt: (a) lin-lin, (b) log-log, (c) clipped 0.01-10 %
+    :class: sphx-glr-single-img
+
+
+
+
+
+3. Results from Mulder et al., 2008, Geophysics
+-----------------------------------------------
+
+Total computation time (CPU) is 13,632 s, which corresponds to
+3 h 47 min 12 s.
+
+.. figure:: ../../_static/images/Mulder2008_Figs_3-4_Tab_1.png
+   :scale: 66 %
+   :align: center
+   :alt: Results Mulder et al., 2008.
+   :name: Muld08_Fig3-4
+
+   Figures 3 and 4 and Table 1, page F5 of Mulder et al., 2008, Geophysics.
+
+The published example took roughly **3.75 hours**, whereas here we need just
+a **few minutes**. There are two main reasons for the speed gain:
+
+1. gridding and
+2. frequency selection.
+
+Note re first point, gridding: We implemented here an adaptive gridding with
+various number of cells. Our computation uses meshes between 36,864
+(64x24x24) and 102,400 (64x40x40) cells, whereas Mulder et al., 2008, used
+2,097,152 (128x128x128) for all frequencies.
+
+Note re second point, frequency selection: We only used 14 frequencies from
+0.05-20 Hz, whereas Mulder et al., 2008, used 26 frequencies from 0.01-100
+Hz. Have a look at the example
+:ref:`sphx_glr_gallery_time_domain_freqselect.py`.
+
+
+.. code-block:: default
+
+
+    emg3d.Report()
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table style='border: 3px solid #ddd;'>
+          <tr>
+             <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Wed Jul 29 22:46:02 2020 CEST</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+            <td style='text-align: left; border: 2px solid #fff;'>4</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+            <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+            <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+            <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59) 
+        [GCC 7.3.0]</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+            <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+            <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+          </tr>
+          <tr>
+             <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+          </tr>
+        </table>
+        <br />
+        <br />
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 1 minutes  53.766 seconds)
+
+**Estimated memory usage:**  9 MB
+
+
+.. _sphx_glr_download_gallery_time_domain_fullspace.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: fullspace.py <fullspace.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: fullspace.ipynb <fullspace.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

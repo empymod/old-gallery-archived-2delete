@@ -1,0 +1,318 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_gallery_tools_CPU-and-RAM.py>`     to download the full example code
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_gallery_tools_CPU-and-RAM.py:
+
+
+1. CPU and RAM usage
+====================
+
+Measuring and estimating runtime and memory usage of ``emg3d`` as a function of
+model size.
+
+The actually computed results further down are only for relatively small
+models, as these examples in the gallery are run very often. Here therefore the
+results of two larger runs that were run on a cluster:
+
+Example CPU
+-----------
+
+.. figure:: ../../_static/images/CPU.png
+   :scale: 66 %
+   :align: center
+   :alt: Runtime
+   :name: cpu-usage
+
+Example RAM
+-----------
+
+.. figure:: ../../_static/images/RAM.png
+   :scale: 66 %
+   :align: center
+   :alt: RAM
+   :name: ram-usage
+
+Check-out the old versions for more information with regards to the above
+figures:
+
+- `4a_RAM-requirements.ipynb
+  <https://github.com/empymod/emg3d-examples/blob/master/4a_RAM-requirements.ipynb>`_,
+- `4b_Runtime.ipynb
+  <https://github.com/empymod/emg3d-examples/blob/master/4b_Runtime.ipynb>`_.
+
+
+.. code-block:: default
+
+    import emg3d
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from memory_profiler import memory_usage
+    plt.style.use('ggplot')
+
+
+
+
+
+
+
+
+
+Model
+-----
+
+This is the actual model it runs. Adjust this to your needs.
+
+
+.. code-block:: default
+
+
+    def compute(nx):
+        """Simple computation routine.
+
+        - Model size is nx * nx * nx, centered around the origin.
+        - Source is at the origin, x-directed.
+        - Frequency is 1 Hz.
+        - Homogenous space of 1 Ohm.m.
+
+        """
+
+        # Grid
+        hx = np.ones(nx)*50
+        x0 = -nx//2*50
+        grid = emg3d.TensorMesh([hx, hx, hx], x0=(x0, x0, x0))
+
+        # Source location and frequency
+        src = [0, 0, 0, 0, 0]
+        freq = 1.0
+
+        # Resistivity model
+        res = 1.
+
+        # Model and source field
+        model = emg3d.Model(grid, property_x=res, mapping='Resistivity')
+        sfield = emg3d.get_source_field(grid, src, freq=freq, strength=0)
+
+        # Compute the field
+        _, inf = emg3d.solve(grid, model, sfield, verb=1, return_info=True)
+
+        return inf['time']
+
+
+
+
+
+
+
+
+
+Loop over model sizes
+---------------------
+
+These are the actual ``nx``-sizes it tests. Adjust to your needs.
+
+
+.. code-block:: default
+
+
+    nsizes = np.array([32, 48, 64, 96, 128, 192])  # , 256, 384, 512, 768, 1024])
+    memory = np.zeros(nsizes.shape)
+    runtime = np.zeros(nsizes.shape)
+
+    # Loop over nx
+    for i, nx in enumerate(nsizes):
+        print(f"  => {nx}^3 = {nx**3:12,d} cells")
+        mem, time = memory_usage((compute, (nx, ), {}), retval=True)
+        memory[i] = max(mem)
+        runtime[i] = time
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+      => 32^3 =       32,768 cells
+      => 48^3 =      110,592 cells
+      => 64^3 =      262,144 cells
+      => 96^3 =      884,736 cells
+      => 128^3 =    2,097,152 cells
+      => 192^3 =    7,077,888 cells
+
+
+
+
+Plot CPU
+````````
+
+
+.. code-block:: default
+
+
+    plt.figure()
+    plt.title('Runtime')
+    plt.loglog(nsizes**3/1e6, runtime, '.-')
+    plt.xlabel('Number of cells (in millions)')
+    plt.ylabel('CPU (s)')
+    plt.axis('equal')
+    plt.show()
+
+
+
+
+.. image:: /gallery/tools/images/sphx_glr_CPU-and-RAM_001.png
+    :alt: Runtime
+    :class: sphx-glr-single-img
+
+
+
+
+
+Plot RAM
+````````
+
+
+.. code-block:: default
+
+
+
+    plt.figure()
+    plt.title('Memory')
+    plt.loglog(nsizes**3/1e6, memory/1e3, '-', zorder=10)
+    plt.xlabel('Number of cells (in millions)')
+    plt.ylabel('RAM (GB)')
+    plt.axis('equal')
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/tools/images/sphx_glr_CPU-and-RAM_002.png
+    :alt: Memory
+    :class: sphx-glr-single-img
+
+
+
+
+
+
+.. code-block:: default
+
+
+    emg3d.Report('memory_profiler')
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table style='border: 3px solid #ddd;'>
+          <tr>
+             <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Wed Jul 29 23:01:04 2020 CEST</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+            <td style='text-align: left; border: 2px solid #fff;'>4</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+            <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+            <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+            <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59) 
+        [GCC 7.3.0]</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>memory_profiler</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.57.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+            <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+            <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+            <td style= border: 2px solid #fff;'></td>
+            <td style= border: 2px solid #fff;'></td>
+          </tr>
+          <tr>
+             <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+          </tr>
+        </table>
+        <br />
+        <br />
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 4 minutes  57.263 seconds)
+
+**Estimated memory usage:**  1677 MB
+
+
+.. _sphx_glr_download_gallery_tools_CPU-and-RAM.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: CPU-and-RAM.py <CPU-and-RAM.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: CPU-and-RAM.ipynb <CPU-and-RAM.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

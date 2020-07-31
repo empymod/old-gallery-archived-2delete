@@ -1,0 +1,626 @@
+:orphan:
+
+
+
+.. _sphx_glr_gallery:
+
+Gallery
+*******
+
+Gallery for `emg3d <https://emg3d.rtfd.io>`_, a multigrid solver for 3D
+electromagnetic diffusion [WeMS19]_.
+
+
+.. raw:: html
+
+    <div class="sphx-glr-clear"></div>
+
+
+
+.. _sphx_glr_gallery_tutorials:
+
+Examples and Tutorials
+======================
+
+Basic examples, a good point to get started with ``emg3d``.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This is a simple minimum working example to use the multigrid solver emg3d, along the lines of ...">
+
+.. only:: html
+
+ .. figure:: /gallery/tutorials/images/thumb/sphx_glr_minimum_example_thumb.png
+     :alt: 1. Minimum working example
+
+     :ref:`sphx_glr_gallery_tutorials_minimum_example.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/tutorials/minimum_example
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="TODO: An example how to use the new emg3d.surveys.Survey- and emg3d.simulations.Simulation-clas...">
+
+.. only:: html
+
+ .. figure:: /gallery/tutorials/images/thumb/sphx_glr_simulation_thumb.png
+     :alt: 2. Simulation
+
+     :ref:`sphx_glr_gallery_tutorials_simulation.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/tutorials/simulation
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" Physical rock properties (and their units) can be a tricky thing. And emg3d is no difference i...">
+
+.. only:: html
+
+ .. figure:: /gallery/tutorials/images/thumb/sphx_glr_mapping_thumb.png
+     :alt: 3. Model property mapping
+
+     :ref:`sphx_glr_gallery_tutorials_mapping.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/tutorials/mapping
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="TODO: An example how to use the new emg3d.optimize.gradient routine to compute the adjoint-stat...">
+
+.. only:: html
+
+ .. figure:: /gallery/tutorials/images/thumb/sphx_glr_gradient_thumb.png
+     :alt: 4. Gradient of the misfit function
+
+     :ref:`sphx_glr_gallery_tutorials_gradient.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/tutorials/gradient
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We usually use emg3d for total field computations. However, we can also use it in a primary-sec...">
+
+.. only:: html
+
+ .. figure:: /gallery/tutorials/images/thumb/sphx_glr_total_vs_ps_field_thumb.png
+     :alt: 5. Total vs primary/secondary field
+
+     :ref:`sphx_glr_gallery_tutorials_total_vs_ps_field.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/tutorials/total_vs_ps_field
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The modeller emg3d has quite a few parameters which can influence the speed of a computation. I...">
+
+.. only:: html
+
+ .. figure:: /gallery/tutorials/images/thumb/sphx_glr_parameter_tests_thumb.png
+     :alt: 6. Parameter tests
+
+     :ref:`sphx_glr_gallery_tutorials_parameter_tests.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/tutorials/parameter_tests
+.. raw:: html
+
+    <div class="sphx-glr-clear"></div>
+
+
+
+.. _sphx_glr_gallery_comparisons:
+
+Comparisons
+===========
+
+Comparisons with other codes.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The code empymod is an open-source code which can model CSEM responses for a layered medium inc...">
+
+.. only:: html
+
+ .. figure:: /gallery/comparisons/images/thumb/sphx_glr_1D_VTI_empymod_thumb.png
+     :alt: 1. empymod: 1D VTI resistivity
+
+     :ref:`sphx_glr_gallery_comparisons_1D_VTI_empymod.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/comparisons/1D_VTI_empymod
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="MARE2DEM is an open-source, finite element 2.5D code for controlled-source electromagnetic (CSE...">
+
+.. only:: html
+
+ .. figure:: /gallery/comparisons/images/thumb/sphx_glr_2D_triaxial_MARE2DEM_thumb.png
+     :alt: 2. MARE2DEM: 2D with tri-axial anisotropy
+
+     :ref:`sphx_glr_gallery_comparisons_2D_triaxial_MARE2DEM.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/comparisons/2D_triaxial_MARE2DEM
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="`SimPEG &lt;https://simpeg.xyz&gt;`_ is an open source python package for simulation and gradient bas...">
+
+.. only:: html
+
+ .. figure:: /gallery/comparisons/images/thumb/sphx_glr_3D_triaxial_SimPEG_thumb.png
+     :alt: 3. SimPEG: 3D with tri-axial anisotropy
+
+     :ref:`sphx_glr_gallery_comparisons_3D_triaxial_SimPEG.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/comparisons/3D_triaxial_SimPEG
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The **gradient of the misfit function**, as implemented in emg3d, uses the adjoint-state method...">
+
+.. only:: html
+
+ .. figure:: /gallery/comparisons/images/thumb/sphx_glr_as_vs_fd_gradient_thumb.png
+     :alt: 4. Adjoint-state vs. FD gradient
+
+     :ref:`sphx_glr_gallery_comparisons_as_vs_fd_gradient.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/comparisons/as_vs_fd_gradient
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="1D VTI comparison between emg3d and empymod in the Laplace domain.">
+
+.. only:: html
+
+ .. figure:: /gallery/comparisons/images/thumb/sphx_glr_1D_VTI_empymod_Laplace_thumb.png
+     :alt: 5. empymod: 1D VTI Laplace-domain
+
+     :ref:`sphx_glr_gallery_comparisons_1D_VTI_empymod_Laplace.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/comparisons/1D_VTI_empymod_Laplace
+.. raw:: html
+
+    <div class="sphx-glr-clear"></div>
+
+
+
+.. _sphx_glr_gallery_magnetics:
+
+Magnetic fields and magnetic permeability
+=========================================
+
+The main implementation of ``emg3d`` obtains the electric field due to an
+electric source. However, ``emg3d`` can also be used to model a magnetic
+source, obtain the magnetic field, or any combination thereof (:math:`ee`,
+:math:`em`, :math:`me`, :math:`mm`).
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The solver emg3d returns the electric field in x-, y-, and z-direction. Using Farady&#x27;s law of i...">
+
+.. only:: html
+
+ .. figure:: /gallery/magnetics/images/thumb/sphx_glr_magnetic_field_thumb.png
+     :alt: 1. Magnetic field due to an el. source
+
+     :ref:`sphx_glr_gallery_magnetics_magnetic_field.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/magnetics/magnetic_field
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Computing the E and H fields generated by a magnetic source">
+
+.. only:: html
+
+ .. figure:: /gallery/magnetics/images/thumb/sphx_glr_magnetic_source_el_loop_thumb.png
+     :alt: 2. Magnetic source using an el. loop
+
+     :ref:`sphx_glr_gallery_magnetics_magnetic_source_el_loop.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/magnetics/magnetic_source_el_loop
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Computing the E and H fields from a magnetic source using the duality principle.">
+
+.. only:: html
+
+ .. figure:: /gallery/magnetics/images/thumb/sphx_glr_magnetic_source_duality_thumb.png
+     :alt: 3. Magnetic source using duality
+
+     :ref:`sphx_glr_gallery_magnetics_magnetic_source_duality.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/magnetics/magnetic_source_duality
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The solver emg3d uses the diffusive approximation of Maxwell&#x27;s equations; the relative electric...">
+
+.. only:: html
+
+ .. figure:: /gallery/magnetics/images/thumb/sphx_glr_magnetic_permeability_thumb.png
+     :alt: 4. Magnetic permeability
+
+     :ref:`sphx_glr_gallery_magnetics_magnetic_permeability.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/magnetics/magnetic_permeability
+.. raw:: html
+
+    <div class="sphx-glr-clear"></div>
+
+
+
+.. _sphx_glr_gallery_time_domain:
+
+Time Domain
+===========
+
+The multigrid solver ``emg3d`` is a frequency-domain (or Laplace-domain)
+code. However, we can also use ``emg3d`` to model time-domain data.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Example how to use emg3d to model time-domain data, using FFTLog and DLF.">
+
+.. only:: html
+
+ .. figure:: /gallery/time_domain/images/thumb/sphx_glr_fullspace_thumb.png
+     :alt: 1. Transient CSEM for a homogeneous space
+
+     :ref:`sphx_glr_gallery_time_domain_fullspace.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/time_domain/fullspace
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Example how to use emg3d to model time-domain data using FFTLog.">
+
+.. only:: html
+
+ .. figure:: /gallery/time_domain/images/thumb/sphx_glr_marine_1D_thumb.png
+     :alt: 2. Transient CSEM for a marine model
+
+     :ref:`sphx_glr_gallery_time_domain_marine_1D.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/time_domain/marine_1D
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The time domain examples sphx_glr_gallery_time_domain_fullspace.py and sphx_glr_gallery_time_do...">
+
+.. only:: html
+
+ .. figure:: /gallery/time_domain/images/thumb/sphx_glr_freqselect_thumb.png
+     :alt: 3. Interactive frequency selection
+
+     :ref:`sphx_glr_gallery_time_domain_freqselect.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/time_domain/freqselect
+.. raw:: html
+
+    <div class="sphx-glr-clear"></div>
+
+
+
+.. _sphx_glr_gallery_tools:
+
+Tools
+=====
+
+Examples to measure and track the performance of ``emg3d``.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Measuring and estimating runtime and memory usage of emg3d as a function of model size.">
+
+.. only:: html
+
+ .. figure:: /gallery/tools/images/thumb/sphx_glr_CPU-and-RAM_thumb.png
+     :alt: 1. CPU and RAM usage
+
+     :ref:`sphx_glr_gallery_tools_CPU-and-RAM.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/tools/CPU-and-RAM
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Ensure the boundary in \pm x, \pm y, and + z is big enough for \rho_\text{air}.">
+
+.. only:: html
+
+ .. figure:: /gallery/tools/images/thumb/sphx_glr_check_calc_domain_thumb.png
+     :alt: 2. Ensure computation domain is big enough
+
+     :ref:`sphx_glr_gallery_tools_check_calc_domain.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/tools/check_calc_domain
+.. raw:: html
+
+    <div class="sphx-glr-clear"></div>
+
+
+
+.. _sphx_glr_gallery_reproducing:
+
+Reproducing
+===========
+
+Reproducing published results.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" In this example we reproduce the results by [Muld07]_, which uses the SEG/EAGE salt model from...">
+
+.. only:: html
+
+ .. figure:: /gallery/reproducing/images/thumb/sphx_glr_SEG-EAGE_3D_salt_model_thumb.png
+     :alt: 1. SEG-EAGE 3D Salt Model
+
+     :ref:`sphx_glr_gallery_reproducing_SEG-EAGE_3D_salt_model.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/reproducing/SEG-EAGE_3D_salt_model
+.. raw:: html
+
+    <div class="sphx-glr-clear"></div>
+
+
+
+.. _sphx_glr_gallery_interactions:
+
+Interactions
+============
+
+Some examples how other big packages can be used together with ``emg3d``.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses `GemPy &lt;https://www.gempy.org&gt;`_ to create a geological model as input to emg...">
+
+.. only:: html
+
+ .. figure:: /gallery/interactions/images/thumb/sphx_glr_GemPy-I_thumb.png
+     :alt: 1. GemPy-I: *Simple Fault Model*
+
+     :ref:`sphx_glr_gallery_interactions_GemPy-I.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/interactions/GemPy-I
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example is mainly about building a deep marine resistivity model that can be used in other...">
+
+.. only:: html
+
+ .. figure:: /gallery/interactions/images/thumb/sphx_glr_GemPy-II_thumb.png
+     :alt: 2. GemPy-II: *Perth Basin*
+
+     :ref:`sphx_glr_gallery_interactions_GemPy-II.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /gallery/interactions/GemPy-II
+.. raw:: html
+
+    <div class="sphx-glr-clear"></div>
+
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-gallery
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+    :download:`Download all examples in Python source code: gallery_python.zip <//home/dtr/Codes/emg3d-gallery/docs/gallery/gallery_python.zip>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+    :download:`Download all examples in Jupyter notebooks: gallery_jupyter.zip <//home/dtr/Codes/emg3d-gallery/docs/gallery/gallery_jupyter.zip>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

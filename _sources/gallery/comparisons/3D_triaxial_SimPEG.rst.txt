@@ -1,0 +1,628 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_gallery_comparisons_3D_triaxial_SimPEG.py>`     to download the full example code
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_gallery_comparisons_3D_triaxial_SimPEG.py:
+
+
+3. SimPEG: 3D with tri-axial anisotropy
+=======================================
+
+`SimPEG <https://simpeg.xyz>`_ is an open source python package for simulation
+and gradient based parameter estimation in geophysical applications. Here we
+compare ``emg3d`` with ``SimPEG`` using the forward solver ``Pardiso``.
+
+Note, in order to use the ``Pardiso``-solver ``pymatsolver`` has to be
+installed via ``conda``, not via ``pip``!
+
+
+.. code-block:: default
+
+    import emg3d
+    import SimPEG
+    import discretize
+    import numpy as np
+    import pymatsolver
+    import SimPEG.electromagnetics.frequency_domain as FDEM
+    import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
+
+
+
+
+
+
+
+
+Model and survey parameters
+---------------------------
+
+
+.. code-block:: default
+
+
+    # Depths (0 is sea-surface)
+    water_depth = 1000
+    target_x = np.r_[-500, 500]
+    target_y = target_x
+    target_z = -water_depth + np.r_[-400, -100]
+
+    # Resistivities
+    res_air = 2e8
+    res_sea = 0.33
+    res_back = [1., 2., 3.]  # Background in x-, y-, and z-directions
+    res_target = 100.
+
+    freq = 1.0
+
+    src = [-100, 100, 0, 0, -900, -900]
+
+
+
+
+
+
+
+
+
+Mesh and source-field
+---------------------
+
+
+.. code-block:: default
+
+
+    # skin depth
+    skin_depth = 503*np.sqrt(res_back[0]/freq)
+    print(f"\nThe skin_depth is {skin_depth} m.\n")
+
+    cs = 100    # 100 m min_width of cells
+
+    pf = 1.15   # Padding factor x- and y-directions
+    pfz = 1.35  # .              z-direction
+    npadx = 12  # Nr of padding in x- and y-directions
+    npadz = 9   # .                z-direction
+
+    domain_x = 4000            # x- and y-domain
+    domain_z = - target_z[0]   # z-domain
+
+    # Create mesh
+    mesh = discretize.TensorMesh(
+        [[(cs, npadx, -pf), (cs, int(domain_x/cs)), (cs, npadx, pf)],
+         [(cs, npadx, -pf), (cs, int(domain_x/cs)), (cs, npadx, pf)],
+         [(cs, npadz, -pfz), (cs, int(domain_z/cs)), (cs, npadz, pfz)]],
+    )
+
+    # Center mesh
+    mesh.x0 = np.r_[-mesh.hx.sum()/2, -mesh.hy.sum()/2, -mesh.hz[:-npadz].sum()]
+
+    # Create the source field for this mesh and given frequency
+    sfield = emg3d.get_source_field(mesh, src, freq, strength=0)
+
+    # We take the receiver locations at the actual CCx-locations
+    rec_x = mesh.vectorCCx[12:-12]
+    print(f"Receiver locations:\n{rec_x}\n")
+
+    mesh
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    The skin_depth is 503.0 m.
+
+    Receiver locations:
+    [-1950. -1850. -1750. -1650. -1550. -1450. -1350. -1250. -1150. -1050.
+      -950.  -850.  -750.  -650.  -550.  -450.  -350.  -250.  -150.   -50.
+        50.   150.   250.   350.   450.   550.   650.   750.   850.   950.
+      1050.  1150.  1250.  1350.  1450.  1550.  1650.  1750.  1850.  1950.]
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table>
+          <tr>
+            <td style='font-weight: bold; font-size: 1.2em; text-align: center;' colspan='3'>TensorMesh</td>
+            <td style='font-size: 1.2em; text-align: center;'colspan='4'>131,072 cells</td>
+          </tr>
+          <tr>
+            <th></th>
+            <th></th>
+            <th colspan='2' style='padding: 5px 20px 5px 20px;'>MESH EXTENT</th>
+            <th colspan='2' style='padding: 5px 20px 5px 20px;'>CELL WIDTH</th>
+            <th style='padding: 5px 20px 5px 20px;'>FACTOR</th>
+          </tr>
+          <tr>
+            <th style='padding: 5px 20px 5px 20px;'>dir</th>
+            <th style='padding: 5px 20px 5px 20px;'>nC</th>
+            <th style='padding: 5px 20px 5px 20px;'>min</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+            <th style='padding: 5px 20px 5px 20px;'>min</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+            <th style='padding: 5px 20px 5px 20px;'>max</th>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>x</td>
+            <td style='padding: 5px 20px 5px 20px;'>64</td>
+            <td style='padding: 5px 20px 5px 20px;'>-5,335.19</td>
+            <td style='padding: 5px 20px 5px 20px;'>5,335.19</td>
+            <td style='padding: 5px 20px 5px 20px;'>100.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>535.03</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.15</td>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>y</td>
+            <td style='padding: 5px 20px 5px 20px;'>64</td>
+            <td style='padding: 5px 20px 5px 20px;'>-5,335.19</td>
+            <td style='padding: 5px 20px 5px 20px;'>5,335.19</td>
+            <td style='padding: 5px 20px 5px 20px;'>100.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>535.03</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.15</td>
+          </tr>
+          <tr>
+            <td style='padding: 5px 20px 5px 20px;'>z</td>
+            <td style='padding: 5px 20px 5px 20px;'>32</td>
+            <td style='padding: 5px 20px 5px 20px;'>-6,759.02</td>
+            <td style='padding: 5px 20px 5px 20px;'>5,359.02</td>
+            <td style='padding: 5px 20px 5px 20px;'>100.00</td>
+            <td style='padding: 5px 20px 5px 20px;'>1,489.37</td>
+            <td style='padding: 5px 20px 5px 20px;'>1.35</td>
+          </tr>
+        </table>
+
+        <br />
+        <br />
+
+Create model
+------------
+
+
+.. code-block:: default
+
+
+    # Layered_background
+    res_x = res_air*np.ones(mesh.nC)
+    res_x[mesh.gridCC[:, 2] <= 0] = res_sea
+
+    res_y = res_x.copy()
+    res_z = res_x.copy()
+
+    res_x[mesh.gridCC[:, 2] <= -water_depth] = res_back[0]
+    res_y[mesh.gridCC[:, 2] <= -water_depth] = res_back[1]
+    res_z[mesh.gridCC[:, 2] <= -water_depth] = res_back[2]
+
+    res_x_bg = res_x.copy()
+    res_y_bg = res_y.copy()
+    res_z_bg = res_z.copy()
+
+    # Include the target
+    target_inds = (
+        (mesh.gridCC[:, 0] >= target_x[0]) & (mesh.gridCC[:, 0] <= target_x[1]) &
+        (mesh.gridCC[:, 1] >= target_y[0]) & (mesh.gridCC[:, 1] <= target_y[1]) &
+        (mesh.gridCC[:, 2] >= target_z[0]) & (mesh.gridCC[:, 2] <= target_z[1])
+    )
+    res_x[target_inds] = res_target
+    res_y[target_inds] = res_target
+    res_z[target_inds] = res_target
+
+    # Create emg3d-models for given frequency
+    pmodel = emg3d.Model(
+            mesh, property_x=res_x, property_y=res_y,
+            property_z=res_z, mapping='Resistivity')
+    pmodel_bg = emg3d.Model(
+            mesh, property_x=res_x_bg, property_y=res_y_bg,
+            property_z=res_z_bg, mapping='Resistivity')
+
+    # Plot a slice
+    mesh.plot_3d_slicer(pmodel.property_x, zslice=-1100, clim=[0, 2],
+                        xlim=(-4000, 4000), ylim=(-4000, 4000), zlim=(-2000, 500))
+
+
+
+
+
+.. image:: /gallery/comparisons/images/sphx_glr_3D_triaxial_SimPEG_001.png
+    :alt: 3D triaxial SimPEG
+    :class: sphx-glr-single-img
+
+
+
+
+
+Compute ``emg3d``
+-------------------
+
+
+.. code-block:: default
+
+
+    em3_tg = emg3d.solve(mesh, pmodel, sfield, verb=3, nu_pre=0,
+                         semicoarsening=True)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    :: emg3d START :: 22:26:14 :: v0.12.0
+
+       MG-cycle       : 'F'                 sslsolver : False
+       semicoarsening : True [1 2 3]        tol       : 1e-06
+       linerelaxation : False [0]           maxit     : 50
+       nu_{i,1,c,2}   : 0, 0, 1, 2          verb      : 3
+       Original grid  :  64 x  64 x  32     => 131,072 cells
+       Coarsest grid  :   2 x   2 x   2     => 8 cells
+       Coarsest level :   5 ;   5 ;   4   
+
+       [hh:mm:ss]  rel. error                  [abs. error, last/prev]   l s
+
+           h_
+          2h_ \                            /
+          4h_  \                  /\      / 
+          8h_   \          /\    /  \    /  
+         16h_    \    /\  /  \  /    \  /   
+         32h_     \/\/  \/    \/      \/    
+
+       [22:26:14]   5.227e-02  after   1 F-cycles   [2.918e-07, 0.052]   0 1
+       [22:26:15]   6.108e-03  after   2 F-cycles   [3.410e-08, 0.117]   0 2
+       [22:26:15]   7.466e-04  after   3 F-cycles   [4.168e-09, 0.122]   0 3
+       [22:26:16]   1.135e-04  after   4 F-cycles   [6.334e-10, 0.152]   0 1
+       [22:26:16]   3.092e-05  after   5 F-cycles   [1.726e-10, 0.273]   0 2
+       [22:26:17]   4.371e-06  after   6 F-cycles   [2.440e-11, 0.141]   0 3
+       [22:26:17]   1.536e-06  after   7 F-cycles   [8.573e-12, 0.351]   0 1
+       [22:26:18]   9.583e-07  after   8 F-cycles   [5.350e-12, 0.624]   0 2
+
+       > CONVERGED
+       > MG cycles        : 8
+       > Final rel. error : 9.583e-07
+
+    :: emg3d END   :: 22:26:18 :: runtime = 0:00:04
+
+
+
+
+
+
+.. code-block:: default
+
+
+    em3_bg = emg3d.solve(mesh, pmodel_bg, sfield, verb=3, nu_pre=0,
+                         semicoarsening=True)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    :: emg3d START :: 22:26:18 :: v0.12.0
+
+       MG-cycle       : 'F'                 sslsolver : False
+       semicoarsening : True [1 2 3]        tol       : 1e-06
+       linerelaxation : False [0]           maxit     : 50
+       nu_{i,1,c,2}   : 0, 0, 1, 2          verb      : 3
+       Original grid  :  64 x  64 x  32     => 131,072 cells
+       Coarsest grid  :   2 x   2 x   2     => 8 cells
+       Coarsest level :   5 ;   5 ;   4   
+
+       [hh:mm:ss]  rel. error                  [abs. error, last/prev]   l s
+
+           h_
+          2h_ \                            /
+          4h_  \                  /\      / 
+          8h_   \          /\    /  \    /  
+         16h_    \    /\  /  \  /    \  /   
+         32h_     \/\/  \/    \/      \/    
+
+       [22:26:18]   5.250e-02  after   1 F-cycles   [2.931e-07, 0.052]   0 1
+       [22:26:19]   6.469e-03  after   2 F-cycles   [3.612e-08, 0.123]   0 2
+       [22:26:19]   8.055e-04  after   3 F-cycles   [4.497e-09, 0.125]   0 3
+       [22:26:20]   1.436e-04  after   4 F-cycles   [8.019e-10, 0.178]   0 1
+       [22:26:20]   4.759e-05  after   5 F-cycles   [2.657e-10, 0.331]   0 2
+       [22:26:21]   5.866e-06  after   6 F-cycles   [3.275e-11, 0.123]   0 3
+       [22:26:21]   1.951e-06  after   7 F-cycles   [1.089e-11, 0.333]   0 1
+       [22:26:22]   1.071e-06  after   8 F-cycles   [5.982e-12, 0.549]   0 2
+       [22:26:22]   3.498e-07  after   9 F-cycles   [1.953e-12, 0.326]   0 3
+
+       > CONVERGED
+       > MG cycles        : 9
+       > Final rel. error : 3.498e-07
+
+    :: emg3d END   :: 22:26:22 :: runtime = 0:00:04
+
+
+
+
+
+Compute ``SimPEG``
+--------------------
+
+
+.. code-block:: default
+
+
+    # Set up the receivers
+    rx_locs = discretize.utils.ndgrid([rec_x, np.r_[0], np.r_[-water_depth]])
+    rx_list = [
+        FDEM.receivers.Point_e(
+            orientation='x', component="real", locations=rx_locs),
+        FDEM.receivers.Point_e(
+            orientation='x', component="imag", locations=rx_locs)
+    ]
+
+    # We use the emg3d-source-vector, to ensure we use the same in both cases
+    src_sp = FDEM.sources.RawVec_e(rx_list, s_e=sfield.vector, freq=freq)
+    src_list = [src_sp]
+    survey = FDEM.Survey(src_list)
+
+    # Define the Simulation
+    sim = FDEM.simulation.Simulation3DElectricField(
+            mesh,
+            survey=survey,
+            sigmaMap=SimPEG.maps.IdentityMap(mesh),
+            Solver=pymatsolver.Pardiso,
+    )
+
+
+
+
+
+
+
+
+
+.. code-block:: default
+
+    spg_tg_dobs = sim.dpred(np.vstack([1./res_x, 1./res_y, 1./res_z]).T)
+    spg_tg = SimPEG.survey.Data(survey, dobs=spg_tg_dobs)
+
+
+
+
+
+
+
+
+
+
+.. code-block:: default
+
+    spg_bg_dobs = sim.dpred(
+            np.vstack([1./res_x_bg, 1./res_y_bg, 1./res_z_bg]).T)
+    spg_bg = SimPEG.survey.Data(survey, dobs=spg_bg_dobs)
+
+
+
+
+
+
+
+
+
+Plot result
+-----------
+
+
+.. code-block:: default
+
+    ix1, ix2 = 12, 12
+    iy = 32
+    iz = 13
+
+    plt.figure(figsize=(9, 6))
+
+    plt.subplot(221)
+    plt.title('|Real(response)|')
+    plt.semilogy(rec_x/1e3, np.abs(em3_bg.fx[ix1:-ix2, iy, iz].real))
+    plt.semilogy(rec_x/1e3, np.abs(em3_tg.fx[ix1:-ix2, iy, iz].real))
+    plt.semilogy(rec_x/1e3, np.abs(spg_bg[src_sp, rx_list[0]]), 'C4--')
+    plt.semilogy(rec_x/1e3, np.abs(spg_tg[src_sp, rx_list[0]]), 'C5--')
+    plt.xlabel('Offset (km)')
+    plt.ylabel('$E_x$ (V/m)')
+
+    plt.subplot(223)
+    plt.title('|Imag(response)|')
+    plt.semilogy(rec_x/1e3, np.abs(em3_bg.fx[ix1:-ix2, iy, iz].imag),
+                 label='emg3d BG')
+    plt.semilogy(rec_x/1e3, np.abs(em3_tg.fx[ix1:-ix2, iy, iz].imag),
+                 label='emg3d target')
+    plt.semilogy(rec_x/1e3, np.abs(spg_bg[src_sp, rx_list[1]]), 'C4--',
+                 label='SimPEG BG')
+    plt.semilogy(rec_x/1e3, np.abs(spg_tg[src_sp, rx_list[1]]), 'C5--',
+                 label='SimPEG target')
+    plt.xlabel('Offset (km)')
+    plt.ylabel('$E_x$ (V/m)')
+    plt.legend()
+
+    plt.subplot(222)
+    plt.title('Difference Real')
+
+    nrmsd_bg = 200*(abs(spg_bg[src_sp, rx_list[0]] -
+                        em3_bg.fx[ix1:-ix2, iy, iz].real) /
+                    (abs(em3_bg.fx[ix1:-ix2, iy, iz].real) +
+                     abs(spg_bg[src_sp, rx_list[0]])))
+    nrmsd_tg = 200*(abs(spg_tg[src_sp, rx_list[0]] -
+                        em3_tg.fx[ix1:-ix2, iy, iz].real) /
+                    (abs(em3_tg.fx[ix1:-ix2, iy, iz].real) +
+                     abs(spg_tg[src_sp, rx_list[0]])))
+
+    plt.semilogy(rec_x/1e3, nrmsd_bg, label='BG')
+    plt.semilogy(rec_x/1e3, nrmsd_tg, label='target')
+
+    plt.xlabel('Offset (km)')
+    plt.ylabel('NRMSD (%)')
+    plt.legend()
+
+    plt.subplot(224)
+    plt.title('Difference Imag')
+
+    nrmsd_bg = 200*(abs(spg_bg[src_sp, rx_list[1]] -
+                        em3_bg.fx[ix1:-ix2, iy, iz].imag) /
+                    (abs(em3_bg.fx[ix1:-ix2, iy, iz].imag) +
+                     abs(spg_bg[src_sp, rx_list[1]])))
+    nrmsd_tg = 200*(abs(spg_tg[src_sp, rx_list[1]] -
+                        em3_tg.fx[ix1:-ix2, iy, iz].imag) /
+                    (abs(em3_tg.fx[ix1:-ix2, iy, iz].imag) +
+                     abs(spg_tg[src_sp, rx_list[1]])))
+
+    plt.semilogy(rec_x/1e3, nrmsd_bg, label='BG')
+    plt.semilogy(rec_x/1e3, nrmsd_tg, label='target')
+
+    plt.xlabel('Offset (km)')
+    plt.ylabel('NRMSD (%)')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+
+.. image:: /gallery/comparisons/images/sphx_glr_3D_triaxial_SimPEG_002.png
+    :alt: |Real(response)|, |Imag(response)|, Difference Real, Difference Imag
+    :class: sphx-glr-single-img
+
+
+
+
+
+
+.. code-block:: default
+
+
+    emg3d.Report([SimPEG, pymatsolver])
+
+
+
+
+
+.. only:: builder_html
+
+    .. raw:: html
+
+        <table style='border: 3px solid #ddd;'>
+          <tr>
+             <td style='text-align: center; font-weight: bold; font-size: 1.2em; border: 2px solid #fff;' colspan='6'>Wed Jul 29 22:34:16 2020 CEST</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>OS</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Linux</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>CPU(s)</td>
+            <td style='text-align: left; border: 2px solid #fff;'>4</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Machine</td>
+            <td style='text-align: left; border: 2px solid #fff;'>x86_64</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Architecture</td>
+            <td style='text-align: left; border: 2px solid #fff;'>64bit</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>RAM</td>
+            <td style='text-align: left; border: 2px solid #fff;'>15.5 GB</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>Environment</td>
+            <td style='text-align: left; border: 2px solid #fff;'>Python</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; border: 2px solid #fff;' colspan='6'>Python 3.8.3 (default, Jul  2 2020, 16:21:59) 
+        [GCC 7.3.0]</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>SimPEG</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.14.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>pymatsolver</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.1.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numpy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.18.5</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>scipy</td>
+            <td style='text-align: left; border: 2px solid #fff;'>1.5.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>numba</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.50.1</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>emg3d</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.12.0</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>empymod</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.0.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>xarray</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.16.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>discretize</td>
+            <td style='text-align: left; border: 2px solid #fff;'>0.4.15</td>
+          </tr>
+          <tr>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>h5py</td>
+            <td style='text-align: left; border: 2px solid #fff;'>2.10.0</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>matplotlib</td>
+            <td style='text-align: left; border: 2px solid #fff;'>3.2.2</td>
+            <td style='text-align: right; background-color: #ccc; border: 2px solid #fff;'>IPython</td>
+            <td style='text-align: left; border: 2px solid #fff;'>7.16.1</td>
+          </tr>
+          <tr>
+             <td style='text-align: center; background-color: #ddd;border: 2px solid #fff;' colspan='6'>Intel(R) Math Kernel Library Version 2020.0.1 Product Build 20200208 for Intel(R) 64 architecture applications</td>
+          </tr>
+        </table>
+        <br />
+        <br />
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 8 minutes  3.404 seconds)
+
+**Estimated memory usage:**  10072 MB
+
+
+.. _sphx_glr_download_gallery_comparisons_3D_triaxial_SimPEG.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: 3D_triaxial_SimPEG.py <3D_triaxial_SimPEG.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: 3D_triaxial_SimPEG.ipynb <3D_triaxial_SimPEG.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

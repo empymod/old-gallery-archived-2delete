@@ -1,0 +1,14 @@
+
+:orphan:
+
+.. _sphx_glr_gallery_interactions_sg_execution_times:
+
+Computation times
+=================
+**01:12.025** total execution time for **gallery_interactions** files:
+
++--------------------------------------------------------------------+-----------+-----------+
+| :ref:`sphx_glr_gallery_interactions_GemPy-I.py` (``GemPy-I.py``)   | 01:12.025 | 3024.9 MB |
++--------------------------------------------------------------------+-----------+-----------+
+| :ref:`sphx_glr_gallery_interactions_GemPy-II.py` (``GemPy-II.py``) | 00:00.000 | 0.0 MB    |
++--------------------------------------------------------------------+-----------+-----------+

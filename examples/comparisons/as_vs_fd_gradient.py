@@ -317,14 +317,14 @@ fig, axs = plt.subplots(figsize=(9, 6), nrows=1, ncols=2)
 # Adjoint-State Gradient
 f0 = comp_grid.plotSlice(as_grad, normal='Y', ind=iy, ax=axs[0],
                          clim=[-vmax, vmax], pcolor_opts=pcolor_opts)
-axs[0].set_title('Adjoint-State Gradient')
+axs[0].set_title("Adjoint-State Gradient")
 set_axis(axs, 0)
 plot_diff(axs[0], 10)
 
 # Finite-Difference Gradient
 f1 = comp_grid.plotSlice(fd_grad, normal='Y', ind=iy, ax=axs[1],
                          clim=[-vmax, vmax], pcolor_opts=pcolor_opts)
-axs[1].set_title(f"Finite-Difference Gradient")
+axs[1].set_title("Finite-Difference Gradient")
 set_axis(axs, 1)
 plot_diff(axs[1], 10)
 

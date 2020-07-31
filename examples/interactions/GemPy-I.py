@@ -1,6 +1,6 @@
 """
-1. GemPy-I
-==========
+1. GemPy-I: *Simple Fault Model*
+================================
 
 This example uses `GemPy <https://www.gempy.org>`_ to create a geological model
 as input to emg3d, utilizing `discretize <http://discretize.simpeg.xyz>`_.
@@ -29,6 +29,7 @@ import gempy as gempy
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 plt.style.use('ggplot')
+# sphinx_gallery_thumbnail_number = 3
 
 ###############################################################################
 # Get and initiate the *simple_fault_model*
@@ -154,7 +155,7 @@ res[np.round(res) == 7] = 200  # resistive basement
 model = emg3d.Model(grid, property_x=res, mapping='Resistivity')
 
 # Store the grid and the model for use in other examples.
-# emg3d.save('./data/GemPy-I.h5', model=model, mesh=grid)
+# emg3d.save('../data/models/GemPy-I.h5', model=model, mesh=grid)
 
 ###############################################################################
 # Plot the model with PyVista

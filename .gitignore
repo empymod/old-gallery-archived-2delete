@@ -1,4 +1,5 @@
 *.npz
+*.npy
 _build/
 gallery/
 examples/data/SEG/

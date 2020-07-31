@@ -154,9 +154,6 @@ res[np.round(res) == 7] = 200  # resistive basement
 # Create an emg3d-model.
 model = emg3d.Model(grid, property_x=res, mapping='Resistivity')
 
-# Store the grid and the model for use in other examples.
-# emg3d.save('../data/models/GemPy-I.h5', model=model, mesh=grid)
-
 ###############################################################################
 # Plot the model with PyVista
 # ---------------------------
@@ -234,5 +231,7 @@ comp_grid.plot_3d_slicer(
     pcolor_opts={'cmap': 'viridis', 'norm': LogNorm()})
 
 ###############################################################################
+# Store the grid and the model for use in other examples.
+# emg3d.save('../data/models/GemPy-I.h5', model=model, mesh=grid)
 
 emg3d.Report([gempy, pyvista, 'pandas'])
